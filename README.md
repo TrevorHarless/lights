@@ -1,3 +1,7 @@
+# Currently...
+
+Currently migrating existing spaghetti code lights app on my local to this repository, taking it one piece at a time and doing it the right way, this will help when trying to publish to the app store. Refactoring, improving, and redigesting. 
+
 # Personal Notes
 
 - `npx expo prebuild`: generates native code for android & iOS (./android and ./ios)
