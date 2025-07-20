@@ -2,6 +2,7 @@
 
 /ios
 /android
+/markdown-files
 
 # dependencies
 node_modules/
@@ -34,6 +35,7 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript
