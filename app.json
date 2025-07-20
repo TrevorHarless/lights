@@ -10,7 +10,13 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tgharles.lightsapp"
+      "bundleIdentifier": "com.tgharles.lightsapp",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app may use camera features in the future",
+        "NSLocationWhenInUseUsageDescription": "This app may use location for project addresses",
+        "CFBundleDisplayName": "Lights App"
+      }
     },
     "android": {
       "adaptiveIcon": {

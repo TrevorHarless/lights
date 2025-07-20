@@ -1,0 +1,34 @@
+{
+  "cli": {
+    "version": ">= 12.0.0"
+  },
+  "build": {
+    "development": {
+      "ios": {
+        "simulator": true,
+        "buildType": "developmentClient"
+      }
+    },
+    "preview": {
+      "ios": {
+        "simulator": false,
+        "buildType": "developmentClient"
+      }
+    },
+    "production": {
+      "ios": {
+        "simulator": false,
+        "buildType": "release"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "your-apple-id@example.com",
+        "ascAppId": "your-app-store-connect-app-id",
+        "appleTeamId": "your-apple-team-id"
+      }
+    }
+  }
+}
