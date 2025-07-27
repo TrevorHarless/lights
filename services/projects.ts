@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Project, CreateProjectData } from '@/types/project'
+import { imageUploadService } from './imageUpload'
 
 export const projectsService = {
   async getProjects(): Promise<{ data: Project[] | null; error: any }> {
@@ -27,6 +28,8 @@ export const projectsService = {
           description: projectData.description || null,
           address: projectData.address || null,
           phone_number: projectData.phone_number || null,
+          image_url: projectData.image_url || null,
+          image_path: projectData.image_path || null,
         }
       ])
       .select()
@@ -36,12 +39,33 @@ export const projectsService = {
   },
 
   async deleteProject(projectId: string): Promise<{ error: any }> {
-    const { error } = await supabase
+    // First, get the project to retrieve the image_path
+    const { data: project, error: fetchError } = await supabase
+      .from('projects')
+      .select('image_path')
+      .eq('id', projectId)
+      .single()
+
+    if (fetchError) {
+      return { error: fetchError }
+    }
+
+    // Delete the project from database
+    const { error: deleteError } = await supabase
       .from('projects')
       .delete()
       .eq('id', projectId)
 
-    return { error }
+    if (deleteError) {
+      return { error: deleteError }
+    }
+
+    // Delete associated image from storage if it exists
+    if (project?.image_path) {
+      await imageUploadService.deleteImage(project.image_path)
+    }
+
+    return { error: null }
   },
 
   async updateProject(projectId: string, updates: Partial<CreateProjectData>): Promise<{ data: Project | null; error: any }> {

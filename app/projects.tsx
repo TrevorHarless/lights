@@ -1,19 +1,21 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { imageUploadService } from "@/services/imageUpload";
 import { projectsService } from "@/services/projects";
 import { Project } from "@/types/project";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
+  Image,
   Modal,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import "../global.css";
 
 export default function ProjectsScreen() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -23,6 +25,8 @@ export default function ProjectsScreen() {
   const [newProjectDescription, setNewProjectDescription] = useState("");
   const [newProjectAddress, setNewProjectAddress] = useState("");
   const [newProjectPhone, setNewProjectPhone] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [creating, setCreating] = useState(false);
   const { user } = useAuth();
 
@@ -52,11 +56,37 @@ export default function ProjectsScreen() {
     }
 
     setCreating(true);
+
+    let imageUrl: string | undefined;
+    let imagePath: string | undefined;
+
+    // Upload image if selected
+    if (selectedImage && user) {
+      setUploadingImage(true);
+      const uploadResult = await imageUploadService.uploadImage(
+        selectedImage,
+        user.id
+      );
+      setUploadingImage(false);
+
+      if (uploadResult.success) {
+        imageUrl = uploadResult.imageUrl;
+        imagePath = uploadResult.imagePath;
+      } else {
+        Alert.alert(
+          "Error",
+          "Failed to upload image. Project will be created without image."
+        );
+      }
+    }
+
     const { data, error } = await projectsService.createProject({
       name: newProjectName.trim(),
       description: newProjectDescription.trim() || undefined,
       address: newProjectAddress.trim() || undefined,
       phone_number: newProjectPhone.trim() || undefined,
+      image_url: imageUrl,
+      image_path: imagePath,
     });
 
     if (error) {
@@ -75,6 +105,23 @@ export default function ProjectsScreen() {
     setNewProjectDescription("");
     setNewProjectAddress("");
     setNewProjectPhone("");
+    setSelectedImage(null);
+  };
+
+  const handlePickImage = async () => {
+    try {
+      const result = await imageUploadService.pickImage();
+      if (result && !result.canceled && result.assets[0]) {
+        setSelectedImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to pick image");
+      console.error("Image picker error:", error);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
   };
 
   const handleDeleteProject = (project: Project) => {
@@ -102,64 +149,111 @@ export default function ProjectsScreen() {
   };
 
   const renderProject = ({ item }: { item: Project }) => (
-    <View style={styles.projectItem}>
-      <View style={styles.projectInfo}>
-        <Text style={styles.projectName}>{item.name}</Text>
-        {item.description && (
-          <Text style={styles.projectDescription}>{item.description}</Text>
-        )}
-        {item.address && (
-          <Text style={styles.projectDetail}>📍 {item.address}</Text>
-        )}
-        {item.phone_number && (
-          <Text style={styles.projectDetail}>📞 {item.phone_number}</Text>
-        )}
-        <Text style={styles.projectDate}>
-          Created {new Date(item.created_at).toLocaleDateString()}
-        </Text>
+    <View className="bg-white mx-4 mb-4 rounded-2xl shadow-medium border border-gray-100">
+      <View className="p-5">
+        <View className="flex-row">
+          {item.image_url ? (
+            <Image
+              source={{ uri: item.image_url }}
+              className="w-16 h-16 rounded-xl mr-4 bg-gray-100"
+            />
+          ) : (
+            <View className="w-16 h-16 rounded-xl mr-4 bg-gray-100 items-center justify-center">
+              <Text className="text-2xl text-gray-400">📷</Text>
+            </View>
+          )}
+
+          <View className="flex-1 mr-3">
+            <Text className="text-lg font-bold text-gray-800 mb-1">
+              {item.name}
+            </Text>
+            {item.description && (
+              <Text className="text-sm text-gray-600 mb-2 italic leading-5">
+                {item.description}
+              </Text>
+            )}
+            {item.address && (
+              <View className="flex-row items-center mb-1">
+                <Text className="text-xs text-gray-500">📍 {item.address}</Text>
+              </View>
+            )}
+            {item.phone_number && (
+              <View className="flex-row items-center mb-1">
+                <Text className="text-xs text-gray-500">
+                  📞 {item.phone_number}
+                </Text>
+              </View>
+            )}
+            <Text className="text-xs text-gray-400 mt-2">
+              Created {new Date(item.created_at).toLocaleDateString()}
+            </Text>
+          </View>
+
+          <TouchableOpacity onPress={() => handleDeleteProject(item)}>
+            <FontAwesome name="trash" size={32} color="#ef4444" />
+          </TouchableOpacity>
+        </View>
       </View>
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() => handleDeleteProject(item)}
-      >
-        <Text style={styles.deleteButtonText}>Delete</Text>
-      </TouchableOpacity>
     </View>
   );
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.loadingText}>Loading projects...</Text>
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <View className="flex-1 justify-center items-center">
+          <View className="bg-white p-8 rounded-2xl shadow-medium">
+            <Text className="text-lg text-gray-600 text-center">
+              Loading projects...
+            </Text>
+          </View>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>My Projects</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text style={styles.addButtonText}>+ Add Project</Text>
-        </TouchableOpacity>
+    <SafeAreaView className="flex-1 bg-gray-50">
+      {/* Header */}
+      <View className="bg-white px-6 py-4 border-b border-gray-100">
+        <View className="flex-row justify-between items-center">
+          <View>
+            <Text className="text-2xl font-bold text-gray-800">
+              My Projects
+            </Text>
+          </View>
+          <TouchableOpacity
+            className="w-12 h-12 bg-blue-600 rounded-full items-center justify-center shadow-lg"
+            onPress={() => setModalVisible(true)}
+          >
+            <FontAwesome name="plus" size={18} color="white" />
+          </TouchableOpacity>
+        </View>
       </View>
 
+      {/* Content */}
       {projects.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>No projects yet</Text>
-          <Text style={styles.emptyStateSubtext}>
-            Tap &quot;Add Project&quot; to create your first project
-          </Text>
+        <View className="flex-1 justify-center items-center px-8">
+          <View className="bg-white p-8 rounded-3xl items-center max-w-sm">
+            <Text className="text-xl font-bold text-gray-800 mb-2 text-center">
+              No projects yet
+            </Text>
+            <Text className="text-gray-500 text-center mb-6">
+              Create your first project to start organizing your lighting work
+            </Text>
+            <TouchableOpacity
+              className="bg-blue-600 px-6 py-3 rounded-xl shadow-lg"
+              onPress={() => setModalVisible(true)}
+            >
+              <Text className="text-white font-semibold">Get Started</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : (
         <FlatList
           data={projects}
           renderItem={renderProject}
           keyExtractor={(item) => item.id}
-          style={styles.list}
+          className="flex-1"
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -170,26 +264,24 @@ export default function ProjectsScreen() {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>New Project</Text>
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-white rounded-t-3xl mx-2 mb-2">
+            <View className="p-6">
+              <Text className="text-xl font-bold text-gray-800 mb-4">
+                New Project
+              </Text>
 
-            <ScrollView
-              style={styles.formContainer}
-              showsVerticalScrollIndicator={false}
-            >
               <TextInput
-                style={styles.input}
-                placeholder="Project name *"
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-gray-800 mb-4"
+                placeholder="Enter project name"
                 value={newProjectName}
                 onChangeText={setNewProjectName}
-                autoFocus
                 maxLength={50}
               />
 
               <TextInput
-                style={[styles.input, styles.textArea]}
-                placeholder="Description (optional)"
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-gray-800 mb-4 h-24"
+                placeholder="Add a description (optional)"
                 value={newProjectDescription}
                 onChangeText={setNewProjectDescription}
                 multiline
@@ -199,47 +291,82 @@ export default function ProjectsScreen() {
               />
 
               <TextInput
-                style={styles.input}
-                placeholder="Address (optional)"
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-gray-800 mb-4"
+                placeholder="Project address (optional)"
                 value={newProjectAddress}
                 onChangeText={setNewProjectAddress}
                 maxLength={200}
               />
 
               <TextInput
-                style={styles.input}
-                placeholder="Phone number (optional)"
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-gray-800 mb-4"
+                placeholder="Contact number (optional)"
                 value={newProjectPhone}
                 onChangeText={setNewProjectPhone}
                 keyboardType="phone-pad"
                 maxLength={20}
               />
-            </ScrollView>
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => {
-                  setModalVisible(false);
-                  clearForm();
-                }}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  styles.createButton,
-                  creating && styles.buttonDisabled,
-                ]}
-                onPress={handleCreateProject}
-                disabled={creating}
-              >
-                <Text style={styles.createButtonText}>
-                  {creating ? "Creating..." : "Create"}
+              {/* Image Section */}
+              <View className="mb-4">
+                <Text className="text-gray-700 font-medium mb-3">
+                  Project Image
                 </Text>
-              </TouchableOpacity>
+
+                {selectedImage ? (
+                  <View className="items-center">
+                    <Image
+                      source={{ uri: selectedImage }}
+                      className="w-32 h-32 rounded-2xl mb-3"
+                    />
+                    <TouchableOpacity
+                      className="bg-red-500 px-4 py-2 rounded-lg"
+                      onPress={handleRemoveImage}
+                    >
+                      <Text className="text-white font-semibold text-sm">
+                        Remove Image
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    className="border-2 border-dashed border-blue-300 bg-blue-50 rounded-2xl p-8 items-center"
+                    onPress={handlePickImage}
+                  >
+                    <Text className="text-3xl mb-2">📷</Text>
+                    <Text className="text-blue-600 font-semibold text-base mb-1">
+                      Add Project Image
+                    </Text>
+                    <Text className="text-gray-500 text-sm text-center">
+                      Choose from your photo library
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <View className="flex-row space-x-3 mt-6">
+                <TouchableOpacity
+                  className="flex-1 bg-gray-100 py-4 rounded-xl"
+                  onPress={() => {
+                    setModalVisible(false);
+                    clearForm();
+                  }}
+                >
+                  <Text className="text-gray-700 font-semibold text-center">
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="flex-1 bg-blue-600 py-4 rounded-xl shadow-lg"
+                  onPress={handleCreateProject}
+                  disabled={creating || uploadingImage}
+                >
+                  <Text className="text-white font-semibold text-center">
+                    Create
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -247,169 +374,3 @@ export default function ProjectsScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  addButton: {
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  addButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  loadingText: {
-    textAlign: "center",
-    marginTop: 50,
-    fontSize: 16,
-    color: "#666",
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 40,
-  },
-  emptyStateText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 8,
-  },
-  emptyStateSubtext: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-  },
-  list: {
-    flex: 1,
-  },
-  projectItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  projectInfo: {
-    flex: 1,
-  },
-  projectName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
-  },
-  projectDescription: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 4,
-    fontStyle: "italic",
-  },
-  projectDetail: {
-    fontSize: 12,
-    color: "#777",
-    marginBottom: 2,
-  },
-  projectDate: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 4,
-  },
-  deleteButton: {
-    backgroundColor: "#FF3B30",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
-  },
-  deleteButtonText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    width: "90%",
-    maxHeight: "80%",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20,
-  },
-  formContainer: {
-    maxHeight: 300,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 16,
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: "top",
-  },
-  modalButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  modalButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  cancelButton: {
-    backgroundColor: "#f0f0f0",
-    marginRight: 8,
-  },
-  createButton: {
-    backgroundColor: "#007AFF",
-    marginLeft: 8,
-  },
-  buttonDisabled: {
-    backgroundColor: "#ccc",
-  },
-  cancelButtonText: {
-    color: "#333",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  createButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});
