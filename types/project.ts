@@ -5,6 +5,8 @@ export interface Project {
   description?: string
   address?: string
   phone_number?: string
+  image_url?: string
+  image_path?: string
   created_at: string
   updated_at: string
 }
@@ -14,6 +16,8 @@ export interface CreateProjectData {
   description?: string
   address?: string
   phone_number?: string
+  image_url?: string
+  image_path?: string
 }
 
 export interface UpdateProjectData {
@@ -21,4 +25,6 @@ export interface UpdateProjectData {
   description?: string
   address?: string
   phone_number?: string
+  image_url?: string
+  image_path?: string
 }
