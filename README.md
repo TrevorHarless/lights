@@ -1,5 +1,3 @@
-# Lights App
-
 React Native app built with Expo using file-based routing.
 
 ## Quick Start
