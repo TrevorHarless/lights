@@ -28,11 +28,8 @@ export default function Index() {
 
   return (
     <View className="flex-1 justify-center items-center p-5 bg-gray-50">
-      <Text className="text-2xl font-bold mb-2 text-center text-gray-800">
-        Welcome to NativeWind!
-      </Text>
-      <Text className="text-base text-gray-600 mb-10 text-center">
-        You are logged in as: {user.email}
+      <Text className="text-2xl font-bold mb-2 text-center text-gray-800 mb-8">
+        Welcome to Lights!
       </Text>
 
       <View className="gap-4 w-full max-w-[200px]">

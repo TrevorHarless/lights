@@ -5,7 +5,11 @@
       "Bash(npm run typecheck:*)",
       "Bash(npm run test:ci:*)",
       "Bash(npm install:*)",
-      "Bash(npx expo install:*)"
+      "Bash(npx expo install:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }
