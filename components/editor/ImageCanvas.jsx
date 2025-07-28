@@ -1,6 +1,6 @@
 // components/projects/ImageCanvas.jsx
 import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, View } from 'react-native';
 
 import { LightStringRenderer } from './LightStringRenderer';
 
@@ -16,8 +16,8 @@ export const ImageCanvas = ({
   panHandlers,
 }) => {
   return (
-    <View style={styles.container} {...panHandlers}>
-      <Image source={{ uri: imgSource }} style={styles.image} resizeMode="contain" />
+    <View className="flex-1 justify-center items-center" {...panHandlers}>
+      <Image source={{ uri: imgSource }} className="w-full h-full" resizeMode="contain" />
 
       <LightStringRenderer
         lightStrings={lightStrings}
@@ -33,15 +33,3 @@ export const ImageCanvas = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-});

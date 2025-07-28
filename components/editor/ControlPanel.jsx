@@ -1,7 +1,7 @@
 // components/projects/ControlPanel.jsx
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 export const ControlPanel = ({
   onClearAll,
@@ -13,38 +13,41 @@ export const ControlPanel = ({
   isExporting = false,
 }) => {
   return (
-    <View style={styles.container}>
-      <View style={styles.buttonRow}>
+    <View className="bg-gray-50 p-3 border-t border-gray-200">
+      <View className="flex-row justify-around items-center">
         {/* Action buttons with improved layout */}
         {canUndo && (
-          <TouchableOpacity style={styles.actionButton} onPress={onUndo} activeOpacity={0.7}>
-            <MaterialIcons name="undo" size={22} color="#555" />
-            <Text style={styles.buttonText}>Undo</Text>
+          <TouchableOpacity 
+            className="flex-row items-center justify-center py-2.5 px-4 rounded-lg flex-1 mx-1.5 bg-gray-100 border border-gray-200" 
+            onPress={onUndo} 
+            activeOpacity={0.7}>
+            <MaterialIcons name="undo" size={22} color="#6b7280" />
+            <Text className="ml-1.5 font-medium text-gray-600 text-sm">Undo</Text>
           </TouchableOpacity>
         )}
 
         <TouchableOpacity
-          style={[styles.actionButton, styles.clearButton]}
+          className="flex-row items-center justify-center py-2.5 px-4 rounded-lg flex-1 mx-1.5 bg-red-50 border border-red-200"
           onPress={onClearAll}
           activeOpacity={0.7}>
-          <MaterialIcons name="delete-sweep" size={22} color="#FF3B30" />
-          <Text style={[styles.buttonText, styles.clearText]}>Clear All</Text>
+          <MaterialIcons name="delete-sweep" size={22} color="#ef4444" />
+          <Text className="ml-1.5 font-medium text-danger-500 text-sm">Clear All</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.actionButton, styles.exportButton]}
+          className="flex-row items-center justify-center py-2.5 px-4 rounded-lg flex-1 mx-1.5 bg-primary-500 border border-primary-600"
           onPress={onExport}
           disabled={isExporting}
           activeOpacity={0.7}>
           {isExporting ? (
             <>
-              <ActivityIndicator size="small" color="#fff" style={styles.exportIcon} />
-              <Text style={styles.exportText}>Exporting...</Text>
+              <ActivityIndicator size="small" color="#fff" />
+              <Text className="text-white ml-1.5 font-medium text-sm">Exporting...</Text>
             </>
           ) : (
             <>
-              <MaterialIcons name="save-alt" size={22} color="#fff" style={styles.exportIcon} />
-              <Text style={styles.exportText}>Export</Text>
+              <MaterialIcons name="save-alt" size={22} color="#fff" />
+              <Text className="text-white ml-1.5 font-medium text-sm">Export</Text>
             </>
           )}
         </TouchableOpacity>
@@ -52,56 +55,3 @@ export const ControlPanel = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#f9f9f9',
-    padding: 12,
-    borderTopWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    flex: 1,
-    marginHorizontal: 6,
-    backgroundColor: '#f0f0f0',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  clearButton: {
-    backgroundColor: '#fff0f0',
-    borderColor: '#ffcccb',
-  },
-  exportButton: {
-    backgroundColor: '#007AFF',
-    borderColor: '#0062cc',
-  },
-  buttonText: {
-    marginLeft: 6,
-    fontWeight: '500',
-    color: '#555',
-    fontSize: 14,
-  },
-  clearText: {
-    color: '#FF3B30',
-  },
-  exportText: {
-    color: '#fff',
-    marginLeft: 6,
-    fontWeight: '500',
-    fontSize: 14,
-  },
-  exportIcon: {
-    marginRight: 0,
-  },
-});

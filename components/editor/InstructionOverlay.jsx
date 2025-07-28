@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { Text } from 'react-native';
 
 export const InstructionOverlay = ({ selectedAsset, selectedStringId }) => {
   let instructionText = '';
@@ -13,21 +13,9 @@ export const InstructionOverlay = ({ selectedAsset, selectedStringId }) => {
       'Select a light style from the options below, then tap existing lights to select or drag to create new ones.';
   }
 
-  return <Text style={styles.instruction}>{instructionText}</Text>;
+  return (
+    <Text className="absolute top-5 left-5 right-5 text-center text-white text-base bg-black/50 p-2.5 rounded-2xl z-10">
+      {instructionText}
+    </Text>
+  );
 };
-
-const styles = StyleSheet.create({
-  instruction: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
-    right: 20,
-    textAlign: 'center',
-    color: '#fff',
-    fontSize: 16,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 10,
-    borderRadius: 10,
-    zIndex: 10,
-  },
-});

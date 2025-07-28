@@ -1,6 +1,6 @@
 // components/projects/NightModeOverlay.jsx
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 /**
  * A component that provides a night-time effect overlay with adjustable intensity
@@ -34,26 +34,29 @@ export const NightModeOverlay = ({ intensity = 0.7, onIntensityChange, enabled =
     <>
       {/* Night effect overlay */}
       <View
-        style={[StyleSheet.absoluteFill, styles.overlay, { opacity: intensity }]}
+        className="absolute inset-0 z-10"
+        style={{ backgroundColor: '#0a1632', opacity: intensity }}
         pointerEvents="none"
       />
 
       {/* Controls for intensity - Now positioned in top-left */}
-      <View style={styles.controlsContainer} pointerEvents="box-none">
-        <View style={styles.controlsBox}>
-          <Text style={styles.controlsLabel}>Night Effect: {intensityPercent}%</Text>
-          <View style={styles.buttonsRow}>
+      <View className="absolute top-5 left-5 z-50" pointerEvents="box-none">
+        <View className="bg-black/60 rounded-2xl p-2.5 items-center">
+          <Text className="text-white text-xs mb-1 text-center">
+            Night Effect: {intensityPercent}%
+          </Text>
+          <View className="flex-row justify-between w-25 mt-1">
             <TouchableOpacity
-              style={styles.button}
+              className="bg-primary-500 w-10 h-10 rounded-full justify-center items-center"
               onPress={decreaseIntensity}
               disabled={intensity <= 0.1}>
-              <Text style={styles.buttonText}>-</Text>
+              <Text className="text-white text-2xl font-bold">-</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.button}
+              className="bg-primary-500 w-10 h-10 rounded-full justify-center items-center"
               onPress={increaseIntensity}
               disabled={intensity >= 0.9}>
-              <Text style={styles.buttonText}>+</Text>
+              <Text className="text-white text-2xl font-bold">+</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -61,52 +64,3 @@ export const NightModeOverlay = ({ intensity = 0.7, onIntensityChange, enabled =
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    backgroundColor: '#0a1632', // Deep blue night color
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10, // Above the image (z-index 1) but below the lights (z-index 20)
-  },
-  controlsContainer: {
-    position: 'absolute',
-    top: 20,
-    left: 20, // Moved from right to left
-    zIndex: 50, // Above everything else
-  },
-  controlsBox: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 10,
-    padding: 10,
-    alignItems: 'center',
-  },
-  controlsLabel: {
-    color: 'white',
-    fontSize: 12,
-    marginBottom: 5,
-    textAlign: 'center',
-  },
-  buttonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: 100,
-    marginTop: 5,
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-});

@@ -1,6 +1,6 @@
 // components/projects/LightStringRenderer.jsx
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import Svg, { G, Path } from 'react-native-svg';
 
 export const LightStringRenderer = ({
@@ -29,7 +29,7 @@ export const LightStringRenderer = ({
           return (
             <View
               key={string.id}
-              style={[StyleSheet.absoluteFillObject, styles.lightLayerTop]}
+              className="absolute inset-0 z-20"
               pointerEvents="none">
               <Svg width="100%" height="100%">
                 {/* Render selection highlighting if this string is selected */}
@@ -70,7 +70,7 @@ export const LightStringRenderer = ({
     const positions = calculateLightPositions(currentVector, asset.spacing);
 
     return (
-      <View style={[StyleSheet.absoluteFillObject, styles.lightLayerTop]} pointerEvents="none">
+      <View className="absolute inset-0 z-20" pointerEvents="none">
         <Svg width="100%" height="100%">
           {/* Render the dashed line ONLY during dragging */}
           <Path
@@ -96,20 +96,9 @@ export const LightStringRenderer = ({
   };
 
   return (
-    <View style={[StyleSheet.absoluteFillObject, styles.container]} pointerEvents="box-none">
+    <View className="absolute inset-0 z-10" pointerEvents="box-none">
       {renderLightStrings()}
       {renderCurrentVector()}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    // Ensures the container is above the image but below controls
-    zIndex: 10,
-  },
-  lightLayerTop: {
-    // Ensures lights are rendered above the night mode overlay
-    zIndex: 20,
-  },
-});
