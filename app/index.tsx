@@ -12,7 +12,7 @@ export default function Index() {
     if (!loading && !user) {
       router.replace("/login");
     }
-  }, [user, loading]);
+  }, [user, loading, router]);
 
   if (loading) {
     return (

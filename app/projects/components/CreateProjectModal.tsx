@@ -1,7 +1,6 @@
 import { imageUploadService } from "@/services/imageUpload";
 import { projectsService } from "@/services/projects";
 import { Project } from "@/types/project";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Image } from "expo-image";
 import React, { useState } from "react";
 import {
