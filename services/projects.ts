@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Project, CreateProjectData } from '@/types/project'
+import { imageUploadService } from './imageUpload'
 
 export const projectsService = {
   async getProjects(): Promise<{ data: Project[] | null; error: any }> {
@@ -8,7 +9,45 @@ export const projectsService = {
       .select('*')
       .order('created_at', { ascending: false })
 
-    return { data, error }
+    if (error || !data) {
+      return { data, error }
+    }
+
+    // Refresh signed URLs for projects with images
+    const projectsWithRefreshedUrls = await Promise.all(
+      data.map(async (project) => {
+        if (project.image_path) {
+          const { url } = await imageUploadService.getSignedUrl(project.image_path)
+          return {
+            ...project,
+            image_url: url || project.image_url
+          }
+        }
+        return project
+      })
+    )
+
+    return { data: projectsWithRefreshedUrls, error: null }
+  },
+
+  async getProject(projectId: string): Promise<{ data: Project | null; error: any }> {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', projectId)
+      .single()
+
+    if (error || !data) {
+      return { data, error }
+    }
+
+    // Refresh signed URL if project has an image
+    if (data.image_path) {
+      const { url } = await imageUploadService.getSignedUrl(data.image_path)
+      data.image_url = url || data.image_url
+    }
+
+    return { data, error: null }
   },
 
   async createProject(projectData: CreateProjectData): Promise<{ data: Project | null; error: any }> {
@@ -27,6 +66,8 @@ export const projectsService = {
           description: projectData.description || null,
           address: projectData.address || null,
           phone_number: projectData.phone_number || null,
+          image_url: projectData.image_url || null,
+          image_path: projectData.image_path || null,
         }
       ])
       .select()
@@ -36,12 +77,33 @@ export const projectsService = {
   },
 
   async deleteProject(projectId: string): Promise<{ error: any }> {
-    const { error } = await supabase
+    // First, get the project to retrieve the image_path
+    const { data: project, error: fetchError } = await supabase
+      .from('projects')
+      .select('image_path')
+      .eq('id', projectId)
+      .single()
+
+    if (fetchError) {
+      return { error: fetchError }
+    }
+
+    // Delete the project from database
+    const { error: deleteError } = await supabase
       .from('projects')
       .delete()
       .eq('id', projectId)
 
-    return { error }
+    if (deleteError) {
+      return { error: deleteError }
+    }
+
+    // Delete associated image from storage if it exists
+    if (project?.image_path) {
+      await imageUploadService.deleteImage(project.image_path)
+    }
+
+    return { error: null }
   },
 
   async updateProject(projectId: string, updates: Partial<CreateProjectData>): Promise<{ data: Project | null; error: any }> {

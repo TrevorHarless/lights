@@ -1,170 +1,135 @@
-import React, { useState } from 'react'
+import { useAuth } from "@/contexts/AuthContext";
+import { Link, router } from "expo-router";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   Alert,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native'
-import { Link, router } from 'expo-router'
-import { useAuth } from '@/contexts/AuthContext'
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import "../global.css";
 
 export default function SignUpScreen() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const { signUp } = useAuth()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
 
   const handleSignUp = async () => {
     if (!email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields')
-      return
+      Alert.alert("Error", "Please fill in all fields");
+      return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match')
-      return
+      Alert.alert("Error", "Passwords do not match");
+      return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters')
-      return
+      Alert.alert("Error", "Password must be at least 6 characters");
+      return;
     }
 
-    setLoading(true)
-    const { error } = await signUp(email, password)
+    setLoading(true);
+    const { error } = await signUp(email, password);
 
     if (error) {
-      Alert.alert('Error', error.message)
+      Alert.alert("Error", error.message);
     } else {
       Alert.alert(
-        'Success',
-        'Account created successfully! Please check your email to verify your account.',
-        [{ text: 'OK', onPress: () => router.replace('/login') }]
-      )
+        "Success",
+        "Account created successfully! Please check your email to verify your account.",
+        [{ text: "OK", onPress: () => router.replace("/login") }]
+      );
     }
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="flex-1 justify-center px-6 bg-gradient-to-b from-primary-50 to-white"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.form}>
-        <Text style={styles.title}>Create Account</Text>
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          autoComplete="email"
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete="new-password"
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-          autoComplete="new-password"
-        />
-        
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleSignUp}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>
-            {loading ? 'Creating Account...' : 'Create Account'}
+      <View className="w-full max-w-sm self-center">
+        {/* Header */}
+        <View className="items-center mb-8">
+          <Text className="text-3xl font-bold text-gray-800 mb-2">
+            Create Account
           </Text>
-        </TouchableOpacity>
-        
-        <View style={styles.linkContainer}>
-          <Text style={styles.linkText}>Already have an account? </Text>
-          <Link href="/login" style={styles.link}>
-            <Text style={styles.linkTextBold}>Login</Text>
+        </View>
+
+        {/* Form */}
+        <View className="space-y-4">
+          <View>
+            <Text className="text-gray-700 font-medium mb-2 ml-1">Email</Text>
+            <TextInput
+              className="bg-white border border-gray-200 rounded-xl p-4 text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md"
+              placeholder="Enter your email"
+              placeholderTextColor="#9ca3af"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+            />
+          </View>
+
+          <View>
+            <Text className="text-gray-700 font-medium mb-2 mt-4 ml-1">
+              Password
+            </Text>
+            <TextInput
+              className="bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md"
+              placeholder="Enter your password"
+              placeholderTextColor="#9ca3af"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="password"
+            />
+          </View>
+
+          <View>
+            <Text className="text-gray-700 font-medium mb-2 mt-4 ml-1">
+              Password
+            </Text>
+            <TextInput
+              className="bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md"
+              placeholder="Confirm your password"
+              placeholderTextColor="#9ca3af"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              autoComplete="new-password"
+            />
+          </View>
+
+          <TouchableOpacity
+            className={`mt-6 rounded-xl py-4 items-center shadow-medium ${
+              loading ? "bg-gray-300" : "bg-success-600 active:bg-success-700"
+            }`}
+            onPress={handleSignUp}
+            disabled={loading}
+          >
+            <Text className="text-white font-semibold">
+              {loading ? "Creating Account..." : "Create Account"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Footer */}
+        <View className="flex-row justify-center mt-8">
+          <Text className="text-gray-500 ">Already have an account? </Text>
+          <Link href="/login">
+            <Text className="text-primary-600 font-semibold">Sign in</Text>
           </Link>
         </View>
       </View>
     </KeyboardAvoidingView>
-  )
+  );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  form: {
-    width: '100%',
-    maxWidth: 400,
-    alignSelf: 'center',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 40,
-    color: '#333',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    padding: 15,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  linkContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  linkText: {
-    color: '#666',
-    fontSize: 16,
-  },
-  link: {
-    color: '#007AFF',
-  },
-  linkTextBold: {
-    color: '#007AFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-})
