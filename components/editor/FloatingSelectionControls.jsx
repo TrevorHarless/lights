@@ -13,33 +13,30 @@ export function FloatingSelectionControls({
   }
 
   return (
-    <>
-      {/* Delete button near the end of the selected string */}
-      <View
+    <View style={{
+      position: 'absolute',
+      top: 120, // Above the image container, below the top toolbar
+      right: 20,
+      zIndex: 1001,
+    }}>
+      {/* Delete button only - users can tap anywhere to deselect */}
+      <TouchableOpacity 
+        onPress={() => onDeleteString(selectedStringId)} 
         style={{
-          position: 'absolute',
-          left: selectedStringEndpoint.x - 20,
-          top: selectedStringEndpoint.y - 40,
-          zIndex: 1000,
+          width: 50,
+          height: 50,
+          borderRadius: 25,
+          backgroundColor: '#EF4444',
+          justifyContent: 'center',
+          alignItems: 'center',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 4,
+          elevation: 5,
         }}>
-        <TouchableOpacity 
-          onPress={() => onDeleteString(selectedStringId)} 
-          className="h-10 w-10 items-center justify-center rounded-full bg-danger-500 shadow-lg"
-          style={{ elevation: 5 }}>
-          <MaterialIcons name="delete" size={20} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Deselect button in top-left area */}
-      <View className="absolute left-4 top-32">
-        <TouchableOpacity 
-          onPress={onDeselectString} 
-          className="flex-row items-center rounded-xl bg-gray-700/80 px-4 py-2 shadow-lg"
-          style={{ elevation: 5 }}>
-          <MaterialIcons name="close" size={18} color="white" />
-          <Text className="ml-2 font-semibold text-white">Deselect</Text>
-        </TouchableOpacity>
-      </View>
-    </>
+        <MaterialIcons name="delete" size={24} color="white" />
+      </TouchableOpacity>
+    </View>
   );
 }

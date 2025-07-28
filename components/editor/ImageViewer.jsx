@@ -12,7 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import ViewShot from 'react-native-view-shot';
 
 import { BottomToolbar } from './BottomToolbar';
@@ -84,6 +85,13 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
   // State for menu
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
 
+  // Zoom gesture state
+  const scale = useSharedValue(1);
+  const savedScale = useSharedValue(1);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const savedTranslateX = useSharedValue(0);
+  const savedTranslateY = useSharedValue(0);
 
   // ViewShot ref and export state
   const viewShotRef = useRef(null);
@@ -98,6 +106,63 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     })();
   }, []);
 
+  // Pure pinch gesture for zoom only
+  const pinchGesture = Gesture.Pinch()
+    .onUpdate((e) => {
+      scale.value = savedScale.value * e.scale;
+    })
+    .onEnd(() => {
+      // Limit zoom levels
+      if (scale.value < 0.5) {
+        scale.value = withSpring(0.5);
+        savedScale.value = 0.5;
+      } else if (scale.value > 3) {
+        scale.value = withSpring(3);
+        savedScale.value = 3;
+      } else {
+        savedScale.value = scale.value;
+      }
+    });
+
+  // Two-finger pan gesture for moving the image when zoomed
+  const twoFingerPanGesture = Gesture.Pan()
+    .minPointers(2)
+    .maxPointers(2)
+    .onUpdate((e) => {
+      // Only allow panning when zoomed in
+      if (scale.value > 1.1) {
+        translateX.value = savedTranslateX.value + e.translationX;
+        translateY.value = savedTranslateY.value + e.translationY;
+      }
+    })
+    .onEnd(() => {
+      if (scale.value > 1.1) {
+        savedTranslateX.value = translateX.value;
+        savedTranslateY.value = translateY.value;
+      }
+    });
+
+  // Combine pinch and two-finger pan gestures
+  const imageGestures = Gesture.Simultaneous(pinchGesture, twoFingerPanGesture);
+
+  // Animated style for the zoom container
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+      { scale: scale.value },
+    ],
+  }));
+
+  // Reset zoom function
+  const resetZoom = () => {
+    scale.value = withSpring(1);
+    savedScale.value = 1;
+    translateX.value = withSpring(0);
+    translateY.value = withSpring(0);
+    savedTranslateX.value = 0;
+    savedTranslateY.value = 0;
+  };
 
   // Update the endpoint position when selection changes
   useEffect(() => {
@@ -334,6 +399,25 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
               )}
             </TouchableOpacity>
 
+            {/* Reset Zoom Button */}
+            <TouchableOpacity
+              onPress={resetZoom}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.15,
+                shadowRadius: 4,
+                elevation: 4,
+              }}>
+              <MaterialIcons name="zoom-out-map" size={22} color="#333" />
+            </TouchableOpacity>
+
             {/* Menu Button */}
             <TouchableOpacity 
               onPress={() => setIsMenuExpanded(!isMenuExpanded)} 
@@ -408,37 +492,41 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           </View>
         )} */}
 
-        <ViewShot ref={viewShotRef} style={styles.canvasContainer}>
-          {/* Main image with precise night mode overlay */}
-          <ImageWithNightOverlay
-            source={{ uri: imgSource }}
-            nightModeEnabled={nightModeEnabled}
-            nightModeIntensity={nightModeIntensity}
-            style={[StyleSheet.absoluteFill, styles.imageContainer]}
-          />
+        <GestureDetector gesture={imageGestures}>
+          <Animated.View style={[styles.zoomContainer, animatedStyle]}>
+            <ViewShot ref={viewShotRef} style={styles.canvasContainer}>
+              {/* Main image with precise night mode overlay */}
+              <ImageWithNightOverlay
+                source={{ uri: imgSource }}
+                nightModeEnabled={nightModeEnabled}
+                nightModeIntensity={nightModeIntensity}
+                style={[StyleSheet.absoluteFill, styles.imageContainer]}
+              />
 
-          {/* Light strings - rendered ON TOP of the night mode overlay */}
-          <View style={[StyleSheet.absoluteFill, styles.lightsLayer]} {...panResponder.panHandlers}>
-            <LightStringRenderer
-              lightStrings={lightStrings}
-              currentVector={currentVector}
-              isDragging={isDragging}
-              selectedStringId={selectedStringId}
-              getAssetById={getAssetById}
-              calculateLightPositions={calculateLightPositions}
-              onDeleteString={handleDeleteString}
-              getLightSizeScale={getLightSizeScale}
-            />
+              {/* Light strings - rendered ON TOP of the night mode overlay */}
+              <View style={[StyleSheet.absoluteFill, styles.lightsLayer]} {...panResponder.panHandlers}>
+                <LightStringRenderer
+                  lightStrings={lightStrings}
+                  currentVector={currentVector}
+                  isDragging={isDragging}
+                  selectedStringId={selectedStringId}
+                  getAssetById={getAssetById}
+                  calculateLightPositions={calculateLightPositions}
+                  onDeleteString={handleDeleteString}
+                  getLightSizeScale={getLightSizeScale}
+                />
 
-            {/* Reference line renderer */}
-            <ReferenceLineRenderer
-              referenceLine={referenceLine}
-              referenceLength={referenceLength}
-              isSettingReference={isSettingReference}
-              pendingLine={currentVector?.isReference ? currentVector : null}
-            />
-          </View>
-        </ViewShot>
+                {/* Reference line renderer */}
+                <ReferenceLineRenderer
+                  referenceLine={referenceLine}
+                  referenceLength={referenceLength}
+                  isSettingReference={isSettingReference}
+                  pendingLine={currentVector?.isReference ? currentVector : null}
+                />
+              </View>
+            </ViewShot>
+          </Animated.View>
+        </GestureDetector>
 
         {/* Floating Selection Controls */}
         <FloatingSelectionControls
@@ -486,6 +574,9 @@ const styles = StyleSheet.create({
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
+  },
+  zoomContainer: {
+    flex: 1,
   },
   canvasContainer: {
     flex: 1,

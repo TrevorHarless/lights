@@ -66,3 +66,15 @@ This feature allows Holiday Light Installation businesses to create visual mocku
 - **Footer Buttons**: Save + Export
 
 ---
+
+
+# More Features for Editor Page
+- Need roof line lights
+- Need mini lights - close together
+- Wreaths
+- Wreath with Bow
+- Ability to put an individual light
+- Option to export directly to iMessage/Photo Lib
+- When selecting a line: can move edges and entire line
+- Zoom in on photo for precise placement -- maintain overal light placement when doing this
+- Cost estimate based on amount of lights in image...? idk how this would work, talk to Justin
