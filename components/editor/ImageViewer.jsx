@@ -5,7 +5,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Image,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -18,6 +17,7 @@ import ViewShot from 'react-native-view-shot';
 
 import { BottomToolbar } from './BottomToolbar';
 import { FloatingSelectionControls } from './FloatingSelectionControls';
+import { ImageWithNightOverlay } from './ImageWithNightOverlay';
 import { LightStringRenderer } from './LightStringRenderer';
 import { ReferenceLineRenderer } from './ReferenceLineRenderer';
 import { ReferenceModal } from './ReferenceModal';
@@ -409,26 +409,13 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
         )} */}
 
         <ViewShot ref={viewShotRef} style={styles.canvasContainer}>
-          {/* Main image */}
-          <View style={[StyleSheet.absoluteFill, styles.imageContainer]}>
-            <Image source={{ uri: imgSource }} style={styles.image} resizeMode="contain" />
-          </View>
-
-          {/* Night Mode Overlay - rendered on top of the image but below the lights */}
-          {nightModeEnabled && (
-            <View style={[StyleSheet.absoluteFill, styles.nightModeLayer]}>
-              <View
-                style={[
-                  StyleSheet.absoluteFill,
-                  {
-                    backgroundColor: '#0a1632',
-                    opacity: nightModeIntensity,
-                  },
-                ]}
-                pointerEvents="none"
-              />
-            </View>
-          )}
+          {/* Main image with precise night mode overlay */}
+          <ImageWithNightOverlay
+            source={{ uri: imgSource }}
+            nightModeEnabled={nightModeEnabled}
+            nightModeIntensity={nightModeIntensity}
+            style={[StyleSheet.absoluteFill, styles.imageContainer]}
+          />
 
           {/* Light strings - rendered ON TOP of the night mode overlay */}
           <View style={[StyleSheet.absoluteFill, styles.lightsLayer]} {...panResponder.panHandlers}>
@@ -509,9 +496,6 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-  },
-  nightModeLayer: {
-    zIndex: 5, // Above the image but below the lights
   },
   lightsLayer: {
     zIndex: 10, // Above both the image and night mode layer
