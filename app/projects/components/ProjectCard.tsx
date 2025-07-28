@@ -1,7 +1,7 @@
-import { Project } from "@/types/project";
 import { Image } from "expo-image";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { Project } from "~/types/project";
 
 interface ProjectCardProps {
   project: Project;

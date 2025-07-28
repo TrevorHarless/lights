@@ -1,7 +1,7 @@
-import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "~/contexts/AuthContext";
 import "../global.css";
 
 export default function Index() {

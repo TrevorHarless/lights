@@ -1,8 +1,8 @@
-import { projectsService } from "@/services/projects";
-import { Project } from "@/types/project";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert } from "react-native";
+import { projectsService } from "~/services/projects";
+import { Project } from "~/types/project";
 
 export function useProjects(user: any) {
   const [projects, setProjects] = useState<Project[]>([]);

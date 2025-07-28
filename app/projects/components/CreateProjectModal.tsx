@@ -1,6 +1,3 @@
-import { imageUploadService } from "@/services/imageUpload";
-import { projectsService } from "@/services/projects";
-import { Project } from "@/types/project";
 import { Image } from "expo-image";
 import React, { useState } from "react";
 import {
@@ -11,6 +8,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { imageUploadService } from "~/services/imageUpload";
+import { projectsService } from "~/services/projects";
+import { Project } from "~/types/project";
 
 interface CreateProjectModalProps {
   visible: boolean;

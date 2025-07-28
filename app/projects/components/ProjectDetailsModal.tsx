@@ -1,8 +1,8 @@
-import { Project } from "@/types/project";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Image } from "expo-image";
 import React from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
+import { Project } from "~/types/project";
 
 interface ProjectDetailsModalProps {
   visible: boolean;

@@ -1,4 +1,3 @@
-import { useAuth } from "@/contexts/AuthContext";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -10,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useAuth } from "~/contexts/AuthContext";
 import "../global.css";
 
 export default function SignUpScreen() {
