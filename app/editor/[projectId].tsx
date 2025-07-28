@@ -1,4 +1,3 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
@@ -92,66 +91,9 @@ export default function LightEditorScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View
-        style={{
-          backgroundColor: "white",
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: "#e5e7eb",
-        }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-            <TouchableOpacity
-              style={{
-                width: 40,
-                height: 40,
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-              onPress={handleGoBack}
-            >
-              <FontAwesome name="arrow-left" size={20} color="#374151" />
-            </TouchableOpacity>
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{ fontSize: 18, fontWeight: "bold", color: "#1f2937" }}
-              >
-                {project.name}
-              </Text>
-              <Text style={{ fontSize: 14, color: "#6b7280" }}>
-                Light Editor
-              </Text>
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#2563eb",
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              borderRadius: 8,
-            }}
-          >
-            <Text style={{ color: "white", fontWeight: "600", fontSize: 14 }}>
-              Export
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
       {/* Main Content */}
       {project.image_url ? (
-        <ImageViewer imgSource={project.image_url} />
+        <ImageViewer imgSource={project.image_url} onGoBack={handleGoBack} />
       ) : (
         <View className="flex-1 justify-center items-center px-8">
           <View className="bg-white p-8 rounded-3xl items-center max-w-sm">

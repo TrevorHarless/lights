@@ -43,7 +43,7 @@ export function ReferenceModal({ visible, onClose, onConfirm, onCancel }) {
               selectTextOnFocus
             />
             <Text className="mt-1 text-xs text-gray-400">
-              Example: If your garage door is 10 feet wide, enter "10"
+              Example: If your garage door is 10 feet wide, enter &quot;10&quot;
             </Text>
           </View>
 

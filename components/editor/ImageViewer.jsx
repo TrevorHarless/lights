@@ -3,6 +3,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   SafeAreaView,
@@ -15,9 +16,7 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ViewShot from 'react-native-view-shot';
 
-import { CollapsibleBottomSheet } from './CollapsibleBottomSheet';
-import { FloatingActionMenu } from './FloatingActionMenu';
-import { FloatingReferenceButton } from './FloatingReferenceButton';
+import { BottomToolbar } from './BottomToolbar';
 import { FloatingSelectionControls } from './FloatingSelectionControls';
 import { LightStringRenderer } from './LightStringRenderer';
 import { ReferenceLineRenderer } from './ReferenceLineRenderer';
@@ -28,7 +27,7 @@ import { useLightStrings } from '~/hooks/editor/useLightStrings';
 import { useReferenceScale } from '~/hooks/editor/useReferenceScale';
 import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
 
-const ImageViewer = ({ imgSource }) => {
+const ImageViewer = ({ imgSource, onGoBack }) => {
   // Custom hooks
   const { lightAssets, selectedAsset, setSelectedAsset, getAssetById } = useLightAssets();
 
@@ -38,7 +37,6 @@ const ImageViewer = ({ imgSource }) => {
     referenceLength,
     isSettingReference,
     showReferenceModal,
-    pendingReferenceLine,
     startReferenceMode,
     cancelReferenceMode,
     handleReferenceLineComplete,
@@ -61,7 +59,6 @@ const ImageViewer = ({ imgSource }) => {
     selectLightString,
     deselectLightString,
     findClosestLightString,
-    getAssetTypeNameForString,
   } = useLightStrings(lightAssets, getScaledLightSpacing);
 
   const { currentVector, isDragging, panResponder } = useVectorDrawing({
@@ -78,15 +75,15 @@ const ImageViewer = ({ imgSource }) => {
   const [selectedStringEndpoint, setSelectedStringEndpoint] = useState(null);
 
   // State for help tooltip
-  const [helpVisible, setHelpVisible] = useState(false);
+  // const [helpVisible, setHelpVisible] = useState(false);
 
   // State for night mode
   const [nightModeEnabled, setNightModeEnabled] = useState(false);
   const [nightModeIntensity, setNightModeIntensity] = useState(0.5);
 
-  // State for undo toast message
-  const [toastVisible, setToastVisible] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  // State for menu
+  const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+
 
   // ViewShot ref and export state
   const viewShotRef = useRef(null);
@@ -101,16 +98,6 @@ const ImageViewer = ({ imgSource }) => {
     })();
   }, []);
 
-  // Update toast visibility when deleted string changes
-  useEffect(() => {
-    if (deletedString) {
-      const assetName = getAssetTypeNameForString(deletedString);
-      setToastMessage(`${assetName} light string deleted`);
-      setToastVisible(true);
-    } else {
-      setToastVisible(false);
-    }
-  }, [deletedString, getAssetTypeNameForString]);
 
   // Update the endpoint position when selection changes
   useEffect(() => {
@@ -199,50 +186,214 @@ const ImageViewer = ({ imgSource }) => {
         <View style={styles.container}>
         {/* Night Mode Controls - Only shown when night mode is enabled */}
         {nightModeEnabled && (
-          <View style={styles.nightModeControlsContainer} pointerEvents="box-none">
-            <View style={styles.nightModeControlsBox}>
-              <Text style={styles.nightModeControlsLabel}>
-                Night Effect: {Math.round(nightModeIntensity * 100)}%
+          <View style={{ 
+            position: 'absolute', 
+            top: 64, 
+            right: 12, 
+            zIndex: 1000 
+          }}>
+            <View style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              borderRadius: 12,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              flexDirection: 'row',
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.15,
+              shadowRadius: 4,
+              elevation: 4,
+              gap: 10,
+            }}>
+              <Text style={{
+                fontSize: 13,
+                fontWeight: '600',
+                color: '#333',
+                minWidth: 35,
+              }}>
+                {Math.round(nightModeIntensity * 100)}%
               </Text>
-              <View style={styles.nightModeButtonsRow}>
-                <TouchableOpacity
-                  style={styles.nightModeAdjustButton}
-                  onPress={() =>
-                    handleNightModeIntensityChange(Math.max(nightModeIntensity - 0.1, 0.1))
-                  }
-                  disabled={nightModeIntensity <= 0.1}>
-                  <Text style={styles.nightModeButtonText}>-</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.nightModeAdjustButton}
-                  onPress={() =>
-                    handleNightModeIntensityChange(Math.min(nightModeIntensity + 0.1, 0.9))
-                  }
-                  disabled={nightModeIntensity >= 0.9}>
-                  <Text style={styles.nightModeButtonText}>+</Text>
-                </TouchableOpacity>
-              </View>
+              
+              <TouchableOpacity
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  backgroundColor: nightModeIntensity <= 0.1 ? '#f5f5f5' : '#333',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() =>
+                  handleNightModeIntensityChange(Math.max(nightModeIntensity - 0.1, 0.1))
+                }
+                disabled={nightModeIntensity <= 0.1}>
+                <MaterialIcons 
+                  name="remove" 
+                  size={16} 
+                  color={nightModeIntensity <= 0.1 ? '#ccc' : 'white'} 
+                />
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  backgroundColor: nightModeIntensity >= 0.9 ? '#f5f5f5' : '#333',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() =>
+                  handleNightModeIntensityChange(Math.min(nightModeIntensity + 0.1, 0.9))
+                }
+                disabled={nightModeIntensity >= 0.9}>
+                <MaterialIcons 
+                  name="add" 
+                  size={16} 
+                  color={nightModeIntensity >= 0.9 ? '#ccc' : 'white'} 
+                />
+              </TouchableOpacity>
             </View>
           </View>
         )}
-        {/* Night Mode Toggle - Positioned in top right */}
+        {/* Back Button - Positioned in top left */}
         <TouchableOpacity
-          style={[styles.nightModeButton, nightModeEnabled && styles.nightModeButtonActive]}
-          onPress={toggleNightMode}>
+          style={{
+            position: 'absolute',
+            top: 12,
+            left: 12,
+            zIndex: 1000,
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.15,
+            shadowRadius: 4,
+            elevation: 4,
+          }}
+          onPress={onGoBack}>
           <MaterialIcons
-            name={nightModeEnabled ? 'nightlight-round' : 'wb-sunny'}
-            size={24}
-            color={nightModeEnabled ? '#FFD700' : '#007AFF'}
+            name="arrow-back"
+            size={22}
+            color="#333"
           />
         </TouchableOpacity>
 
+        {/* Top Right Button Group */}
+        <View style={{ position: 'absolute', top: 12, right: 12, zIndex: 1000 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {/* Night Mode Toggle */}
+            <TouchableOpacity
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: nightModeEnabled ? 'rgba(25, 25, 50, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.15,
+                shadowRadius: 4,
+                elevation: 4,
+              }}
+              onPress={toggleNightMode}>
+              <MaterialIcons
+                name={nightModeEnabled ? 'nightlight-round' : 'wb-sunny'}
+                size={22}
+                color={nightModeEnabled ? '#FFD700' : '#333'}
+              />
+            </TouchableOpacity>
+
+            {/* Export Button */}
+            <TouchableOpacity
+              onPress={handleExport}
+              disabled={isExporting}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.15,
+                shadowRadius: 4,
+                elevation: 4,
+              }}>
+              {isExporting ? (
+                <ActivityIndicator size="small" color="#333" />
+              ) : (
+                <MaterialIcons name="file-download" size={22} color="#333" />
+              )}
+            </TouchableOpacity>
+
+            {/* Menu Button */}
+            <TouchableOpacity 
+              onPress={() => setIsMenuExpanded(!isMenuExpanded)} 
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.15,
+                shadowRadius: 4,
+                elevation: 4,
+              }}>
+              <MaterialIcons name={isMenuExpanded ? 'close' : 'more-horiz'} size={22} color="#333" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Expanded menu items */}
+          {isMenuExpanded && (
+            <View style={{ 
+              position: 'absolute', 
+              top: 50, 
+              right: 0, 
+              minWidth: 120,
+            }}>
+              <TouchableOpacity
+                onPress={() => {
+                  clearAllLightStrings();
+                  setIsMenuExpanded(false);
+                }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  paddingHorizontal: 12,
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 4,
+                  elevation: 4,
+                }}>
+                <MaterialIcons name="delete-sweep" size={18} color="#EF4444" />
+                <Text style={{ marginLeft: 8, fontWeight: '600', color: '#EF4444', fontSize: 14 }}>Clear All</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
         {/* Help Button */}
-        <TouchableOpacity style={styles.helpButton} onPress={() => setHelpVisible(!helpVisible)}>
+        {/* <TouchableOpacity style={styles.helpButton} onPress={() => setHelpVisible(!helpVisible)}>
           <MaterialIcons name="help-outline" size={24} color="#007AFF" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* Help Tooltip */}
-        {helpVisible && (
+        {/* {helpVisible && (
           <View style={styles.helpTooltip}>
             <Text style={styles.helpText}>
               {selectedStringId
@@ -255,7 +406,7 @@ const ImageViewer = ({ imgSource }) => {
               <MaterialIcons name="close" size={18} color="#fff" />
             </TouchableOpacity>
           </View>
-        )}
+        )} */}
 
         <ViewShot ref={viewShotRef} style={styles.canvasContainer}>
           {/* Main image */}
@@ -302,24 +453,6 @@ const ImageViewer = ({ imgSource }) => {
           </View>
         </ViewShot>
 
-        {/* Floating Reference Button */}
-        <FloatingReferenceButton
-          hasReference={hasReference}
-          isSettingReference={isSettingReference}
-          onStartReference={startReferenceMode}
-          onClearReference={clearReference}
-          referenceLength={referenceLength}
-        />
-
-        {/* Floating Action Menu */}
-        <FloatingActionMenu
-          onClearAll={clearAllLightStrings}
-          onExport={handleExport}
-          canUndo={!!deletedString}
-          onUndo={handleUndo}
-          isExporting={isExporting}
-        />
-
         {/* Floating Selection Controls */}
         <FloatingSelectionControls
           selectedStringId={selectedStringId}
@@ -328,11 +461,17 @@ const ImageViewer = ({ imgSource }) => {
           onDeselectString={deselectLightString}
         />
 
-        {/* Collapsible Bottom Sheet for Light Picker */}
-        <CollapsibleBottomSheet
+        {/* Bottom Toolbar */}
+        <BottomToolbar
+          hasReference={hasReference}
+          isSettingReference={isSettingReference}
+          onStartReference={startReferenceMode}
+          onClearReference={clearReference}
           lightAssets={lightAssets}
           selectedAsset={selectedAsset}
           onSelectAsset={setSelectedAsset}
+          canUndo={!!deletedString}
+          onUndo={handleUndo}
         />
 
         {/* Reference modal */}
@@ -376,106 +515,5 @@ const styles = StyleSheet.create({
   },
   lightsLayer: {
     zIndex: 10, // Above both the image and night mode layer
-  },
-  helpButton: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    zIndex: 1000,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-  nightModeButton: {
-    position: 'absolute',
-    top: 12,
-    right: 60, // Positioned to the left of the help button
-    zIndex: 1000,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-  nightModeButtonActive: {
-    backgroundColor: 'rgba(25, 25, 50, 0.8)',
-  },
-  nightModeControlsContainer: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
-    zIndex: 20, // Above other elements
-  },
-  nightModeControlsBox: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 10,
-    padding: 10,
-    alignItems: 'center',
-  },
-  nightModeControlsLabel: {
-    color: 'white',
-    fontSize: 12,
-    marginBottom: 5,
-    textAlign: 'center',
-  },
-  nightModeButtonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: 100,
-    marginTop: 5,
-  },
-  nightModeAdjustButton: {
-    backgroundColor: '#007AFF',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  nightModeButtonText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  helpTooltip: {
-    position: 'absolute',
-    top: 60,
-    left: 15,
-    right: 15,
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    borderRadius: 10,
-    padding: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    zIndex: 900,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  helpText: {
-    color: '#fff',
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
-    paddingRight: 8,
-  },
-  closeHelp: {
-    padding: 4,
   },
 });
