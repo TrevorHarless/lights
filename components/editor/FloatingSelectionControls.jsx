@@ -1,12 +1,11 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 
 export function FloatingSelectionControls({
   selectedStringId,
   selectedStringEndpoint,
   onDeleteString,
-  onDeselectString,
 }) {
   if (!selectedStringId || !selectedStringEndpoint) {
     return null;

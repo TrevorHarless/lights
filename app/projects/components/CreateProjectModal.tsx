@@ -1,12 +1,15 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Alert,
   Modal,
+  SafeAreaView,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { imageUploadService } from "~/services/imageUpload";
 import { projectsService } from "~/services/projects";
@@ -33,6 +36,12 @@ export default function CreateProjectModal({
   const [uploadingImage, setUploadingImage] = useState(false);
   const [creating, setCreating] = useState(false);
 
+  // Refs for keyboard navigation
+  const nameInputRef = useRef<TextInput>(null);
+  const descriptionInputRef = useRef<TextInput>(null);
+  const addressInputRef = useRef<TextInput>(null);
+  const phoneInputRef = useRef<TextInput>(null);
+
   const clearForm = () => {
     setNewProjectName("");
     setNewProjectDescription("");
@@ -53,9 +62,6 @@ export default function CreateProjectModal({
     }
   };
 
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-  };
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) {
@@ -130,27 +136,86 @@ export default function CreateProjectModal({
   return (
     <Modal
       animationType="slide"
-      transparent={true}
+      transparent={false}
       visible={visible}
       onRequestClose={handleClose}
     >
-      <View className="flex-1 justify-end bg-black/50">
-        <View className="bg-white rounded-t-3xl mx-2 mb-2">
-          <View className="p-6">
-            <Text className="text-xl font-bold text-gray-800 mb-4">
+      <SafeAreaView className="flex-1 bg-gray-50">
+        {/* Header */}
+        <View className="bg-white/95 px-5 py-4 shadow-lg border-b border-gray-100">
+          <View className="flex-row items-center justify-between">
+            <TouchableOpacity 
+              onPress={handleClose}
+              className="w-10 h-10 items-center justify-center"
+              disabled={creating || uploadingImage}
+            >
+              <MaterialIcons name="close" size={24} color="#374151" />
+            </TouchableOpacity>
+            
+            <Text className="text-xl font-bold text-gray-800">
               New Project
             </Text>
+            
+            <TouchableOpacity
+              className={`px-4 py-2 rounded-2xl ${
+                creating || uploadingImage || !newProjectName.trim() 
+                  ? 'bg-gray-300' 
+                  : 'bg-gray-700'
+              }`}
+              onPress={handleCreateProject}
+              disabled={creating || uploadingImage || !newProjectName.trim()}
+            >
+              <Text className="text-white font-semibold text-sm">
+                {creating ? 'Creating...' : uploadingImage ? 'Uploading...' : 'Create'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <View className="p-6 space-y-6">
 
             <TextInput
-              className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-gray-800 mb-4"
+              ref={nameInputRef}
+              className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 font-medium mb-5"
               placeholder="Enter project name"
               value={newProjectName}
               onChangeText={setNewProjectName}
               maxLength={50}
+              placeholderTextColor="#9ca3af"
+              returnKeyType="next"
+              onSubmitEditing={() => phoneInputRef.current?.focus()}
             />
 
             <TextInput
-              className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-gray-800 mb-4 h-24"
+              ref={phoneInputRef}
+              className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 font-medium mb-5"
+              placeholder="Contact number (optional)"
+              value={newProjectPhone}
+              onChangeText={setNewProjectPhone}
+              keyboardType="phone-pad"
+              maxLength={20}
+              placeholderTextColor="#9ca3af"
+              returnKeyType="next"
+              onSubmitEditing={() => addressInputRef.current?.focus()}
+            />
+
+            <TextInput
+              ref={addressInputRef}
+              className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 font-medium mb-5"
+              placeholder="Project address (optional)"
+              value={newProjectAddress}
+              onChangeText={setNewProjectAddress}
+              maxLength={200}
+              placeholderTextColor="#9ca3af"
+              returnKeyType="next"
+              autoCapitalize="words"
+              onSubmitEditing={() => descriptionInputRef.current?.focus()}
+            />
+
+            <TextInput
+              ref={descriptionInputRef}
+              className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 font-medium mb-5 h-28"
               placeholder="Add a description (optional)"
               value={newProjectDescription}
               onChangeText={setNewProjectDescription}
@@ -158,53 +223,50 @@ export default function CreateProjectModal({
               numberOfLines={3}
               maxLength={500}
               textAlignVertical="top"
+              placeholderTextColor="#9ca3af"
             />
 
-            <TextInput
-              className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-gray-800 mb-4"
-              placeholder="Project address (optional)"
-              value={newProjectAddress}
-              onChangeText={setNewProjectAddress}
-              maxLength={200}
-            />
-
-            <TextInput
-              className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-gray-800 mb-4"
-              placeholder="Contact number (optional)"
-              value={newProjectPhone}
-              onChangeText={setNewProjectPhone}
-              keyboardType="phone-pad"
-              maxLength={20}
-            />
-
-            <View className="mb-4">
-              <Text className="text-gray-700 font-medium mb-3">
+            <View className="mb-6">
+              <Text className="text-gray-800 font-semibold mb-3 text-base">
                 Project Image
               </Text>
 
               {selectedImage ? (
-                <View className="items-center">
-                  <Image
-                    source={{ uri: selectedImage }}
-                    className="w-32 h-32 rounded-2xl mb-3"
-                  />
-                  <TouchableOpacity
-                    className="bg-red-500 px-4 py-2 rounded-lg"
-                    onPress={handleRemoveImage}
-                  >
-                    <Text className="text-white font-semibold text-sm">
-                      Remove Image
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
                 <TouchableOpacity
-                  className="border-2 border-dashed border-blue-300 bg-blue-50 rounded-2xl p-8 items-center"
+                  className="border-2 border-gray-300 bg-gray-50 rounded-2xl p-4 items-center flex-row"
                   onPress={handlePickImage}
                 >
-                  <Text className="text-3xl mb-2">📷</Text>
-                  <Text className="text-blue-600 font-semibold text-base mb-1">
-                    Add Project Image
+                  <Image
+                    source={{ uri: selectedImage }}
+                    style={{ 
+                      width: 64, 
+                      height: 64, 
+                      borderRadius: 12, 
+                      marginRight: 16,
+                      backgroundColor: '#f3f4f6' // Fallback background to see if container is there
+                    }}
+                    contentFit="cover"
+                    onError={(error) => {
+                      console.log("Image error in modal:", error);
+                    }}
+                  />
+                  <View className="flex-1">
+                    <Text className="text-gray-700 font-semibold text-base mb-1">
+                      Project Photo Added
+                    </Text>
+                    <Text className="text-gray-500 text-sm">
+                      Tap to change photo
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  className="border-2 border-dashed border-gray-300 bg-gray-50/50 rounded-2xl p-8 items-center"
+                  onPress={handlePickImage}
+                >
+                  <Text className="text-4xl mb-3">📸</Text>
+                  <Text className="text-gray-700 font-semibold text-base mb-1">
+                    Add Project Photo
                   </Text>
                   <Text className="text-gray-500 text-sm text-center">
                     Choose from your photo library
@@ -213,29 +275,9 @@ export default function CreateProjectModal({
               )}
             </View>
 
-            <View className="flex-row space-x-3 mt-6">
-              <TouchableOpacity
-                className="flex-1 bg-gray-100 py-4 rounded-xl"
-                onPress={handleClose}
-              >
-                <Text className="text-gray-700 font-semibold text-center">
-                  Cancel
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="flex-1 bg-blue-600 py-4 rounded-xl shadow-lg"
-                onPress={handleCreateProject}
-                disabled={creating || uploadingImage}
-              >
-                <Text className="text-white font-semibold text-center">
-                  Create
-                </Text>
-              </TouchableOpacity>
-            </View>
           </View>
-        </View>
-      </View>
+        </ScrollView>
+      </SafeAreaView>
     </Modal>
   );
 }

@@ -10,18 +10,38 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project, onPress }: ProjectCardProps) {
   return (
-    <View className="bg-white mx-4 mb-4 rounded-2xl shadow-medium border border-gray-100">
+    <View style={{
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      marginHorizontal: 16,
+      marginBottom: 16,
+      borderRadius: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      elevation: 6,
+    }}>
       <TouchableOpacity
-        className="p-5"
+        style={{ padding: 20 }}
         onPress={() => onPress(project)}
-        activeOpacity={0.7}
+        activeOpacity={0.95}
       >
-        <View className="flex-row">
-          <View className="rounded-xl mr-8 bg-gray-100">
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{
+            borderRadius: 16,
+            marginRight: 16,
+            backgroundColor: '#f3f4f6',
+            overflow: 'hidden',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 2,
+          }}>
             {project.image_url ? (
               <Image
                 source={{ uri: project.image_url }}
-                style={{ width: 64, height: 64 }}
+                style={{ width: 72, height: 72, borderRadius: 16 }}
                 contentFit="cover"
                 onError={(error) => {
                   console.log(
@@ -35,18 +55,36 @@ export default function ProjectCard({ project, onPress }: ProjectCardProps) {
                 }}
               />
             ) : (
-              <View className="w-16 h-16 rounded-xl mr-4 bg-gray-100 items-center justify-center">
-                <Text className="text-2xl text-gray-400">📷</Text>
+              <View style={{
+                width: 72,
+                height: 72,
+                borderRadius: 16,
+                backgroundColor: '#e5e7eb',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Text style={{ fontSize: 28, color: '#9ca3af' }}>📷</Text>
               </View>
             )}
           </View>
 
-          <View className="flex-1">
-            <Text className="text-lg font-bold text-gray-800 mb-1">
+          <View style={{ flex: 1 }}>
+            <Text style={{
+              fontSize: 20,
+              fontWeight: '700',
+              color: '#1f2937',
+              marginBottom: 4,
+              letterSpacing: -0.3
+            }}>
               {project.name}
             </Text>
             {project.description && (
-              <Text className="text-sm text-gray-600 italic leading-5">
+              <Text style={{
+                fontSize: 15,
+                color: '#6b7280',
+                lineHeight: 20,
+                fontStyle: 'italic'
+              }}>
                 {project.description}
               </Text>
             )}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import Svg, { Circle, Line, Text as SvgText } from 'react-native-svg';
+import Svg, { Line } from 'react-native-svg';
 
 export function ReferenceLineRenderer({
   referenceLine,

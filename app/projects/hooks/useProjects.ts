@@ -10,6 +10,7 @@ export function useProjects(user: any) {
   const [modalVisible, setModalVisible] = useState(false);
   const [projectDetailsModalVisible, setProjectDetailsModalVisible] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -79,14 +80,22 @@ export function useProjects(user: any) {
     setProjects((prev) => [newProject, ...prev]);
   };
 
+  // Filter projects based on search query
+  const filteredProjects = projects.filter(project =>
+    project.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return {
-    projects,
+    projects: filteredProjects,
+    allProjects: projects,
     loading,
     modalVisible,
     setModalVisible,
     projectDetailsModalVisible,
     setProjectDetailsModalVisible,
     selectedProject,
+    searchQuery,
+    setSearchQuery,
     handleShowProjectDetails,
     handleOpenEditor,
     handleDeleteProject,
