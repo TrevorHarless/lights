@@ -10,6 +10,7 @@ export function BottomToolbar({
   isSettingReference,
   onStartReference,
   onClearReference,
+  onCancelReference,
   // Light selection functionality
   lightAssets,
   selectedAsset,
@@ -21,9 +22,14 @@ export function BottomToolbar({
   const [showLightPopover, setShowLightPopover] = useState(false);
 
   const handleRulerPress = () => {
-    if (hasReference) {
+    if (isSettingReference) {
+      // Cancel the reference setting process
+      onCancelReference();
+    } else if (hasReference) {
+      // Clear existing reference
       onClearReference();
     } else {
+      // Start new reference
       onStartReference();
     }
   };
@@ -54,7 +60,6 @@ export function BottomToolbar({
         <TouchableOpacity 
           style={{ padding: 8 }} 
           onPress={handleRulerPress}
-          disabled={isSettingReference}
         >
           <MaterialIcons 
             name="straighten" 

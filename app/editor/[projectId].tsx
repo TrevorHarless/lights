@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -90,11 +90,18 @@ export default function LightEditorScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      {/* Main Content */}
-      {project.image_url ? (
-        <ImageViewer imgSource={project.image_url} onGoBack={handleGoBack} />
-      ) : (
+    <>
+      <Stack.Screen 
+        options={{ 
+          gestureEnabled: false,
+          headerShown: false 
+        }} 
+      />
+      <SafeAreaView className="flex-1 bg-gray-50">
+        {/* Main Content */}
+        {project.image_url ? (
+          <ImageViewer imgSource={project.image_url} onGoBack={handleGoBack} />
+        ) : (
         <View className="flex-1 justify-center items-center px-8">
           <View className="bg-white p-8 rounded-3xl items-center max-w-sm">
             <Text className="text-xl font-bold text-gray-800 mb-2 text-center">
@@ -111,7 +118,8 @@ export default function LightEditorScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      )}
-    </SafeAreaView>
+        )}
+      </SafeAreaView>
+    </>
   );
 }

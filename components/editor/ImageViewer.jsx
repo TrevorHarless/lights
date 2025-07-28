@@ -454,6 +454,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           isSettingReference={isSettingReference}
           onStartReference={startReferenceMode}
           onClearReference={clearReference}
+          onCancelReference={cancelReferenceMode}
           lightAssets={lightAssets}
           selectedAsset={selectedAsset}
           onSelectAsset={setSelectedAsset}
