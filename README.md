@@ -3,6 +3,11 @@ React Native app built with Expo using file-based routing.
 ## Quick Start
 
 ```bash
+npx expo run:ios
+```
+After this is run once, you can use the following:
+
+```bash
 npx expo start
 ```
 
