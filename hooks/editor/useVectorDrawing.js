@@ -48,10 +48,11 @@ export function useVectorDrawing({
             y: locationY - gestureState.dy,
           };
 
+          // Prioritize reference mode over asset selection
           setCurrentVector({
             start: startPos,
             end: { x: locationX, y: locationY },
-            assetId: selectedAsset?.id || 'reference',
+            assetId: isSettingReference ? 'reference' : selectedAsset?.id,
             isReference: isSettingReference,
           });
         }

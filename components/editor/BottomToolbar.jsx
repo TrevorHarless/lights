@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { Alert, TouchableOpacity, View } from 'react-native';
 
 import { LightSelectionPopover } from './LightSelectionPopover';
 
@@ -15,6 +15,8 @@ export function BottomToolbar({
   lightAssets,
   selectedAsset,
   onSelectAsset,
+  getAssetsByCategory,
+  getCategories,
   // Undo functionality
   canUndo,
   onUndo,
@@ -26,8 +28,25 @@ export function BottomToolbar({
       // Cancel the reference setting process
       onCancelReference();
     } else if (hasReference) {
-      // Clear existing reference
-      onClearReference();
+      // Show confirmation dialog before clearing existing reference
+      Alert.alert(
+        "Remeasure Reference",
+        "Are you sure you want to remeasure? This will remove your current measurement.",
+        [
+          {
+            text: "Cancel",
+            style: "cancel"
+          },
+          {
+            text: "Yes, Remeasure",
+            style: "destructive",
+            onPress: () => {
+              onClearReference();
+              onStartReference();
+            }
+          }
+        ]
+      );
     } else {
       // Start new reference
       onStartReference();
@@ -104,6 +123,8 @@ export function BottomToolbar({
           onSelectAsset(asset);
           setShowLightPopover(false);
         }}
+        getAssetsByCategory={getAssetsByCategory}
+        getCategories={getCategories}
       />
     </>
   );
