@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useRouter } from "expo-router";
 import React from "react";
 import { FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,6 +15,7 @@ import { useProjects } from "~/hooks/projects/useProjects";
 
 export default function ProjectsScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const {
     projects,
     allProjects,
@@ -89,24 +91,44 @@ export default function ProjectsScreen() {
               My Projects
             </Text>
           </View>
-          <TouchableOpacity
-            style={{
-              width: 48,
-              height: 48,
-              backgroundColor: '#374151',
-              borderRadius: 24,
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.15,
-              shadowRadius: 8,
-              elevation: 6,
-            }}
-            onPress={() => setModalVisible(true)}
-          >
-            <FontAwesome name="plus" size={20} color="white" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <TouchableOpacity
+              style={{
+                width: 48,
+                height: 48,
+                backgroundColor: '#6b7280',
+                borderRadius: 24,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.15,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+              onPress={() => router.push('/profile')}
+            >
+              <FontAwesome name="user" size={20} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                width: 48,
+                height: 48,
+                backgroundColor: '#374151',
+                borderRadius: 24,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.15,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+              onPress={() => setModalVisible(true)}
+            >
+              <FontAwesome name="plus" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Search Bar */}
