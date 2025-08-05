@@ -1,8 +1,8 @@
-import { supabase } from '@/lib/supabase'
 import { decode } from 'base64-arraybuffer'
 import * as FileSystem from 'expo-file-system'
 import * as ImagePicker from 'expo-image-picker'
 import * as MediaLibrary from 'expo-media-library'
+import { supabase } from '~/lib/supabase'
 
 export interface ImageUploadResult {
   success: boolean
@@ -77,8 +77,10 @@ export const imageUploadService = {
       // Convert base64 to ArrayBuffer
       const arrayBuffer = decode(base64)
 
+      console.log('Uploading to path:', filePath, 'Content type:', `image/${fileExt}`);
+
       // Upload to Supabase Storage
-      const { error } = await supabase.storage
+      const { data: uploadData, error } = await supabase.storage
         .from('project-images')
         .upload(filePath, arrayBuffer, {
           contentType: `image/${fileExt}`,
@@ -94,14 +96,26 @@ export const imageUploadService = {
         }
       }
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
+      console.log('Upload successful:', uploadData);
+
+      // Get signed URL (valid for 1 year)
+      const { data: urlData, error: urlError } = await supabase.storage
         .from('project-images')
-        .getPublicUrl(filePath)
+        .createSignedUrl(filePath, 31536000) // 1 year in seconds
+
+      if (urlError) {
+        console.error('Error creating signed URL:', urlError);
+        return {
+          success: false,
+          error: urlError.message,
+        }
+      }
+
+      console.log('Generated signed URL:', urlData.signedUrl);
 
       return {
         success: true,
-        imageUrl: urlData.publicUrl,
+        imageUrl: urlData.signedUrl,
         imagePath: filePath,
       }
     } catch (error) {
@@ -133,6 +147,25 @@ export const imageUploadService = {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       }
+    }
+  },
+
+  // Get signed URL for existing image
+  async getSignedUrl(imagePath: string): Promise<{ url?: string; error?: string }> {
+    try {
+      const { data: urlData, error: urlError } = await supabase.storage
+        .from('project-images')
+        .createSignedUrl(imagePath, 31536000) // 1 year in seconds
+
+      if (urlError) {
+        console.error('Error creating signed URL:', urlError);
+        return { error: urlError.message }
+      }
+
+      return { url: urlData.signedUrl }
+    } catch (error) {
+      console.error('Error getting signed URL:', error);
+      return { error: error instanceof Error ? error.message : 'Unknown error' }
     }
   },
 

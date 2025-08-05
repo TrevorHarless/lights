@@ -1,6 +1,6 @@
-import { supabase } from '@/lib/supabase'
-import { Project, CreateProjectData } from '@/types/project'
-import { imageUploadService } from './imageUpload'
+import { supabase } from '~/lib/supabase';
+import { CreateProjectData, Project } from '~/types/project';
+import { imageUploadService } from './imageUpload';
 
 export const projectsService = {
   async getProjects(): Promise<{ data: Project[] | null; error: any }> {
@@ -9,7 +9,45 @@ export const projectsService = {
       .select('*')
       .order('created_at', { ascending: false })
 
-    return { data, error }
+    if (error || !data) {
+      return { data, error }
+    }
+
+    // Refresh signed URLs for projects with images
+    const projectsWithRefreshedUrls = await Promise.all(
+      data.map(async (project) => {
+        if (project.image_path) {
+          const { url } = await imageUploadService.getSignedUrl(project.image_path)
+          return {
+            ...project,
+            image_url: url || project.image_url
+          }
+        }
+        return project
+      })
+    )
+
+    return { data: projectsWithRefreshedUrls, error: null }
+  },
+
+  async getProject(projectId: string): Promise<{ data: Project | null; error: any }> {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', projectId)
+      .single()
+
+    if (error || !data) {
+      return { data, error }
+    }
+
+    // Refresh signed URL if project has an image
+    if (data.image_path) {
+      const { url } = await imageUploadService.getSignedUrl(data.image_path)
+      data.image_url = url || data.image_url
+    }
+
+    return { data, error: null }
   },
 
   async createProject(projectData: CreateProjectData): Promise<{ data: Project | null; error: any }> {
