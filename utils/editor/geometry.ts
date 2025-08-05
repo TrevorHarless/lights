@@ -1,4 +1,4 @@
-import { Point, Vector, LightString } from '@/types/editor';
+import { Point, Vector, LightString } from '~/types/editor';
 
 /**
  * Calculate distance between two points

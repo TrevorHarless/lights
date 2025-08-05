@@ -1,8 +1,8 @@
-import { supabase } from '@/lib/supabase'
 import { decode } from 'base64-arraybuffer'
 import * as FileSystem from 'expo-file-system'
 import * as ImagePicker from 'expo-image-picker'
 import * as MediaLibrary from 'expo-media-library'
+import { supabase } from '~/lib/supabase'
 
 export interface ImageUploadResult {
   success: boolean

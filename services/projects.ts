@@ -1,6 +1,6 @@
-import { supabase } from '@/lib/supabase'
-import { Project, CreateProjectData } from '@/types/project'
-import { imageUploadService } from './imageUpload'
+import { supabase } from '~/lib/supabase';
+import { CreateProjectData, Project } from '~/types/project';
+import { imageUploadService } from './imageUpload';
 
 export const projectsService = {
   async getProjects(): Promise<{ data: Project[] | null; error: any }> {

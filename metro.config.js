@@ -11,6 +11,9 @@ config.transformer = {
 
 config.resolver = {
   ...config.resolver,
+  alias: {
+    "~": __dirname,
+  },
   assetExts: config.resolver.assetExts.filter((ext) => ext !== "svg"),
   sourceExts: [...config.resolver.sourceExts, "svg"],
 };
