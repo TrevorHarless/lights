@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '~/lib/supabase';
 
 describe('Supabase Configuration', () => {
   it('should have supabase client configured', () => {

@@ -1,3 +1,5 @@
+import { ReactElement } from 'react';
+
 export interface Point {
   x: number;
   y: number;
@@ -21,7 +23,7 @@ export interface LightAsset {
   id: string;
   name: string;
   spacing: number;
-  renderFunction: (props: LightRenderProps) => JSX.Element;
+  renderFunction: (props: LightRenderProps) => ReactElement;
 }
 
 export interface LightRenderProps {
