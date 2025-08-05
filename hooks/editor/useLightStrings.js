@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from "react";
 
 export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
   const [lightStrings, setLightStrings] = useState([]);
@@ -23,7 +23,9 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
       clearUndoTimer();
 
       // Find the string to store for potential undo
-      const stringToDelete = lightStrings.find((string) => string.id === stringId);
+      const stringToDelete = lightStrings.find(
+        (string) => string.id === stringId
+      );
 
       if (!stringToDelete) {
         console.error(`No light string found with id: ${stringId}`);
@@ -34,7 +36,9 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
       setDeletedString(stringToDelete);
 
       // Remove the string from the list
-      setLightStrings((prev) => prev.filter((string) => string.id !== stringId));
+      setLightStrings((prev) =>
+        prev.filter((string) => string.id !== stringId)
+      );
 
       // Deselect after deletion
       setSelectedStringId(null);
@@ -104,7 +108,7 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
   // Helper function to get a readable name for the string type
   const getAssetTypeNameForString = useCallback(
     (string) => {
-      if (!string || !string.assetId) return 'unknown';
+      if (!string || !string.assetId) return "unknown";
 
       // Find the asset in the provided lightAssets array
       const asset = lightAssets.find((asset) => asset.id === string.assetId);
@@ -114,12 +118,12 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
 
       // Fallback mapping
       const assetTypes = {
-        'glow-light-blue': 'Blue Glow',
-        'warm-white': 'Warm White',
-        'test-light': 'Test Light',
+        "glow-light-blue": "Blue Glow",
+        "warm-white": "Warm White",
+        "test-light": "Test Light",
       };
 
-      return assetTypes[string.assetId] || 'selected';
+      return assetTypes[string.assetId] || "selected";
     },
     [lightAssets]
   );
@@ -146,7 +150,11 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
         const endpointDistance = Math.min(distanceToStart, distanceToEnd) * 0.8;
 
         // Also calculate the line segment distance
-        const lineDistance = pointToLineDistance(point, string.start, string.end);
+        const lineDistance = pointToLineDistance(
+          point,
+          string.start,
+          string.end
+        );
 
         // Use the smaller of the two distances
         const distance = Math.min(endpointDistance, lineDistance);
@@ -178,13 +186,13 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
       // Calculate how many lights to place
       const count = Math.floor(distance / spacing);
 
-      console.log('🔍 Light Position Debug:', {
-        distance,
-        spacing,
-        assetSpacing,
-        count,
-        hasScaledSpacing: !!getScaledSpacing,
-      });
+      // console.log('🔍 Light Position Debug:', {
+      //   distance,
+      //   spacing,
+      //   assetSpacing,
+      //   count,
+      //   hasScaledSpacing: !!getScaledSpacing,
+      // });
 
       // If distance is too short, at least place one light
       if (count === 0) return [{ x: start.x, y: start.y }];
@@ -224,7 +232,10 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
     // Calculate projection proportion
     const t = Math.max(
       0,
-      Math.min(1, ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) / lenSq)
+      Math.min(
+        1,
+        ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) / lenSq
+      )
     );
 
     // Find the closest point on the segment
@@ -232,7 +243,10 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
     const projY = lineStart.y + t * dy;
 
     // Calculate the distance to the projected point
-    return Math.sqrt((point.x - projX) * (point.x - projX) + (point.y - projY) * (point.y - projY));
+    return Math.sqrt(
+      (point.x - projX) * (point.x - projX) +
+        (point.y - projY) * (point.y - projY)
+    );
   };
 
   return {

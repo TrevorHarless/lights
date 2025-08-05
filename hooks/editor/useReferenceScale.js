@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from "react";
 
 export function useReferenceScale() {
   const [referenceLine, setReferenceLine] = useState(null);
@@ -50,17 +50,19 @@ export function useReferenceScale() {
     if (!referenceLine || !referenceLength) return null;
 
     const { start, end } = referenceLine;
-    const pixelLength = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+    const pixelLength = Math.sqrt(
+      Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
+    );
 
     // Return pixels per foot
     const scaleFactor = pixelLength / referenceLength;
 
-    console.log('🔍 Scale Factor Debug:', {
-      referenceLine,
-      referenceLength,
-      pixelLength,
-      scaleFactor,
-    });
+    // console.log('🔍 Scale Factor Debug:', {
+    //   referenceLine,
+    //   referenceLength,
+    //   pixelLength,
+    //   scaleFactor,
+    // });
 
     return scaleFactor;
   }, [referenceLine, referenceLength]);
@@ -97,13 +99,13 @@ export function useReferenceScale() {
       const minSpacing = 8;
       const finalSpacing = Math.max(spacing, minSpacing);
 
-      console.log('🔍 Light Spacing Debug:', {
-        scaleFactor,
-        lightSpacingInches,
-        lightSpacingFeet,
-        calculatedSpacing: spacing,
-        finalSpacing,
-      });
+      // console.log("🔍 Light Spacing Debug:", {
+      //   scaleFactor,
+      //   lightSpacingInches,
+      //   lightSpacingFeet,
+      //   calculatedSpacing: spacing,
+      //   finalSpacing,
+      // });
 
       return finalSpacing;
     },
@@ -113,7 +115,9 @@ export function useReferenceScale() {
   // Get the length of a line in real-world units
   const getLineLengthInFeet = useCallback(
     (start, end) => {
-      const pixelLength = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+      const pixelLength = Math.sqrt(
+        Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
+      );
       return pixelsToFeet(pixelLength);
     },
     [pixelsToFeet]
@@ -138,15 +142,15 @@ export function useReferenceScale() {
       const maxScale = 3.0; // Don't let lights get larger than 300% of original
       const finalSizeScale = Math.min(Math.max(sizeScale, minScale), maxScale);
 
-      console.log('🔍 Light Size Debug:', {
-        scaleFactor,
-        lightDiameterInches,
-        lightDiameterFeet,
-        lightDiameterPixels,
-        baseLightDiameter,
-        calculatedSizeScale: sizeScale,
-        finalSizeScale,
-      });
+      // console.log("🔍 Light Size Debug:", {
+      //   scaleFactor,
+      //   lightDiameterInches,
+      //   lightDiameterFeet,
+      //   lightDiameterPixels,
+      //   baseLightDiameter,
+      //   calculatedSizeScale: sizeScale,
+      //   finalSizeScale,
+      // });
 
       return finalSizeScale;
     },

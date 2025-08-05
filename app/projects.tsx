@@ -9,8 +9,8 @@ import {
   CreateProjectModal,
   ProjectCard,
   ProjectDetailsModal,
-} from "./projects/components";
-import { useProjects } from "./projects/hooks/useProjects";
+} from "~/components/projects";
+import { useProjects } from "~/hooks/projects/useProjects";
 
 export default function ProjectsScreen() {
   const { user } = useAuth();

@@ -17,7 +17,7 @@
 
 
   # Images Manipulation in Supabse Storage
-  - Problem: Images are currently uploaded at their full size, takes up too much space especially at scale (100 users * 10 projects * 10mb image --> 10 gigs of data... yea, no good.)
+  - Problem: Images are currently uploaded at their full size, takes up too much space especially at scale (100 users * 10 projects * 10mb image --> 10 gigs of data... yea, no good.) Phones seem to upload images at like 4000x3000 px, scale down to 1080p? 
 
 
   # Small TODOs
