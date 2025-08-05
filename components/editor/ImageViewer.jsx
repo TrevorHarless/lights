@@ -19,7 +19,7 @@ import ViewShot from 'react-native-view-shot';
 import { BottomToolbar } from './BottomToolbar';
 import { FloatingSelectionControls } from './FloatingSelectionControls';
 import { ImageWithNightOverlay } from './ImageWithNightOverlay';
-import { LightStringRenderer } from './LightStringRenderer';
+import SimpleLightRenderer from './SimpleLightRenderer';
 import { ReferenceLineRenderer } from './ReferenceLineRenderer';
 import { ReferenceModal } from './ReferenceModal';
 import { WreathRenderer } from './WreathRenderer';
@@ -38,7 +38,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     lightAssets, 
     getAssetById: getLightAssetById,
     getAssetsByCategory: getLightAssetsByCategory,
-    getCategories: getLightCategories 
+    getCategories: getLightCategories
   } = useLightAssets();
 
   const {
@@ -603,14 +603,13 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
 
               {/* Light strings - rendered ON TOP of the night mode overlay */}
               <View style={[StyleSheet.absoluteFill, styles.lightsLayer]} {...activePanResponder.panHandlers}>
-                <LightStringRenderer
+                <SimpleLightRenderer
                   lightStrings={lightStrings}
                   currentVector={currentVector}
                   isDragging={isDragging}
                   selectedStringId={selectedStringId}
                   getAssetById={getAssetById}
                   calculateLightPositions={calculateLightPositions}
-                  onDeleteString={handleDeleteString}
                   getLightSizeScale={getLightSizeScale}
                 />
 
