@@ -197,6 +197,21 @@ const getLightStyle = (assetId, scale, lightIndex = 0) => {
         opacity: 0.9,
       };
 
+    case 'c9-red-white':
+      const redWhitePattern = ["#ff3333", "#ff3333", "#ffffff", "#ffffff"];
+      const redWhiteColor = redWhitePattern[lightIndex % redWhitePattern.length];
+      return {
+        width: glowSize,
+        height: glowSize,
+        borderRadius: glowSize / 2,
+        backgroundColor: redWhiteColor,
+        shadowColor: redWhiteColor === "#ffffff" ? "#fff5e0" : redWhiteColor,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: redWhiteColor === "#ffffff" ? 0.8 : 0.6,
+        shadowRadius: baseSize * 0.5,
+        opacity: 0.9,
+      };
+
     case 'mini-led-multicolor':
       const miniColors = ["#ff4444", "#44ff44", "#4444ff", "#ffff44", "#ff44ff", "#44ffff"];
       const miniColor = miniColors[lightIndex % miniColors.length];
@@ -266,6 +281,7 @@ const getBaseLightSize = (assetId) => {
   switch (assetId) {
     case 'c9-warm-white':
     case 'c9-multicolor':
+    case 'c9-red-white':
     case 'glow-light-blue':
     case 'warm-white':
       return 12; // Larger C9 bulbs

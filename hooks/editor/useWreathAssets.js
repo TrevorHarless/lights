@@ -15,6 +15,16 @@ export function useWreathAssets() {
       baseRadius: 60,
       lightSpacing: 20,
     },
+    {
+      id: "red-bow",
+      name: "Bow",
+      category: "wreath",
+      type: "traditional",
+      renderType: "image",
+      image: require("../../assets/wreaths/red-bow.png"),
+      baseRadius: 60,
+      lightSpacing: 20,
+    },
     // Add more PNG wreaths here when available:
     /*
     {
@@ -43,10 +53,13 @@ export function useWreathAssets() {
   const [selectedWreathAsset, setSelectedWreathAsset] = React.useState(null);
 
   // Find the wreath asset by ID
-  const getWreathAssetById = (id) => wreathAssets.find((asset) => asset.id === id);
+  const getWreathAssetById = (id) =>
+    wreathAssets.find((asset) => asset.id === id);
 
   // Get all wreath types
-  const getWreathTypes = () => [...new Set(wreathAssets.map((asset) => asset.type))];
+  const getWreathTypes = () => [
+    ...new Set(wreathAssets.map((asset) => asset.type)),
+  ];
 
   return {
     wreathAssets,

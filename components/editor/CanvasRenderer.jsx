@@ -189,6 +189,11 @@ const CanvasRenderer = ({
               const color = colors[lightIndex % colors.length];
               renderGenericLight(ctx, x, y, scale, color);
               break;
+            case 'c9-red-white':
+              const redWhitePattern = ["#ff3333", "#ff3333", "#ffffff", "#ffffff"];
+              const redWhiteColor = redWhitePattern[lightIndex % redWhitePattern.length];
+              renderGenericLight(ctx, x, y, scale, redWhiteColor);
+              break;
             case 'glow-light-blue':
               renderGenericLight(ctx, x, y, scale, '#3388ff');
               break;

@@ -1,7 +1,6 @@
 // hooks/useLightAssets.js
 import React from "react";
 import { Circle, Ellipse, G, LinearGradient, RadialGradient, Stop } from "react-native-svg";
-import { Image } from "react-native";
 
 // Shared gradient definitions - these IDs are reused across all light instances
 const SHARED_GRADIENT_DEFS = {
@@ -243,7 +242,7 @@ export function useLightAssets() {
     },
     {
       id: "mini-led-warm",
-      name: "Mini LED Warm White",
+      name: "Mini Warm White",
       category: "string",
       type: "mini",
       useInstancing: true,
@@ -262,7 +261,7 @@ export function useLightAssets() {
     },
     {
       id: "mini-led-multicolor",
-      name: "Mini LED Multicolor",
+      name: "Mini Multicolor",
       category: "string",
       type: "mini",
       useInstancing: false, // Keep custom rendering for multicolor
@@ -301,7 +300,7 @@ export function useLightAssets() {
     },
     {
       id: "net-warm-white",
-      name: "Net Light Warm White",
+      name: "Warm White",
       category: "net",
       type: "net",
       useInstancing: true,
@@ -318,60 +317,52 @@ export function useLightAssets() {
       },
       spacing: 12,
     },
-    // Legacy lights for backward compatibility
     {
-      id: "glow-light-blue",
-      name: "Blue Glow (Legacy)",
+      id: "c9-red-white",
+      name: "C9 Red & White",
       category: "string",
-      type: "legacy",
-      useInstancing: true,
-      instanceDefId: "glow-light-blue-def",
-      centerOffset: { x: 15, y: 15 },
-      svg: (scale = 1) => {
+      type: "c9",
+      useInstancing: false, // Keep custom rendering for pattern cycling
+      svg: (scale = 1, lightIndex = 0) => {
+        // RRWW pattern: Red, Red, White, White, Red, Red, White, White...
+        const pattern = ["#ff3333", "#ff3333", "#ffffff", "#ffffff"];
+        const color = pattern[lightIndex % pattern.length];
+        const isRed = color === "#ff3333";
+        
         return (
           <G transform={`scale(${scale})`}>
-            <Circle cx="15" cy="15" r="18" fill="url(#legacy-blue-outer)" />
-            <Circle cx="15" cy="15" r="10" fill="url(#legacy-blue-middle)" />
-            <Circle cx="15" cy="15" r="5" fill="url(#legacy-blue-inner)" />
-            <Circle cx="15" cy="15" r="1.5" fill="#ffffff" />
-            <Circle
-              cx="13.5"
-              cy="13.5"
-              r="0.5"
-              fill="#ffffff"
-              fillOpacity="0.9"
+            {/* Outer glow - red or warm white based on bulb color */}
+            <Circle 
+              cx="15" 
+              cy="15" 
+              r="22" 
+              fill={isRed ? "#ff3333" : "#fff5e0"} 
+              fillOpacity={isRed ? "0.3" : "0.6"} 
             />
+            {/* Middle glow */}
+            <Circle 
+              cx="15" 
+              cy="15" 
+              r="12" 
+              fill={isRed ? "#ff3333" : "#fffaf0"} 
+              fillOpacity={isRed ? "0.6" : "0.9"} 
+            />
+            {/* Bulb */}
+            <Circle 
+              cx="15" 
+              cy="15" 
+              r="6" 
+              fill={color} 
+              stroke={isRed ? "#cc2222" : "#cc9966"} 
+              strokeWidth="0.5" 
+            />
+            {/* Inner highlight */}
+            <Circle cx="15" cy="15" r="2" fill="#ffffff" />
+            <Circle cx="13" cy="13" r="0.8" fill="#ffffff" fillOpacity="0.8" />
           </G>
         );
       },
-      spacing: 30,
-    },
-    {
-      id: "warm-white",
-      name: "Warm White (Legacy)",
-      category: "string",
-      type: "legacy",
-      useInstancing: true,
-      instanceDefId: "warm-white-def",
-      centerOffset: { x: 15, y: 15 },
-      svg: (scale = 1) => {
-        return (
-          <G transform={`scale(${scale})`}>
-            <Circle cx="15" cy="15" r="18" fill="url(#legacy-warm-outer)" />
-            <Circle cx="15" cy="15" r="8" fill="url(#legacy-warm-middle)" />
-            <Circle cx="15" cy="15" r="4" fill="url(#legacy-warm-inner)" />
-            <Circle cx="15" cy="15" r="1.5" fill="#ffffff" />
-            <Circle
-              cx="13.5"
-              cy="13.5"
-              r="0.5"
-              fill="#ffffff"
-              fillOpacity="0.9"
-            />
-          </G>
-        );
-      },
-      spacing: 30,
+      spacing: 36,
     },
   ];
 

@@ -295,6 +295,42 @@ const getLightConfig = (assetId, scale, lightIndex = 0) => {
         },
       };
 
+    case 'c9-red-white':
+      const redWhitePattern = ["#ff3333", "#ff3333", "#ffffff", "#ffffff"];
+      const redWhiteColor = redWhitePattern[lightIndex % redWhitePattern.length];
+      const isRedLight = redWhiteColor === "#ff3333";
+      return {
+        outerGlow: {
+          size: 44 * scale,
+          color: isRedLight ? "#ff3333" : "#fff5e0",
+          opacity: isRedLight ? 0.3 : 0.6,
+        },
+        middleGlow: {
+          size: 24 * scale,
+          color: isRedLight ? "#ff3333" : "#fffaf0",
+          opacity: isRedLight ? 0.6 : 0.9,
+        },
+        core: {
+          size: 12 * scale,
+          color: redWhiteColor,
+          shadowColor: redWhiteColor,
+          borderWidth: Math.max(0.5, scale * 0.5),
+          borderColor: isRedLight ? "#cc2222" : "#cc9966",
+        },
+        highlight: {
+          size: 4 * scale,
+          color: '#ffffff',
+          opacity: 0.9,
+        },
+        secondaryHighlight: {
+          size: 1.6 * scale,
+          color: 'rgba(255, 255, 255, 0.8)',
+          opacity: 0.8,
+          offsetX: 2 * scale,
+          offsetY: 2 * scale,
+        },
+      };
+
     case 'mini-led-warm':
       return {
         outerGlow: {
