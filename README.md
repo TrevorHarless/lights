@@ -1,4 +1,4 @@
-React Native app built with Expo using file-based routing.
+React Native app built with Expo
 
 ## Quick Start
 
