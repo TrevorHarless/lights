@@ -11,6 +11,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "~/contexts/AuthContext";
 import { supabase } from "~/lib/supabase";
+import { projectsService } from "~/services/projects";
+import { localStorageService } from "~/services/localStorage";
 import "../global.css";
 
 export default function ProfileScreen() {
@@ -20,6 +22,7 @@ export default function ProfileScreen() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [clearingProjects, setClearingProjects] = useState(false);
 
   const handleSignOut = async () => {
     Alert.alert(
@@ -88,6 +91,41 @@ export default function ProfileScreen() {
     }
 
     setLoading(false);
+  };
+
+  const handleClearAllProjects = async () => {
+    Alert.alert(
+      "Clear All Projects",
+      "Are you sure you want to delete ALL of your projects? This action cannot be undone and will remove all projects from both your device and the cloud.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete All",
+          style: "destructive",
+          onPress: async () => {
+            setClearingProjects(true);
+            try {
+              // Clear from Supabase first
+              const { error } = await projectsService.deleteAllProjects();
+              
+              if (error) {
+                Alert.alert("Error", "Failed to delete projects from cloud: " + error.message);
+                setClearingProjects(false);
+                return;
+              }
+
+              // Clear from local storage
+              await localStorageService.clearUserData();
+              
+              Alert.alert("Success", "All projects have been deleted successfully");
+            } catch (error) {
+              Alert.alert("Error", "Failed to clear projects: " + (error as Error).message);
+            }
+            setClearingProjects(false);
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -293,6 +331,60 @@ export default function ProfileScreen() {
               fontWeight: '600',
             }}>
               {loading ? 'Updating...' : 'Update Password'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Clear All Projects Section */}
+        <View style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: 16,
+          padding: 20,
+          marginBottom: 24,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 12,
+          elevation: 6,
+        }}>
+          <Text style={{
+            fontSize: 20,
+            fontWeight: '700',
+            color: '#1f2937',
+            marginBottom: 8,
+          }}>
+            Clear All Projects
+          </Text>
+          <Text style={{
+            fontSize: 14,
+            color: '#6b7280',
+            marginBottom: 16,
+            lineHeight: 20,
+          }}>
+            This will permanently delete all of your projects from both your device and the cloud. This action cannot be undone.
+          </Text>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#dc2626',
+              borderRadius: 12,
+              paddingVertical: 14,
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              elevation: 6,
+              opacity: clearingProjects ? 0.7 : 1,
+            }}
+            onPress={handleClearAllProjects}
+            disabled={clearingProjects}
+          >
+            <Text style={{
+              color: 'white',
+              fontSize: 16,
+              fontWeight: '600',
+            }}>
+              {clearingProjects ? 'Deleting All Projects...' : 'Delete All Projects'}
             </Text>
           </TouchableOpacity>
         </View>

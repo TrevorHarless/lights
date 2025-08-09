@@ -38,7 +38,10 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     lightAssets, 
     getAssetById: getLightAssetById,
     getAssetsByCategory: getLightAssetsByCategory,
-    getCategories: getLightCategories
+    getCategories: getLightCategories,
+    getLightRenderStyle,
+    getSharedGradientDefs,
+    getLightDefinitions
   } = useLightAssets();
 
   const {
@@ -611,6 +614,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
                   getAssetById={getAssetById}
                   calculateLightPositions={calculateLightPositions}
                   getLightSizeScale={getLightSizeScale}
+                  getLightRenderStyle={getLightRenderStyle}
                 />
 
                 {/* Reference line renderer */}
@@ -658,6 +662,8 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           onSelectAsset={setSelectedAsset}
           getAssetsByCategory={getAssetsByCategory}
           getCategories={getCategories}
+          getSharedGradientDefs={getSharedGradientDefs}
+          getLightDefinitions={getLightDefinitions}
           canUndo={!!deletedString}
           onUndo={handleUndo}
         />

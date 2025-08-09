@@ -17,6 +17,8 @@ export function BottomToolbar({
   onSelectAsset,
   getAssetsByCategory,
   getCategories,
+  getSharedGradientDefs,
+  getLightDefinitions,
   // Undo functionality
   canUndo,
   onUndo,
@@ -125,6 +127,8 @@ export function BottomToolbar({
         }}
         getAssetsByCategory={getAssetsByCategory}
         getCategories={getCategories}
+        getSharedGradientDefs={getSharedGradientDefs}
+        getLightDefinitions={getLightDefinitions}
       />
     </>
   );

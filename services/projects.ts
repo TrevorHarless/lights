@@ -115,5 +115,44 @@ export const projectsService = {
       .single()
 
     return { data, error }
+  },
+
+  async deleteAllProjects(): Promise<{ error: any }> {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return { error: { message: 'User not authenticated' } }
+    }
+
+    // First, get all projects to retrieve their image_paths
+    const { data: projects, error: fetchError } = await supabase
+      .from('projects')
+      .select('image_path')
+      .eq('user_id', user.id)
+
+    if (fetchError) {
+      return { error: fetchError }
+    }
+
+    // Delete all projects from database
+    const { error: deleteError } = await supabase
+      .from('projects')
+      .delete()
+      .eq('user_id', user.id)
+
+    if (deleteError) {
+      return { error: deleteError }
+    }
+
+    // Delete associated images from storage
+    if (projects && projects.length > 0) {
+      await Promise.all(
+        projects
+          .filter(project => project.image_path)
+          .map(project => imageUploadService.deleteImage(project.image_path!))
+      )
+    }
+
+    return { error: null }
   }
 }

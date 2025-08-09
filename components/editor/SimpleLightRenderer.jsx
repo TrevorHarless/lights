@@ -10,6 +10,7 @@ const SimpleLightRenderer = ({
   getAssetById,
   calculateLightPositions,
   getLightSizeScale,
+  getLightRenderStyle,
 }) => {
   const lightScale = getLightSizeScale ? getLightSizeScale() : 1;
 
@@ -54,20 +55,22 @@ const SimpleLightRenderer = ({
 
       // Add lights as simple Views
       positions.forEach((pos, idx) => {
-        const lightStyle = getLightStyle(asset.id, lightScale, idx);
-        views.push(
-          <View
-            key={`${string.id}-${idx}`}
-            style={[
-              lightStyle,
-              {
-                position: 'absolute',
-                left: pos.x - lightStyle.width / 2,
-                top: pos.y - lightStyle.height / 2,
-              }
-            ]}
-          />
-        );
+        const lightStyle = getLightRenderStyle ? getLightRenderStyle(asset.id, lightScale, idx) : getFallbackStyle(asset.id, lightScale);
+        if (lightStyle) {
+          views.push(
+            <View
+              key={`${string.id}-${idx}`}
+              style={[
+                lightStyle,
+                {
+                  position: 'absolute',
+                  left: pos.x - lightStyle.width / 2,
+                  top: pos.y - lightStyle.height / 2,
+                }
+              ]}
+            />
+          );
+        }
       });
     });
 
@@ -110,21 +113,23 @@ const SimpleLightRenderer = ({
 
         // Add current vector lights
         positions.forEach((pos, idx) => {
-          const lightStyle = getLightStyle(asset.id, lightScale, idx);
-          views.push(
-            <View
-              key={`current-${idx}`}
-              style={[
-                lightStyle,
-                {
-                  position: 'absolute',
-                  left: pos.x - lightStyle.width / 2,
-                  top: pos.y - lightStyle.height / 2,
-                  opacity: 0.8, // Slightly transparent for preview
-                }
-              ]}
-            />
-          );
+          const lightStyle = getLightRenderStyle ? getLightRenderStyle(asset.id, lightScale, idx) : getFallbackStyle(asset.id, lightScale);
+          if (lightStyle) {
+            views.push(
+              <View
+                key={`current-${idx}`}
+                style={[
+                  lightStyle,
+                  {
+                    position: 'absolute',
+                    left: pos.x - lightStyle.width / 2,
+                    top: pos.y - lightStyle.height / 2,
+                    opacity: 0.8, // Slightly transparent for preview
+                  }
+                ]}
+              />
+            );
+          }
         });
       }
     }
@@ -149,152 +154,21 @@ const SimpleLightRenderer = ({
   );
 };
 
-// Ultra-simple light styles - just colored circles with glow effect
-const getLightStyle = (assetId, scale, lightIndex = 0) => {
-  const baseSize = getBaseLightSize(assetId) * scale;
+// Simple fallback for when getLightRenderStyle is not available
+const getFallbackStyle = (assetId, scale = 1) => {
+  const baseSize = 8 * scale;
   const glowSize = baseSize * 1.8;
   
-  switch (assetId) {
-    case 'c9-warm-white':
-      return {
-        width: glowSize,
-        height: glowSize,
-        borderRadius: glowSize / 2,
-        backgroundColor: '#fff5e0',
-        shadowColor: '#fff5e0',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.8,
-        shadowRadius: baseSize * 0.6,
-        // Inner circle using border
-        borderWidth: Math.max(1, (glowSize - baseSize) / 2),
-        borderColor: 'rgba(255, 245, 224, 0.3)',
-      };
-
-    case 'mini-led-warm':
-      return {
-        width: glowSize,
-        height: glowSize,
-        borderRadius: glowSize / 2,
-        backgroundColor: '#fffaf0',
-        shadowColor: '#fff5e0',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.6,
-        shadowRadius: baseSize * 0.4,
-      };
-
-    case 'c9-multicolor':
-      const colors = ["#ff3333", "#33ff33", "#3333ff", "#ffff33", "#ff33ff"];
-      const color = colors[lightIndex % colors.length];
-      return {
-        width: glowSize,
-        height: glowSize,
-        borderRadius: glowSize / 2,
-        backgroundColor: color,
-        shadowColor: color,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.6,
-        shadowRadius: baseSize * 0.5,
-        opacity: 0.9,
-      };
-
-    case 'c9-red-white':
-      const redWhitePattern = ["#ff3333", "#ff3333", "#ffffff", "#ffffff"];
-      const redWhiteColor = redWhitePattern[lightIndex % redWhitePattern.length];
-      return {
-        width: glowSize,
-        height: glowSize,
-        borderRadius: glowSize / 2,
-        backgroundColor: redWhiteColor,
-        shadowColor: redWhiteColor === "#ffffff" ? "#fff5e0" : redWhiteColor,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: redWhiteColor === "#ffffff" ? 0.8 : 0.6,
-        shadowRadius: baseSize * 0.5,
-        opacity: 0.9,
-      };
-
-    case 'mini-led-multicolor':
-      const miniColors = ["#ff4444", "#44ff44", "#4444ff", "#ffff44", "#ff44ff", "#44ffff"];
-      const miniColor = miniColors[lightIndex % miniColors.length];
-      return {
-        width: glowSize,
-        height: glowSize,
-        borderRadius: glowSize / 2,
-        backgroundColor: miniColor,
-        shadowColor: miniColor,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5,
-        shadowRadius: baseSize * 0.3,
-        opacity: 0.9,
-      };
-
-    case 'glow-light-blue':
-      return {
-        width: glowSize,
-        height: glowSize,
-        borderRadius: glowSize / 2,
-        backgroundColor: '#66aaff',
-        shadowColor: '#3388ff',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.7,
-        shadowRadius: baseSize * 0.6,
-      };
-
-    case 'icicle-cool-white':
-      return {
-        width: glowSize * 0.6, // More elliptical
-        height: glowSize,
-        borderRadius: glowSize / 2,
-        backgroundColor: '#f0f8ff',
-        shadowColor: '#e6f3ff',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.6,
-        shadowRadius: baseSize * 0.5,
-      };
-
-    case 'net-warm-white':
-      return {
-        width: glowSize * 0.7, // Smaller net lights
-        height: glowSize * 0.7,
-        borderRadius: glowSize / 2,
-        backgroundColor: '#fffaf0',
-        shadowColor: '#fff5e0',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5,
-        shadowRadius: baseSize * 0.3,
-      };
-
-    default:
-      return {
-        width: glowSize,
-        height: glowSize,
-        borderRadius: glowSize / 2,
-        backgroundColor: '#ffffff',
-        shadowColor: '#ffffff',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.6,
-        shadowRadius: baseSize * 0.4,
-      };
-  }
-};
-
-const getBaseLightSize = (assetId) => {
-  switch (assetId) {
-    case 'c9-warm-white':
-    case 'c9-multicolor':
-    case 'c9-red-white':
-    case 'glow-light-blue':
-    case 'warm-white':
-      return 12; // Larger C9 bulbs
-    case 'mini-led-warm':
-    case 'mini-led-multicolor':
-      return 8; // Mini LEDs
-    case 'net-warm-white':
-      return 6; // Small net lights
-    case 'icicle-cool-white':
-      return 10; // Medium icicle lights
-    default:
-      return 8;
-  }
+  return {
+    width: glowSize,
+    height: glowSize,
+    borderRadius: glowSize / 2,
+    backgroundColor: '#ffffff',
+    shadowColor: '#ffffff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: baseSize * 0.4,
+  };
 };
 
 export default React.memo(SimpleLightRenderer);
