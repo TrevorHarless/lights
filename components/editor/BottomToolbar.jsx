@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Alert, TouchableOpacity, View } from 'react-native';
 
 import { LightSelectionPopover } from './LightSelectionPopover';
+import { useAssetManagement } from '~/contexts/editor/AssetManagementProvider';
 
 export function BottomToolbar({
   // Set Scale functionality
@@ -11,19 +12,17 @@ export function BottomToolbar({
   onStartReference,
   onClearReference,
   onCancelReference,
-  // Light selection functionality
-  lightAssets,
-  selectedAsset,
-  onSelectAsset,
-  getAssetsByCategory,
-  getCategories,
-  getSharedGradientDefs,
-  getLightDefinitions,
   // Undo functionality
   canUndo,
   onUndo,
 }) {
   const [showLightPopover, setShowLightPopover] = useState(false);
+  
+  // Get asset management from context
+  const {
+    selectedAsset,
+    setSelectedAsset: onSelectAsset,
+  } = useAssetManagement();
 
   const handleRulerPress = () => {
     if (isSettingReference) {
@@ -119,16 +118,10 @@ export function BottomToolbar({
       <LightSelectionPopover
         visible={showLightPopover}
         onClose={() => setShowLightPopover(false)}
-        lightAssets={lightAssets}
-        selectedAsset={selectedAsset}
         onSelectAsset={(asset) => {
           onSelectAsset(asset);
           setShowLightPopover(false);
         }}
-        getAssetsByCategory={getAssetsByCategory}
-        getCategories={getCategories}
-        getSharedGradientDefs={getSharedGradientDefs}
-        getLightDefinitions={getLightDefinitions}
       />
     </>
   );

@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ImageViewer from "~/components/editor/ImageViewer";
+import { AssetManagementProvider } from "~/contexts/editor/AssetManagementProvider";
 import { useAuth } from "~/contexts/AuthContext";
 import { projectsService } from "~/services/projects";
 import { Project } from "~/types/project";
@@ -100,7 +101,9 @@ export default function LightEditorScreen() {
       <SafeAreaView className="flex-1 bg-gray-50">
         {/* Main Content */}
         {project.image_url ? (
-          <ImageViewer imgSource={project.image_url} onGoBack={handleGoBack} />
+          <AssetManagementProvider>
+            <ImageViewer imgSource={project.image_url} onGoBack={handleGoBack} />
+          </AssetManagementProvider>
         ) : (
         <View className="flex-1 justify-center items-center px-8">
           <View className="bg-white p-8 rounded-3xl items-center max-w-sm">

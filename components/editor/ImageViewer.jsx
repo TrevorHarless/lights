@@ -24,8 +24,7 @@ import { ReferenceLineRenderer } from './ReferenceLineRenderer';
 import { ReferenceModal } from './ReferenceModal';
 import { WreathRenderer } from './WreathRenderer';
 
-import { useLightAssets } from '~/hooks/editor/useLightAssets';
-import { useWreathAssets } from '~/hooks/editor/useWreathAssets';
+import { useAssetManagement } from '~/contexts/editor/AssetManagementProvider';
 import { useLightStrings } from '~/hooks/editor/useLightStrings';
 import { useReferenceScale } from '~/hooks/editor/useReferenceScale';
 import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
@@ -33,42 +32,14 @@ import { useWreathShapes } from '~/hooks/editor/useWreathShapes';
 import { useWreathGestures } from '~/hooks/editor/useWreathGestures';
 
 const ImageViewer = ({ imgSource, onGoBack }) => {
-  // Asset management hooks
+  // Asset management from context
   const { 
-    lightAssets, 
-    getAssetById: getLightAssetById,
-    getAssetsByCategory: getLightAssetsByCategory,
-    getCategories: getLightCategories,
+    lightAssets,
+    selectedAsset,
+    setSelectedAsset,
+    getAssetById,
     getLightRenderStyle,
-    getSharedGradientDefs,
-    getLightDefinitions
-  } = useLightAssets();
-
-  const {
-    wreathAssets,
-    getWreathAssetById,
-  } = useWreathAssets();
-
-  // Combined asset system
-  const allAssets = [...lightAssets, ...wreathAssets];
-  const [selectedAsset, setSelectedAsset] = React.useState(null);
-
-  // Combined asset helpers
-  const getAssetById = (id) => {
-    return getLightAssetById(id) || getWreathAssetById(id);
-  };
-
-  const getAssetsByCategory = (category) => {
-    if (category === 'wreath') {
-      return wreathAssets;
-    }
-    return getLightAssetsByCategory(category);
-  };
-
-  const getCategories = () => {
-    const lightCategories = getLightCategories();
-    return [...lightCategories, 'wreath'];
-  };
+  } = useAssetManagement();
 
   // Reference scale hook
   const {
@@ -657,13 +628,6 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           onStartReference={startReferenceMode}
           onClearReference={clearReference}
           onCancelReference={cancelReferenceMode}
-          lightAssets={allAssets}
-          selectedAsset={selectedAsset}
-          onSelectAsset={setSelectedAsset}
-          getAssetsByCategory={getAssetsByCategory}
-          getCategories={getCategories}
-          getSharedGradientDefs={getSharedGradientDefs}
-          getLightDefinitions={getLightDefinitions}
           canUndo={!!deletedString}
           onUndo={handleUndo}
         />

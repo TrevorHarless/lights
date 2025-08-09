@@ -10,19 +10,24 @@ import {
   View,
 } from 'react-native';
 import Svg, { Defs } from 'react-native-svg';
+import { useAssetManagement } from '~/contexts/editor/AssetManagementProvider';
 
 export function LightSelectionPopover({ 
   visible, 
   onClose, 
-  lightAssets, 
-  selectedAsset, 
-  onSelectAsset,
-  getAssetsByCategory,
-  getCategories,
-  getSharedGradientDefs,
-  getLightDefinitions
+  onSelectAsset
 }) {
   const [selectedCategory, setSelectedCategory] = React.useState('string');
+  
+  // Get asset management from context
+  const {
+    allAssets: lightAssets,
+    selectedAsset,
+    getAssetsByCategory,
+    getCategories,
+    getSharedGradientDefs,
+    getLightDefinitions
+  } = useAssetManagement();
   
   const categories = getCategories ? getCategories() : ['string'];
   const categoryAssets = getAssetsByCategory ? getAssetsByCategory(selectedCategory) : lightAssets;

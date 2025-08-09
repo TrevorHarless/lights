@@ -139,7 +139,7 @@ const SimpleLightRenderer = ({
       selectionLines: lines,
       currentVectorLine: vectorLine,
     };
-  }, [lightStrings, currentVector, isDragging, selectedStringId, getAssetById, calculateLightPositions, lightScale]);
+  }, [lightStrings, currentVector, isDragging, selectedStringId, getAssetById, calculateLightPositions, lightScale, getLightRenderStyle]);
 
   if (!lightViews.length && !currentVectorLine) {
     return null;
