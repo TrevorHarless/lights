@@ -65,17 +65,15 @@ export function SyncButton({ size = 20, color = 'white', style }: SyncButtonProp
     <TouchableOpacity
       onPress={handleSync}
       disabled={isDisabled}
-      className={`items-center justify-center rounded-full ${
-        isPressed
-          ? 'bg-white/30 dark:bg-gray-300/30'
-          : hasChanges
-          ? 'bg-amber-500/20 dark:bg-amber-400/20 border border-amber-500'
-          : 'bg-white/10 dark:bg-gray-600/20'
-      } ${isDisabled ? 'opacity-50' : ''}`}
       style={[
         {
-          width: size + 16,
-          height: size + 16,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 24,
+          width: 48,
+          height: 48,
+          backgroundColor: '#6b7280',
+          opacity: isDisabled ? 0.5 : 1,
         },
         style,
       ]}

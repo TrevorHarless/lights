@@ -11,15 +11,19 @@ import {
   ProjectCard,
   ProjectDetailsModal,
 } from "~/components/projects";
+import { SyncButton } from "~/components/sync/SyncButton";
 import { useProjects } from "~/hooks/projects/useProjects";
+import { useSync } from "~/contexts/SyncContext";
 
 export default function ProjectsScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { pendingChanges } = useSync();
   const {
     projects,
     allProjects,
     loading,
+    syncing,
     modalVisible,
     setModalVisible,
     projectDetailsModalVisible,
@@ -81,7 +85,7 @@ export default function ProjectsScreen() {
         elevation: 4,
       }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={{ 
               fontSize: 28, 
               fontWeight: '700', 
@@ -90,6 +94,26 @@ export default function ProjectsScreen() {
             }}>
               My Projects
             </Text>
+            {pendingChanges > 0 && (
+              <Text style={{ 
+                fontSize: 12, 
+                color: '#f59e0b',
+                fontWeight: '500',
+                marginTop: 2
+              }}>
+                {pendingChanges} unsaved change{pendingChanges === 1 ? '' : 's'}
+              </Text>
+            )}
+            {syncing && (
+              <Text style={{ 
+                fontSize: 12, 
+                color: '#3b82f6',
+                fontWeight: '500',
+                marginTop: 2
+              }}>
+                Syncing...
+              </Text>
+            )}
           </View>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <TouchableOpacity
@@ -110,6 +134,17 @@ export default function ProjectsScreen() {
             >
               <FontAwesome name="user" size={20} color="white" />
             </TouchableOpacity>
+            <SyncButton 
+              size={20} 
+              color="white"
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.15,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+            />
             <TouchableOpacity
               style={{
                 width: 48,

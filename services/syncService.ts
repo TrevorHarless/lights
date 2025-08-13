@@ -183,21 +183,25 @@ class SyncService {
     return await this.syncToCloud(userId);
   }
 
-  async backgroundSync(userId: string): Promise<void> {
+  async backgroundSync(userId: string): Promise<SyncResult> {
     try {
-      if (!userId) return;
+      if (!userId) return { success: true, syncedCount: 0 };
+      
+      let totalSynced = 0;
       
       const dirtyProjects = await localStorageService.getDirtyProjects();
       if (dirtyProjects.length > 0) {
-        await this.syncToCloud(userId);
+        const uploadResult = await this.syncToCloud(userId);
+        totalSynced += uploadResult.syncedCount || 0;
       }
       
       const metadata = await localStorageService.getMetadata();
       const lastSync = metadata.last_full_sync;
       
       if (!lastSync) {
-        await this.syncFromCloud(userId);
-        return;
+        const downloadResult = await this.syncFromCloud(userId);
+        totalSynced += downloadResult.syncedCount || 0;
+        return { success: true, syncedCount: totalSynced };
       }
       
       const lastSyncDate = new Date(lastSync);
@@ -206,10 +210,14 @@ class SyncService {
       const thirtyMinutes = 30 * 60 * 1000;
       
       if (timeSinceLastSync > thirtyMinutes) {
-        await this.syncFromCloud(userId);
+        const downloadResult = await this.syncFromCloud(userId);
+        totalSynced += downloadResult.syncedCount || 0;
       }
+      
+      return { success: true, syncedCount: totalSynced };
     } catch (error) {
       console.error('Background sync failed:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 }

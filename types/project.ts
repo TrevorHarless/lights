@@ -7,6 +7,8 @@ export interface Project {
   phone_number?: string
   image_url?: string
   image_path?: string
+  image_url_expires_at?: string  // When current URL expires
+  image_url_cached_at?: string   // When URL was last cached
   created_at: string
   updated_at: string
 }

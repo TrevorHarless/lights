@@ -26,8 +26,8 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
 
   const updatePendingChanges = useCallback(async () => {
     try {
-      const dirtyProjects = await localStorageService.getDirtyProjects();
       const projects = await localStorageService.getProjects();
+      const dirtyProjects = projects.filter(p => p.is_dirty);
       const errorProjects = projects.filter(p => p.sync_status === 'error');
       
       setPendingChanges(dirtyProjects.length);
@@ -111,9 +111,11 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id || syncStatus === 'syncing') return;
     
     try {
-      await syncService.backgroundSync(user.id);
-      await updatePendingChanges();
-      await updateLastSyncTime();
+      const result = await syncService.backgroundSync(user.id);
+      if (result.success) {
+        await updatePendingChanges();
+        await updateLastSyncTime();
+      }
     } catch (error) {
       console.error('Background sync error:', error);
     }
@@ -125,6 +127,10 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     try {
       const metadata = await localStorageService.getMetadata();
       const hasData = await localStorageService.getProjects();
+      
+      // Update state immediately with current data
+      await updatePendingChanges();
+      await updateLastSyncTime();
       
       // If no local data or different user, do initial sync
       if (hasData.length === 0 || metadata.user_id !== user.id) {
@@ -139,6 +145,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
           setTimeout(() => setSyncStatus('idle'), 5000);
         }
         
+        // Update state after sync
         await updatePendingChanges();
         await updateLastSyncTime();
       }
@@ -151,16 +158,16 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (user) {
+      // Only run initial sync, which will handle pending changes and sync time updates
       initialSync();
-      updatePendingChanges();
-      updateLastSyncTime();
     }
-  }, [user, initialSync, updatePendingChanges, updateLastSyncTime]);
+  }, [user, initialSync]);
 
   useEffect(() => {
     if (!user) return;
 
-    backgroundSync();
+    // Don't run immediate background sync since initialSync handles initial state
+    // Only set up scheduled and app state syncing
 
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === 'active') {
@@ -174,7 +181,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
       if (AppState.currentState === 'active') {
         backgroundSync();
       }
-    }, 5 * 60 * 1000);
+    }, 15 * 60 * 1000); // Increased to 15 minutes
 
     return () => {
       subscription?.remove();
