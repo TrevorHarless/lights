@@ -13,24 +13,24 @@ import {
   View,
 } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import ViewShot from 'react-native-view-shot';
 
 import { BottomToolbar } from './BottomToolbar';
 import { FloatingSelectionControls } from './FloatingSelectionControls';
 import { ImageWithNightOverlay } from './ImageWithNightOverlay';
-import SimpleLightRenderer from './SimpleLightRenderer';
 import { ReferenceLineRenderer } from './ReferenceLineRenderer';
 import { ReferenceModal } from './ReferenceModal';
+import SimpleLightRenderer from './SimpleLightRenderer';
 import { WreathRenderer } from './WreathRenderer';
 
 import { useLightAssets } from '~/hooks/editor/useLightAssets';
-import { useWreathAssets } from '~/hooks/editor/useWreathAssets';
 import { useLightStrings } from '~/hooks/editor/useLightStrings';
 import { useReferenceScale } from '~/hooks/editor/useReferenceScale';
 import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
-import { useWreathShapes } from '~/hooks/editor/useWreathShapes';
+import { useWreathAssets } from '~/hooks/editor/useWreathAssets';
 import { useWreathGestures } from '~/hooks/editor/useWreathGestures';
+import { useWreathShapes } from '~/hooks/editor/useWreathShapes';
 
 const ImageViewer = ({ imgSource, onGoBack }) => {
   // Asset management hooks
@@ -39,9 +39,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     getAssetById: getLightAssetById,
     getAssetsByCategory: getLightAssetsByCategory,
     getCategories: getLightCategories,
-    getLightRenderStyle,
-    getSharedGradientDefs,
-    getLightDefinitions
+    getLightRenderStyle
   } = useLightAssets();
 
   const {
@@ -173,7 +171,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
 
   // State for night mode
   const [nightModeEnabled, setNightModeEnabled] = useState(false);
-  const [nightModeIntensity, setNightModeIntensity] = useState(0.5);
+  const [nightModeIntensity, setNightModeIntensity] = useState(0.4);
 
   // State for menu
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
@@ -316,7 +314,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
       // Set options for the capture
       const captureOptions = {
         format: 'jpg',
-        quality: 0.8,
+        quality: 1,
         result: 'file',
       };
 
@@ -662,8 +660,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           onSelectAsset={setSelectedAsset}
           getAssetsByCategory={getAssetsByCategory}
           getCategories={getCategories}
-          getSharedGradientDefs={getSharedGradientDefs}
-          getLightDefinitions={getLightDefinitions}
+          getLightRenderStyle={getLightRenderStyle}
           canUndo={!!deletedString}
           onUndo={handleUndo}
         />

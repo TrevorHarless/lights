@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Svg, { Defs } from 'react-native-svg';
 
 export function LightSelectionPopover({ 
   visible, 
@@ -19,8 +18,7 @@ export function LightSelectionPopover({
   onSelectAsset,
   getAssetsByCategory,
   getCategories,
-  getSharedGradientDefs,
-  getLightDefinitions
+  getLightRenderStyle
 }) {
   const [selectedCategory, setSelectedCategory] = React.useState('string');
   
@@ -111,13 +109,17 @@ export function LightSelectionPopover({
                       resizeMode="contain"
                     />
                   ) : (
-                    <Svg width={40} height={40} viewBox="0 0 30 30">
-                      <Defs>
-                        {getSharedGradientDefs && getSharedGradientDefs()}
-                        {getLightDefinitions && getLightDefinitions()}
-                      </Defs>
-                      {asset.svg && asset.svg()}
-                    </Svg>
+                    <View
+                      style={[
+                        {
+                          width: 40,
+                          height: 40,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        },
+                        getLightRenderStyle && getLightRenderStyle(asset.id, 0.8, 0)
+                      ]}
+                    />
                   )}
 
                   {selectedAsset?.id === asset.id && (
