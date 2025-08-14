@@ -13,24 +13,60 @@ import {
   View,
 } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import ViewShot from 'react-native-view-shot';
 
 import { BottomToolbar } from './BottomToolbar';
 import { FloatingSelectionControls } from './FloatingSelectionControls';
 import { ImageWithNightOverlay } from './ImageWithNightOverlay';
-import { LightStringRenderer } from './LightStringRenderer';
 import { ReferenceLineRenderer } from './ReferenceLineRenderer';
 import { ReferenceModal } from './ReferenceModal';
+import SimpleLightRenderer from './SimpleLightRenderer';
+import { WreathRenderer } from './WreathRenderer';
 
 import { useLightAssets } from '~/hooks/editor/useLightAssets';
 import { useLightStrings } from '~/hooks/editor/useLightStrings';
 import { useReferenceScale } from '~/hooks/editor/useReferenceScale';
 import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
+import { useWreathAssets } from '~/hooks/editor/useWreathAssets';
+import { useWreathGestures } from '~/hooks/editor/useWreathGestures';
+import { useWreathShapes } from '~/hooks/editor/useWreathShapes';
 
 const ImageViewer = ({ imgSource, onGoBack }) => {
-  // Custom hooks
-  const { lightAssets, selectedAsset, setSelectedAsset, getAssetById } = useLightAssets();
+  // Asset management hooks
+  const { 
+    lightAssets, 
+    getAssetById: getLightAssetById,
+    getAssetsByCategory: getLightAssetsByCategory,
+    getCategories: getLightCategories,
+    getLightRenderStyle
+  } = useLightAssets();
+
+  const {
+    wreathAssets,
+    getWreathAssetById,
+  } = useWreathAssets();
+
+  // Combined asset system
+  const allAssets = [...lightAssets, ...wreathAssets];
+  const [selectedAsset, setSelectedAsset] = React.useState(null);
+
+  // Combined asset helpers
+  const getAssetById = (id) => {
+    return getLightAssetById(id) || getWreathAssetById(id);
+  };
+
+  const getAssetsByCategory = (category) => {
+    if (category === 'wreath') {
+      return wreathAssets;
+    }
+    return getLightAssetsByCategory(category);
+  };
+
+  const getCategories = () => {
+    const lightCategories = getLightCategories();
+    return [...lightCategories, 'wreath'];
+  };
 
   // Reference scale hook
   const {
@@ -62,7 +98,40 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     findClosestLightString,
   } = useLightStrings(lightAssets, getScaledLightSpacing);
 
-  const { currentVector, isDragging, panResponder } = useVectorDrawing({
+  // Wreath management
+  const {
+    wreaths,
+    selectedWreathId,
+    setSelectedWreathId,
+    addWreath,
+    removeWreath,
+    moveWreath,
+    resizeWreath,
+    getWreathById,
+    findWreathAtPoint,
+    getResizeHandles,
+  } = useWreathShapes();
+
+  // Interaction mode state
+  const [interactionMode, setInteractionMode] = React.useState('string'); // 'string' or 'wreath'
+
+  // Auto-switch mode based on selected asset
+  React.useEffect(() => {
+    if (selectedAsset) {
+      if (selectedAsset.category === 'wreath') {
+        setInteractionMode('wreath');
+      } else {
+        setInteractionMode('string');
+      }
+    }
+  }, [selectedAsset]);
+
+  // String drawing gestures
+  const { 
+    currentVector, 
+    isDragging: isDrawingString, 
+    panResponder: stringPanResponder 
+  } = useVectorDrawing({
     selectedAsset,
     onVectorComplete: addLightString,
     onTapSelection: selectLightString,
@@ -72,6 +141,28 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     onReferenceComplete: handleReferenceLineComplete,
   });
 
+  // Wreath placement/manipulation gestures
+  const { 
+    panResponder: wreathPanResponder, 
+    isDragging: isManipulatingWreath 
+  } = useWreathGestures({
+    selectedAsset,
+    setSelectedAsset,
+    addWreath,
+    moveWreath,
+    resizeWreath,
+    findWreathAtPoint,
+    getWreathById,
+    getResizeHandles,
+    selectedWreathId,
+    setSelectedWreathId,
+    isEnabled: interactionMode === 'wreath',
+  });
+
+  // Use appropriate pan responder based on mode
+  const activePanResponder = interactionMode === 'wreath' ? wreathPanResponder : stringPanResponder;
+  const isDragging = interactionMode === 'wreath' ? isManipulatingWreath : isDrawingString;
+
   // State for selected string's endpoint position for delete button
   const [selectedStringEndpoint, setSelectedStringEndpoint] = useState(null);
 
@@ -80,7 +171,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
 
   // State for night mode
   const [nightModeEnabled, setNightModeEnabled] = useState(false);
-  const [nightModeIntensity, setNightModeIntensity] = useState(0.5);
+  const [nightModeIntensity, setNightModeIntensity] = useState(0.4);
 
   // State for menu
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
@@ -116,9 +207,9 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
       if (scale.value < 0.5) {
         scale.value = withSpring(0.5);
         savedScale.value = 0.5;
-      } else if (scale.value > 3) {
-        scale.value = withSpring(3);
-        savedScale.value = 3;
+      } else if (scale.value > 6) {
+        scale.value = withSpring(6);
+        savedScale.value = 6;
       } else {
         savedScale.value = scale.value;
       }
@@ -186,6 +277,14 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     deleteLightString(stringId);
   };
 
+  // Direct delete handler for wreaths
+  const handleDeleteWreath = () => {
+    if (selectedWreathId) {
+      removeWreath(selectedWreathId);
+      setSelectedWreathId(null);
+    }
+  };
+
   // Toggle night mode
   const toggleNightMode = () => {
     setNightModeEnabled(!nightModeEnabled);
@@ -215,7 +314,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
       // Set options for the capture
       const captureOptions = {
         format: 'jpg',
-        quality: 0.8,
+        quality: 1,
         result: 'file',
       };
 
@@ -504,16 +603,16 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
               />
 
               {/* Light strings - rendered ON TOP of the night mode overlay */}
-              <View style={[StyleSheet.absoluteFill, styles.lightsLayer]} {...panResponder.panHandlers}>
-                <LightStringRenderer
+              <View style={[StyleSheet.absoluteFill, styles.lightsLayer]} {...activePanResponder.panHandlers}>
+                <SimpleLightRenderer
                   lightStrings={lightStrings}
                   currentVector={currentVector}
                   isDragging={isDragging}
                   selectedStringId={selectedStringId}
                   getAssetById={getAssetById}
                   calculateLightPositions={calculateLightPositions}
-                  onDeleteString={handleDeleteString}
                   getLightSizeScale={getLightSizeScale}
+                  getLightRenderStyle={getLightRenderStyle}
                 />
 
                 {/* Reference line renderer */}
@@ -522,6 +621,15 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
                   referenceLength={referenceLength}
                   isSettingReference={isSettingReference}
                   pendingLine={currentVector?.isReference ? currentVector : null}
+                />
+
+                {/* Wreaths */}
+                <WreathRenderer
+                  wreaths={wreaths}
+                  selectedWreathId={selectedWreathId}
+                  onWreathSelect={setSelectedWreathId}
+                  showResizeHandles={interactionMode === 'wreath'}
+                  getResizeHandles={getResizeHandles}
                 />
               </View>
             </ViewShot>
@@ -534,6 +642,10 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           selectedStringEndpoint={selectedStringEndpoint}
           onDeleteString={handleDeleteString}
           onDeselectString={deselectLightString}
+          selectedWreathId={selectedWreathId}
+          onDeleteWreath={handleDeleteWreath}
+          onDeselectWreath={() => setSelectedWreathId(null)}
+          interactionMode={interactionMode}
         />
 
         {/* Bottom Toolbar */}
@@ -543,9 +655,12 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           onStartReference={startReferenceMode}
           onClearReference={clearReference}
           onCancelReference={cancelReferenceMode}
-          lightAssets={lightAssets}
+          lightAssets={allAssets}
           selectedAsset={selectedAsset}
           onSelectAsset={setSelectedAsset}
+          getAssetsByCategory={getAssetsByCategory}
+          getCategories={getCategories}
+          getLightRenderStyle={getLightRenderStyle}
           canUndo={!!deletedString}
           onUndo={handleUndo}
         />

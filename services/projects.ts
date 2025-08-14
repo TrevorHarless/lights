@@ -1,9 +1,14 @@
 import { supabase } from '~/lib/supabase';
 import { CreateProjectData, Project } from '~/types/project';
 import { imageUploadService } from './imageUpload';
+import { localStorageService } from './localStorage';
 
 export const projectsService = {
   async getProjects(): Promise<{ data: Project[] | null; error: any }> {
+    // This method should only be called during sync operations
+    // Regular app usage should use localStorageService.getProjects()
+    
+    console.log('🌐 Supabase: Fetching projects from server');
     const { data, error } = await supabase
       .from('projects')
       .select('*')
@@ -13,24 +18,42 @@ export const projectsService = {
       return { data, error }
     }
 
-    // Refresh signed URLs for projects with images
-    const projectsWithRefreshedUrls = await Promise.all(
+    // Only refresh URLs that are expired or missing using smart caching
+    const projectsWithSmartUrls = await Promise.all(
       data.map(async (project) => {
         if (project.image_path) {
-          const { url } = await imageUploadService.getSignedUrl(project.image_path)
-          return {
-            ...project,
-            image_url: url || project.image_url
+          // First try to get from local storage cache
+          const localProject = await localStorageService.getProject(project.id);
+          if (localProject) {
+            const cached = await localStorageService.getCachedImageUrl(localProject);
+            if (cached) {
+              return { ...project, image_url: cached };
+            }
+          }
+          
+          // Only generate new URL if cache is expired/missing
+          const { url } = await imageUploadService.getSignedUrl(project.image_path);
+          if (url) {
+            await localStorageService.cacheImageUrl(project.id, url);
+            return { 
+              ...project, 
+              image_url: url,
+              image_url_expires_at: new Date(Date.now() + 50 * 60 * 1000).toISOString(),
+              image_url_cached_at: new Date().toISOString()
+            };
           }
         }
-        return project
+        return project;
       })
     )
 
-    return { data: projectsWithRefreshedUrls, error: null }
+    return { data: projectsWithSmartUrls, error: null }
   },
 
   async getProject(projectId: string): Promise<{ data: Project | null; error: any }> {
+    // This method should primarily be used during sync operations
+    // Regular app usage should use localStorageService.getProject()
+    
     const { data, error } = await supabase
       .from('projects')
       .select('*')
@@ -41,10 +64,26 @@ export const projectsService = {
       return { data, error }
     }
 
-    // Refresh signed URL if project has an image
+    // Use smart caching for single project image URL
     if (data.image_path) {
-      const { url } = await imageUploadService.getSignedUrl(data.image_path)
-      data.image_url = url || data.image_url
+      // Try to get cached URL from local storage
+      const localProject = await localStorageService.getProject(data.id);
+      if (localProject) {
+        const cached = await localStorageService.getCachedImageUrl(localProject);
+        if (cached) {
+          data.image_url = cached;
+          return { data, error: null };
+        }
+      }
+      
+      // Generate new URL and cache it
+      const { url } = await imageUploadService.getSignedUrl(data.image_path);
+      if (url) {
+        await localStorageService.cacheImageUrl(data.id, url);
+        data.image_url = url;
+        data.image_url_expires_at = new Date(Date.now() + 50 * 60 * 1000).toISOString();
+        data.image_url_cached_at = new Date().toISOString();
+      }
     }
 
     return { data, error: null }
@@ -57,6 +96,7 @@ export const projectsService = {
       return { data: null, error: { message: 'User not authenticated' } }
     }
 
+    console.log('🌐 Supabase: Creating project on server -', projectData.name);
     const { data, error } = await supabase
       .from('projects')
       .insert([
@@ -77,6 +117,8 @@ export const projectsService = {
   },
 
   async deleteProject(projectId: string): Promise<{ error: any }> {
+    console.log('🌐 Supabase: Deleting project from server -', projectId);
+    
     // First, get the project to retrieve the image_path
     const { data: project, error: fetchError } = await supabase
       .from('projects')
@@ -115,5 +157,44 @@ export const projectsService = {
       .single()
 
     return { data, error }
+  },
+
+  async deleteAllProjects(): Promise<{ error: any }> {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return { error: { message: 'User not authenticated' } }
+    }
+
+    // First, get all projects to retrieve their image_paths
+    const { data: projects, error: fetchError } = await supabase
+      .from('projects')
+      .select('image_path')
+      .eq('user_id', user.id)
+
+    if (fetchError) {
+      return { error: fetchError }
+    }
+
+    // Delete all projects from database
+    const { error: deleteError } = await supabase
+      .from('projects')
+      .delete()
+      .eq('user_id', user.id)
+
+    if (deleteError) {
+      return { error: deleteError }
+    }
+
+    // Delete associated images from storage
+    if (projects && projects.length > 0) {
+      await Promise.all(
+        projects
+          .filter(project => project.image_path)
+          .map(project => imageUploadService.deleteImage(project.image_path!))
+      )
+    }
+
+    return { error: null }
   }
 }

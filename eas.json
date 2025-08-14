@@ -5,29 +5,27 @@
   "build": {
     "development": {
       "ios": {
-        "simulator": true,
-        "buildType": "developmentClient"
-      }
+        "simulator": false,
+      },
+      "developmentClient": true
     },
     "preview": {
       "ios": {
         "simulator": false,
-        "buildType": "developmentClient"
       }
     },
     "production": {
       "ios": {
         "simulator": false,
-        "buildType": "release"
       }
     }
   },
   "submit": {
     "production": {
       "ios": {
-        "appleId": "your-apple-id@example.com",
-        "ascAppId": "your-app-store-connect-app-id",
-        "appleTeamId": "your-apple-team-id"
+        "appleId": "trevorharless@icloud.com",
+        "ascAppId": "trevorharless",
+        "appleTeamId": "52LCF4WAHV"
       }
     }
   }

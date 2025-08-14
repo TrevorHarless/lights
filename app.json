@@ -1,22 +1,26 @@
 {
   "expo": {
     "name": "lights-app",
-    "slug": "lights-app",
+    "slug": "lights",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "lightsapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
+    "statusBarStyle": "dark",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.tgharles.lightsapp",
       "buildNumber": "1",
+      "userInterfaceStyle": "light",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to your camera to take photos for your projects",
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select images for your projects",
         "NSLocationWhenInUseUsageDescription": "This app may use location for project addresses",
-        "CFBundleDisplayName": "Lights App"
+        "CFBundleDisplayName": "Lights App",
+        "UIStatusBarStyle": "UIStatusBarStyleDarkContent",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -24,8 +28,17 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "statusBar": {
+        "barStyle": "dark-content",
+        "backgroundColor": "#ffffff"
+      },
       "edgeToEdgeEnabled": true,
-      "package": "com.tgharles.lightsapp"
+      "package": "com.tgharles.lightsapp",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -49,15 +62,23 @@
           "photosPermission": "This app needs access to your photos to allow you to add images to your projects."
         }
       ],
-      ["expo-media-library",
-      {
-        "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
-        "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos."
-      }
-    ]
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ccf655d6-3912-429d-aacf-3b0fe4018e60"
+      }
+    },
+    "owner": "tgharles"
   }
 }

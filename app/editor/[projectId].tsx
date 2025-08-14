@@ -4,7 +4,7 @@ import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ImageViewer from "~/components/editor/ImageViewer";
 import { useAuth } from "~/contexts/AuthContext";
-import { projectsService } from "~/services/projects";
+import { localStorageService } from "~/services/localStorage";
 import { Project } from "~/types/project";
 import "../../global.css";
 
@@ -18,22 +18,21 @@ export default function LightEditorScreen() {
   const loadProject = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await projectsService.getProject(projectId!);
+      const project = await localStorageService.getProject(projectId!);
 
-      if (error) {
-        Alert.alert("Error", "Failed to load project");
-        console.error("Error loading project:", error);
-        router.back();
-        return;
-      }
-
-      if (!data) {
+      if (!project) {
         Alert.alert("Error", "Project not found");
         router.back();
         return;
       }
 
-      setProject(data);
+      // Check if project has a valid image URL
+      if (!project.image_url && project.image_path) {
+        console.log('📱 Editor: Project missing image URL, will load on demand');
+      }
+      
+      console.log('📱 Editor: Loaded project from local storage -', project.name);
+      setProject(project);
     } catch (error) {
       Alert.alert("Error", "Failed to load project");
       console.error("Error loading project:", error);

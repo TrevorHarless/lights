@@ -1,6 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
+  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -8,15 +9,31 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Svg from 'react-native-svg';
 
 export function LightSelectionPopover({ 
   visible, 
   onClose, 
   lightAssets, 
   selectedAsset, 
-  onSelectAsset 
+  onSelectAsset,
+  getAssetsByCategory,
+  getCategories,
+  getLightRenderStyle
 }) {
+  const [selectedCategory, setSelectedCategory] = React.useState('string');
+  
+  const categories = getCategories ? getCategories() : ['string'];
+  const categoryAssets = getAssetsByCategory ? getAssetsByCategory(selectedCategory) : lightAssets;
+
+  const getCategoryDisplayName = (category) => {
+    switch (category) {
+      case 'string': return 'String Lights';
+      case 'wreath': return 'Wreaths';
+      case 'net': return 'Net Lights';
+      default: return category.charAt(0).toUpperCase() + category.slice(1);
+    }
+  };
+
   return (
     <Modal
       visible={visible}
@@ -37,12 +54,42 @@ export function LightSelectionPopover({
             </TouchableOpacity>
           </View>
 
+          {/* Category Tabs */}
+          {categories.length > 1 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryTabs}
+              style={{ marginBottom: 16 }}
+            >
+              {categories.map((category) => (
+                <TouchableOpacity
+                  key={category}
+                  style={[
+                    styles.categoryTab,
+                    selectedCategory === category && styles.selectedCategoryTab
+                  ]}
+                  onPress={() => setSelectedCategory(category)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryTabText,
+                      selectedCategory === category && styles.selectedCategoryTabText
+                    ]}
+                  >
+                    {getCategoryDisplayName(category)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            {lightAssets.map((asset) => (
+            {categoryAssets.map((asset) => (
               <TouchableOpacity
                 key={asset.id}
                 onPress={() => onSelectAsset(asset)}
@@ -55,9 +102,25 @@ export function LightSelectionPopover({
                     selectedAsset?.id === asset.id && styles.selectedAsset
                   ]}
                 >
-                  <Svg width={40} height={40} viewBox="0 0 30 30">
-                    {asset.svg()}
-                  </Svg>
+                  {asset.renderType === 'image' && asset.image ? (
+                    <Image 
+                      source={asset.image} 
+                      style={{ width: 40, height: 40 }}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <View
+                      style={[
+                        {
+                          width: 40,
+                          height: 40,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        },
+                        getLightRenderStyle && getLightRenderStyle(asset.id, 0.8, 0)
+                      ]}
+                    />
+                  )}
 
                   {selectedAsset?.id === asset.id && (
                     <View style={styles.checkmark}>
@@ -152,5 +215,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     color: '#6B7280',
+  },
+  categoryTabs: {
+    paddingHorizontal: 4,
+  },
+  categoryTab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginHorizontal: 4,
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  selectedCategoryTab: {
+    backgroundColor: '#EBF4FF',
+    borderColor: '#3B82F6',
+  },
+  categoryTabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  selectedCategoryTabText: {
+    color: '#3B82F6',
   },
 });

@@ -3,13 +3,32 @@ import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 
 export function FloatingSelectionControls({
+  // String selection props
   selectedStringId,
   selectedStringEndpoint,
   onDeleteString,
+  onDeselectString,
+  // Wreath selection props
+  selectedWreathId,
+  onDeleteWreath,
+  onDeselectWreath,
+  // Mode
+  interactionMode = 'string',
 }) {
-  if (!selectedStringId || !selectedStringEndpoint) {
+  const hasStringSelection = selectedStringId && selectedStringEndpoint;
+  const hasWreathSelection = selectedWreathId;
+  
+  if (!hasStringSelection && !hasWreathSelection) {
     return null;
   }
+
+  const handleDelete = () => {
+    if (hasWreathSelection && onDeleteWreath) {
+      onDeleteWreath();
+    } else if (hasStringSelection && onDeleteString) {
+      onDeleteString(selectedStringId);
+    }
+  };
 
   return (
     <View style={{
@@ -18,9 +37,9 @@ export function FloatingSelectionControls({
       right: 20,
       zIndex: 1001,
     }}>
-      {/* Delete button only - users can tap anywhere to deselect */}
+      {/* Delete button - works for both strings and wreaths */}
       <TouchableOpacity 
-        onPress={() => onDeleteString(selectedStringId)} 
+        onPress={handleDelete}
         style={{
           width: 50,
           height: 50,
