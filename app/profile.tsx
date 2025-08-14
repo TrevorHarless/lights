@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -166,7 +167,12 @@ export default function ProfileScreen() {
       </View>
 
       {/* Content */}
-      <View style={{ flex: 1, padding: 20 }}>
+      <ScrollView 
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 20 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* User Info Section */}
         <View style={{
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -423,7 +429,7 @@ export default function ProfileScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

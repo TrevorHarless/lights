@@ -1,9 +1,9 @@
 import { Link, router } from "expo-router";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Alert,
-  KeyboardAvoidingView,
-  Platform,
+  SafeAreaView,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -18,6 +18,8 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
+  const passwordRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
 
   const handleSignUp = async () => {
     if (!email || !password || !confirmPassword) {
@@ -51,11 +53,15 @@ export default function SignUpScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 justify-center px-6 bg-gradient-to-b from-primary-50 to-white"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <View className="w-full max-w-sm self-center">
+    <SafeAreaView className="flex-1 bg-gradient-to-b from-primary-50 to-white">
+      <ScrollView
+        className="flex-1 px-6"
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="w-full max-w-sm self-center">
         {/* Header */}
         <View className="items-center mb-8">
           <Text className="text-3xl font-bold text-gray-800 mb-2">
@@ -76,6 +82,12 @@ export default function SignUpScreen() {
               autoCapitalize="none"
               keyboardType="email-address"
               autoComplete="email"
+              autoCorrect={false}
+              spellCheck={false}
+              enablesReturnKeyAutomatically={true}
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() => passwordRef.current?.focus()}
             />
           </View>
 
@@ -84,6 +96,7 @@ export default function SignUpScreen() {
               Password
             </Text>
             <TextInput
+              ref={passwordRef}
               className="bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md"
               placeholder="Enter your password"
               placeholderTextColor="#9ca3af"
@@ -91,6 +104,12 @@ export default function SignUpScreen() {
               onChangeText={setPassword}
               secureTextEntry
               autoComplete="password"
+              autoCorrect={false}
+              spellCheck={false}
+              enablesReturnKeyAutomatically={true}
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() => confirmPasswordRef.current?.focus()}
             />
           </View>
 
@@ -99,6 +118,7 @@ export default function SignUpScreen() {
               Password
             </Text>
             <TextInput
+              ref={confirmPasswordRef}
               className="bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md"
               placeholder="Confirm your password"
               placeholderTextColor="#9ca3af"
@@ -106,6 +126,12 @@ export default function SignUpScreen() {
               onChangeText={setConfirmPassword}
               secureTextEntry
               autoComplete="new-password"
+              autoCorrect={false}
+              spellCheck={false}
+              enablesReturnKeyAutomatically={true}
+              returnKeyType="done"
+              blurOnSubmit={true}
+              onSubmitEditing={handleSignUp}
             />
           </View>
 
@@ -129,7 +155,8 @@ export default function SignUpScreen() {
             <Text className="text-primary-600 font-semibold">Sign in</Text>
           </Link>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
