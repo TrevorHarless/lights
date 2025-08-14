@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { AppState } from 'react-native';
 import { syncService, SyncStatus, SyncResult } from '~/services/syncService';
 import { localStorageService } from '~/services/localStorage';
@@ -23,6 +23,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
   const [pendingChanges, setPendingChanges] = useState(0);
   const [isOnline, setIsOnline] = useState(true);
   const [hasSyncErrors, setHasSyncErrors] = useState(false);
+  const prevUserRef = useRef(user);
 
   const updatePendingChanges = useCallback(async () => {
     try {
@@ -54,7 +55,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     setSyncStatus('syncing');
     
     try {
-      const result = await syncService.fullSync(user.id);
+      const result = await syncService.manualSync(user.id);
       
       if (result.success) {
         setSyncStatus('success');
@@ -190,16 +191,27 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
   }, [user, backgroundSync]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user && prevUserRef.current) {
+      // User signed out (was authenticated, now not) - clear data
+      console.log('🔐 User signed out, clearing local data');
       setPendingChanges(0);
       setHasSyncErrors(false);
       setLastSyncTime(null);
       setSyncStatus('idle');
-      // Clear local storage when user signs out
       localStorageService.clearUserData().catch(error => {
         console.error('Error clearing user data:', error);
       });
+    } else if (!user) {
+      // Initial app load (never was authenticated) - just reset UI state
+      console.log('🔐 Initial app load, keeping local data');
+      setPendingChanges(0);
+      setHasSyncErrors(false);
+      setLastSyncTime(null);
+      setSyncStatus('idle');
     }
+    
+    // Update ref for next render
+    prevUserRef.current = user;
   }, [user]);
 
   const value = {
