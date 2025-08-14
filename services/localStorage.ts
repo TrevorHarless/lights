@@ -165,6 +165,17 @@ export const localStorageService = {
     }
   },
 
+  async updateLastSyncTime(): Promise<void> {
+    try {
+      await this.saveMetadata({
+        last_full_sync: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error updating last sync time:', error);
+      throw error;
+    }
+  },
+
   async clearUserData(): Promise<void> {
     try {
       await AsyncStorage.multiRemove([PROJECTS_KEY, METADATA_KEY]);
