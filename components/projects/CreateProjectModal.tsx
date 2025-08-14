@@ -12,13 +12,12 @@ import {
   View
 } from "react-native";
 import { imageUploadService } from "~/services/imageUpload";
-import { projectsService } from "~/services/projects";
 import { Project } from "~/types/project";
 
 interface CreateProjectModalProps {
   visible: boolean;
   onClose: () => void;
-  onProjectCreated: (project: Project) => void;
+  onProjectCreated: (project: Project, imageUri?: string | null) => void;
   userId: string;
 }
 
@@ -33,7 +32,6 @@ export default function CreateProjectModal({
   const [newProjectAddress, setNewProjectAddress] = useState("");
   const [newProjectPhone, setNewProjectPhone] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
   const [creating, setCreating] = useState(false);
 
   // Refs for keyboard navigation
@@ -71,62 +69,35 @@ export default function CreateProjectModal({
 
     setCreating(true);
 
-    let imageUrl: string | undefined;
-    let imagePath: string | undefined;
+    try {
+      // Create project locally first for instant UI feedback
+      const localProject: Project = {
+        id: `local_${Date.now()}`, // Temporary local ID
+        user_id: userId,
+        name: newProjectName.trim(),
+        description: newProjectDescription.trim() || undefined,
+        address: newProjectAddress.trim() || undefined,
+        phone_number: newProjectPhone.trim() || undefined,
+        image_url: selectedImage || undefined, // Use local image initially
+        image_path: undefined, // Will be set after server upload
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
-    if (selectedImage) {
-      console.log("Starting image upload for:", selectedImage);
-      setUploadingImage(true);
-      const uploadResult = await imageUploadService.uploadImage(
-        selectedImage,
-        userId
-      );
-      setUploadingImage(false);
-
-      console.log("Upload result:", uploadResult);
-
-      if (uploadResult.success) {
-        imageUrl = uploadResult.imageUrl;
-        imagePath = uploadResult.imagePath;
-        console.log(
-          "Image uploaded successfully. URL:",
-          imageUrl,
-          "Path:",
-          imagePath
-        );
-      } else {
-        console.error("Image upload failed:", uploadResult.error);
-        Alert.alert(
-          "Error",
-          "Failed to upload image. Project will be created without image."
-        );
-      }
-    }
-
-    const projectData = {
-      name: newProjectName.trim(),
-      description: newProjectDescription.trim() || undefined,
-      address: newProjectAddress.trim() || undefined,
-      phone_number: newProjectPhone.trim() || undefined,
-      image_url: imageUrl,
-      image_path: imagePath,
-    };
-
-    console.log("Creating project with data:", projectData);
-
-    const { data, error } = await projectsService.createProject(projectData);
-
-    if (error) {
-      Alert.alert("Error", "Failed to create project");
-      console.error("Error creating project:", error);
-    } else {
-      console.log("Project created successfully:", data);
-      onProjectCreated(data!);
+      // Pass to useProjects to handle all persistence and UI updates
+      console.log("Creating project locally:", localProject);
+      onProjectCreated(localProject, selectedImage); // Pass image for background upload
       clearForm();
       onClose();
+      
+    } catch (error) {
+      Alert.alert("Error", "Failed to create project");
+      console.error("Error creating project locally:", error);
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
   };
+
 
   const handleClose = () => {
     onClose();
@@ -147,7 +118,7 @@ export default function CreateProjectModal({
             <TouchableOpacity 
               onPress={handleClose}
               className="w-10 h-10 items-center justify-center"
-              disabled={creating || uploadingImage}
+              disabled={creating}
             >
               <MaterialIcons name="close" size={24} color="#374151" />
             </TouchableOpacity>
@@ -158,15 +129,15 @@ export default function CreateProjectModal({
             
             <TouchableOpacity
               className={`px-4 py-2 rounded-2xl ${
-                creating || uploadingImage || !newProjectName.trim() 
+                creating || !newProjectName.trim() 
                   ? 'bg-gray-300' 
                   : 'bg-gray-700'
               }`}
               onPress={handleCreateProject}
-              disabled={creating || uploadingImage || !newProjectName.trim()}
+              disabled={creating || !newProjectName.trim()}
             >
               <Text className="text-white font-semibold text-sm">
-                {creating ? 'Creating...' : uploadingImage ? 'Uploading...' : 'Create'}
+                {creating ? 'Creating...' : 'Create'}
               </Text>
             </TouchableOpacity>
           </View>

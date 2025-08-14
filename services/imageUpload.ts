@@ -50,7 +50,7 @@ export const imageUploadService = {
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.8,
+      quality: 1,
       base64: false,
     })
 
