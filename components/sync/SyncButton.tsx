@@ -34,6 +34,12 @@ export function SyncButton({ size = 20, color = 'white', style }: SyncButtonProp
             'Sync Complete',
             `Successfully synced ${result.syncedCount} project${result.syncedCount === 1 ? '' : 's'}.`
           );
+        } else {
+          // Show feedback even when no changes to sync
+          Alert.alert(
+            'Sync Complete',
+            'Everything is up to date!'
+          );
         }
         
         if (result.conflictCount && result.conflictCount > 0) {

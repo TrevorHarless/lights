@@ -19,6 +19,7 @@ class SyncService {
   async syncToCloud(userId: string): Promise<SyncResult> {
     try {
       const dirtyProjects = await localStorageService.getDirtyProjects();
+      console.log(`📤 Sync: Found ${dirtyProjects.length} dirty projects to upload`);
       let syncedCount = 0;
       let conflictCount = 0;
 
@@ -145,25 +146,40 @@ class SyncService {
         }
       }
 
-      const uploadResult = await this.syncToCloud(userId);
-      if (!uploadResult.success) {
-        return uploadResult;
-      }
-
-      const downloadResult = await this.syncFromCloud(userId);
-      if (!downloadResult.success) {
-        return downloadResult;
-      }
-
-      return {
-        success: true,
-        syncedCount: (uploadResult.syncedCount || 0) + (downloadResult.syncedCount || 0),
-        conflictCount: uploadResult.conflictCount || 0
-      };
+      return await this.performFullSync(userId);
     } catch (error) {
       console.error('Full sync failed:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
+  }
+
+  async manualSync(userId: string): Promise<SyncResult> {
+    try {
+      // Manual sync bypasses rate limiting - always sync when user requests it
+      console.log('🔄 Manual sync requested, bypassing rate limit');
+      return await this.performFullSync(userId);
+    } catch (error) {
+      console.error('Manual sync failed:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  private async performFullSync(userId: string): Promise<SyncResult> {
+    const uploadResult = await this.syncToCloud(userId);
+    if (!uploadResult.success) {
+      return uploadResult;
+    }
+
+    const downloadResult = await this.syncFromCloud(userId);
+    if (!downloadResult.success) {
+      return downloadResult;
+    }
+
+    return {
+      success: true,
+      syncedCount: (uploadResult.syncedCount || 0) + (downloadResult.syncedCount || 0),
+      conflictCount: uploadResult.conflictCount || 0
+    };
   }
 
   async retryFailedSyncs(userId: string): Promise<SyncResult> {
