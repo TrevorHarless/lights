@@ -22,11 +22,13 @@ import { ImageWithNightOverlay } from './ImageWithNightOverlay';
 import { ReferenceLineRenderer } from './ReferenceLineRenderer';
 import { ReferenceModal } from './ReferenceModal';
 import SimpleLightRenderer from './SimpleLightRenderer';
+import { SingleLightRenderer } from './SingleLightRenderer';
 import { WreathRenderer } from './WreathRenderer';
 
 import { useLightAssets } from '~/hooks/editor/useLightAssets';
 import { useLightStrings } from '~/hooks/editor/useLightStrings';
 import { useReferenceScale } from '~/hooks/editor/useReferenceScale';
+import { useSingleLights } from '~/hooks/editor/useSingleLights';
 import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
 import { useWreathAssets } from '~/hooks/editor/useWreathAssets';
 import { useWreathGestures } from '~/hooks/editor/useWreathGestures';
@@ -101,21 +103,57 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     getResizeHandles,
   } = useWreathShapes();
 
-  // Interaction mode state
-  const [interactionMode, setInteractionMode] = React.useState('string'); // 'string' or 'wreath'
+  // Single lights management - NEW
+  const {
+    singleLights,
+    selectedSingleLightIds,
+    addSingleLight,
+    removeSingleLight,
+    removeSingleLights,
+    selectSingleLight,
+    deselectAllSingleLights,
+    findSingleLightAtPoint,
+    undoDeleteSingleLight,
+    canUndoSingleLight,
+    clearAllSingleLights,
+  } = useSingleLights();
 
-  // Auto-switch mode based on selected asset
+  // Interaction mode state - UPDATED to include 'tap'
+  const [interactionMode, setInteractionMode] = React.useState('string'); // 'string', 'wreath', or 'tap'
+
+  // Auto-switch mode based on selected asset (but preserve tap mode)
   React.useEffect(() => {
-    if (selectedAsset) {
+    if (selectedAsset && interactionMode !== 'tap') {
       if (selectedAsset.category === 'wreath') {
         setInteractionMode('wreath');
       } else {
         setInteractionMode('string');
       }
     }
-  }, [selectedAsset]);
+  }, [selectedAsset, interactionMode]);
 
-  // String drawing gestures
+  // Enhanced tap selection handler
+  const handleTapSelection = (type, id) => {
+    // Clear other selections first
+    deselectLightString();
+    setSelectedWreathId(null);
+    deselectAllSingleLights();
+    
+    // Apply new selection
+    switch (type) {
+      case 'string':
+        selectLightString(id);
+        break;
+      case 'single':
+        selectSingleLight(id);
+        break;
+      case 'wreath':
+        setSelectedWreathId(id);
+        break;
+    }
+  };
+
+  // String drawing gestures - UPDATED with tap mode support
   const { 
     currentVector, 
     isDragging: isDrawingString, 
@@ -126,11 +164,15 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     selectedStringId,
     onVectorComplete: addLightString,
     onUpdateLightString: updateLightString,
-    onTapSelection: selectLightString,
+    onTapSelection: handleTapSelection,
     findClosestLightString,
     deselectLightString,
     isSettingReference,
     onReferenceComplete: handleReferenceLineComplete,
+    // NEW: Tap mode parameters
+    interactionMode,
+    onSingleLightPlace: addSingleLight,
+    findSingleLightAtPoint,
   });
 
   // Wreath placement/manipulation gestures
@@ -259,9 +301,13 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     }
   }, [selectedStringId, lightStrings]);
 
-  // Handle undo action
+  // Handle undo action - UPDATED to support single lights
   const handleUndo = () => {
-    undoDelete();
+    if (deletedString) {
+      undoDelete();
+    } else if (canUndoSingleLight) {
+      undoDeleteSingleLight();
+    }
   };
 
   // Direct delete handler
@@ -274,6 +320,13 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     if (selectedWreathId) {
       removeWreath(selectedWreathId);
       setSelectedWreathId(null);
+    }
+  };
+
+  // NEW: Delete handlers for single lights
+  const handleDeleteSingleLights = () => {
+    if (selectedSingleLightIds.length > 0) {
+      removeSingleLights(selectedSingleLightIds);
     }
   };
 
@@ -540,6 +593,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
               <TouchableOpacity
                 onPress={() => {
                   clearAllLightStrings();
+                  clearAllSingleLights(); // NEW: Also clear single lights from tap mode
                   setIsMenuExpanded(false);
                 }}
                 style={{
@@ -607,6 +661,15 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
                   getLightRenderStyle={getLightRenderStyle}
                 />
 
+                {/* NEW: Single light renderer */}
+                <SingleLightRenderer
+                  singleLights={singleLights}
+                  selectedSingleLightIds={selectedSingleLightIds}
+                  getAssetById={getAssetById}
+                  getLightSizeScale={getLightSizeScale}
+                  getLightRenderStyle={getLightRenderStyle}
+                />
+
                 {/* Reference line renderer */}
                 <ReferenceLineRenderer
                   referenceLine={referenceLine}
@@ -628,7 +691,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           </Animated.View>
         </GestureDetector>
 
-        {/* Floating Selection Controls */}
+        {/* Floating Selection Controls - UPDATED with single lights */}
         <FloatingSelectionControls
           selectedStringId={selectedStringId}
           selectedStringEndpoint={selectedStringEndpoint}
@@ -637,10 +700,13 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           selectedWreathId={selectedWreathId}
           onDeleteWreath={handleDeleteWreath}
           onDeselectWreath={() => setSelectedWreathId(null)}
+          selectedSingleLightIds={selectedSingleLightIds}
+          onDeleteSingleLights={handleDeleteSingleLights}
+          onDeselectSingleLights={deselectAllSingleLights}
           interactionMode={interactionMode}
         />
 
-        {/* Bottom Toolbar */}
+        {/* Bottom Toolbar - UPDATED with mode toggle */}
         <BottomToolbar
           hasReference={hasReference}
           isSettingReference={isSettingReference}
@@ -653,8 +719,10 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           getAssetsByCategory={getAssetsByCategory}
           getCategories={getCategories}
           getLightRenderStyle={getLightRenderStyle}
-          canUndo={!!deletedString}
+          canUndo={!!deletedString || canUndoSingleLight}
           onUndo={handleUndo}
+          interactionMode={interactionMode}
+          onModeToggle={setInteractionMode}
         />
 
         {/* Reference modal */}

@@ -22,6 +22,9 @@ export function BottomToolbar({
   // Undo functionality
   canUndo,
   onUndo,
+  // NEW: Mode toggle functionality
+  interactionMode,
+  onModeToggle,
 }) {
   const [showLightPopover, setShowLightPopover] = useState(false);
   const [showRemeasureModal, setShowRemeasureModal] = useState(false);
@@ -53,6 +56,12 @@ export function BottomToolbar({
     setShowLightPopover(true);
   };
 
+  const handleModeToggle = () => {
+    // Toggle between string and tap modes only (wreath mode is auto-activated)
+    const newMode = interactionMode === 'tap' ? 'string' : 'tap';
+    onModeToggle(newMode);
+  };
+
   return (
     <>
       <View style={{ 
@@ -80,6 +89,18 @@ export function BottomToolbar({
             name="straighten" 
             size={28} 
             color={hasReference ? '#4CAF50' : (isSettingReference ? '#FF9800' : 'white')} 
+          />
+        </TouchableOpacity>
+        
+        {/* Mode Toggle - NEW */}
+        <TouchableOpacity 
+          style={{ padding: 8 }} 
+          onPress={handleModeToggle}
+        >
+          <MaterialIcons 
+            name={interactionMode === 'tap' ? 'touch-app' : 'timeline'} 
+            size={28} 
+            color={interactionMode === 'tap' ? '#FF9800' : 'white'} 
           />
         </TouchableOpacity>
         
