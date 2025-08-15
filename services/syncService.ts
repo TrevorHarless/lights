@@ -45,16 +45,17 @@ class SyncService {
 
             if (error) throw error;
 
+            const projectData = data as Project;
             const updatedProject = {
               ...localProject,
-              id: data.id,
-              created_at: data.created_at,
-              updated_at: data.updated_at,
+              id: projectData.id,
+              created_at: projectData.created_at,
+              updated_at: projectData.updated_at,
             };
 
             await localStorageService.deleteProject(localProject.id);
             await localStorageService.upsertProject(updatedProject);
-            await localStorageService.markProjectSynced(data.id);
+            await localStorageService.markProjectSynced(projectData.id);
           } else {
             const { error: updateError } = await supabase
               .from('projects')
@@ -109,7 +110,7 @@ class SyncService {
       }
 
       const projectsWithUrls = await Promise.all(
-        cloudProjects.map(async (project) => {
+        (cloudProjects as unknown as Project[]).map(async (project) => {
           if (project.image_path) {
             const { url } = await imageUploadService.getSignedUrl(project.image_path);
             return {
@@ -149,7 +150,7 @@ class SyncService {
       }
 
       // Filter to only projects not in local storage
-      const missingProjects = cloudProjects.filter(project => !localProjectIds.has(project.id));
+      const missingProjects = (cloudProjects as unknown as Project[]).filter(project => !localProjectIds.has(project.id));
       
       if (missingProjects.length === 0) {
         console.log('📥 No missing projects to sync from cloud');

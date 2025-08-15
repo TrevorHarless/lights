@@ -20,7 +20,7 @@ export const projectsService = {
 
     // Only refresh URLs that are expired or missing using smart caching
     const projectsWithSmartUrls = await Promise.all(
-      data.map(async (project) => {
+      (data as unknown as Project[]).map(async (project) => {
         if (project.image_path) {
           // First try to get from local storage cache
           const localProject = await localStorageService.getProject(project.id);
@@ -65,28 +65,29 @@ export const projectsService = {
     }
 
     // Use smart caching for single project image URL
-    if (data.image_path) {
+    const project = data as unknown as Project;
+    if (project.image_path) {
       // Try to get cached URL from local storage
-      const localProject = await localStorageService.getProject(data.id);
+      const localProject = await localStorageService.getProject(project.id);
       if (localProject) {
         const cached = await localStorageService.getCachedImageUrl(localProject);
         if (cached) {
-          data.image_url = cached;
-          return { data, error: null };
+          project.image_url = cached;
+          return { data: project, error: null };
         }
       }
       
       // Generate new URL and cache it
-      const { url } = await imageUploadService.getSignedUrl(data.image_path);
+      const { url } = await imageUploadService.getSignedUrl(project.image_path);
       if (url) {
-        await localStorageService.cacheImageUrl(data.id, url);
-        data.image_url = url;
-        data.image_url_expires_at = new Date(Date.now() + 50 * 60 * 1000).toISOString();
-        data.image_url_cached_at = new Date().toISOString();
+        await localStorageService.cacheImageUrl(project.id, url);
+        project.image_url = url;
+        project.image_url_expires_at = new Date(Date.now() + 50 * 60 * 1000).toISOString();
+        project.image_url_cached_at = new Date().toISOString();
       }
     }
 
-    return { data, error: null }
+    return { data: project, error: null }
   },
 
   async createProject(projectData: CreateProjectData): Promise<{ data: Project | null; error: any }> {
@@ -141,8 +142,9 @@ export const projectsService = {
     }
 
     // Delete associated image from storage if it exists
-    if (project?.image_path) {
-      await imageUploadService.deleteImage(project.image_path)
+    const projectData = project as { image_path?: string } | null;
+    if (projectData?.image_path) {
+      await imageUploadService.deleteImage(projectData.image_path)
     }
 
     return { error: null }
@@ -188,8 +190,9 @@ export const projectsService = {
 
     // Delete associated images from storage
     if (projects && projects.length > 0) {
+      const projectsData = projects as { image_path?: string }[];
       await Promise.all(
-        projects
+        projectsData
           .filter(project => project.image_path)
           .map(project => imageUploadService.deleteImage(project.image_path!))
       )

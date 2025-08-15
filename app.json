@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "lights-app",
+    "name": "Holiday Lights Pro",
     "slug": "lights",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -18,7 +18,7 @@
         "NSCameraUsageDescription": "This app needs access to your camera to take photos for your projects",
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select images for your projects",
         "NSLocationWhenInUseUsageDescription": "This app may use location for project addresses",
-        "CFBundleDisplayName": "Lights App",
+        "CFBundleDisplayName": "Holiday Lights Pro",
         "UIStatusBarStyle": "UIStatusBarStyleDarkContent",
         "ITSAppUsesNonExemptEncryption": false
       }
