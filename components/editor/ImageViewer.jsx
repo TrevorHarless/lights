@@ -52,21 +52,9 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
   const [selectedAsset, setSelectedAsset] = React.useState(null);
 
   // Combined asset helpers
-  const getAssetById = (id) => {
-    return getLightAssetById(id) || getWreathAssetById(id);
-  };
-
-  const getAssetsByCategory = (category) => {
-    if (category === 'wreath') {
-      return wreathAssets;
-    }
-    return getLightAssetsByCategory(category);
-  };
-
-  const getCategories = () => {
-    const lightCategories = getLightCategories();
-    return [...lightCategories, 'wreath'];
-  };
+  const getAssetById = (id) => getLightAssetById(id) || getWreathAssetById(id);
+  const getAssetsByCategory = (category) => category === 'wreath' ? wreathAssets : getLightAssetsByCategory(category);
+  const getCategories = () => [...getLightCategories(), 'wreath'];
 
   // Reference scale hook
   const {

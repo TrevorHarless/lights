@@ -17,15 +17,22 @@ export function useWreathGestures({
 }) {
   const gestureState = useRef({
     isDragging: false,
-    dragType: null, // 'move', 'resize', or null
+    dragType: null,
     dragTarget: null,
     startPosition: null,
-    resizeHandle: null,
   });
 
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => isEnabled,
-    onMoveShouldSetPanResponder: () => isEnabled,
+    onStartShouldSetPanResponder: (evt) => {
+      // Only capture single touches when enabled and in wreath mode
+      const touches = evt.nativeEvent.touches;
+      return isEnabled && touches.length === 1;
+    },
+    onMoveShouldSetPanResponder: (evt) => {
+      // Only capture single touches when enabled and in wreath mode
+      const touches = evt.nativeEvent.touches;
+      return isEnabled && touches.length === 1;
+    },
 
     onPanResponderGrant: (evt) => {
       if (!isEnabled) return;
@@ -51,7 +58,6 @@ export function useWreathGestures({
                 dragType: 'resize',
                 dragTarget: selectedWreathId,
                 startPosition: touchPoint,
-                resizeHandle: handle,
               };
               return;
             }
@@ -68,7 +74,6 @@ export function useWreathGestures({
           dragType: 'move',
           dragTarget: touchedWreath.id,
           startPosition: touchPoint,
-          resizeHandle: null,
         };
         return;
       }
@@ -87,6 +92,12 @@ export function useWreathGestures({
     },
 
     onPanResponderMove: (evt) => {
+      // If multi-touch detected, abort this gesture to allow zoom/pan
+      if (evt.nativeEvent.touches.length > 1) {
+        gestureState.current.isDragging = false;
+        return false;
+      }
+      
       if (!gestureState.current.isDragging) return;
 
       const touch = evt.nativeEvent;
@@ -123,23 +134,11 @@ export function useWreathGestures({
     },
 
     onPanResponderRelease: () => {
-      gestureState.current = {
-        isDragging: false,
-        dragType: null,
-        dragTarget: null,
-        startPosition: null,
-        resizeHandle: null,
-      };
+      gestureState.current.isDragging = false;
     },
 
     onPanResponderTerminate: () => {
-      gestureState.current = {
-        isDragging: false,
-        dragType: null,
-        dragTarget: null,
-        startPosition: null,
-        resizeHandle: null,
-      };
+      gestureState.current.isDragging = false;
     },
   });
 

@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { Animated, PanResponder } from 'react-native';
+import { useState } from 'react';
+import { PanResponder } from 'react-native';
 
 export function useVectorDrawing({
   selectedAsset,
@@ -14,27 +14,32 @@ export function useVectorDrawing({
   const [isDragging, setIsDragging] = useState(false);
   const [lastTapTime, setLastTapTime] = useState(0);
 
-  const startPoint = useRef(new Animated.ValueXY()).current;
-  const endPoint = useRef(new Animated.ValueXY()).current;
-
   // Create PanResponder for handling gestures
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true, // Always capture the touch to determine if it's a tap or drag
+    onStartShouldSetPanResponder: (evt) => {
+      // Only capture if we have a single touch and either have an asset selected or in reference mode
+      const touches = evt.nativeEvent.touches;
+      return touches.length === 1 && (selectedAsset || isSettingReference);
+    },
+    
+    onMoveShouldSetPanResponder: (evt) => {
+      // Don't capture moves if there are multiple touches (zoom/pan in progress)
+      const touches = evt.nativeEvent.touches;
+      return touches.length === 1 && (selectedAsset || isSettingReference);
+    },
 
     onPanResponderGrant: (evt, gestureState) => {
-      const { locationX, locationY } = evt.nativeEvent;
-      const currentTime = Date.now();
-
-      // Save the tap location for potential tap-to-select
-      startPoint.setValue({ x: locationX, y: locationY });
-      endPoint.setValue({ x: locationX, y: locationY });
-
-      // Set a timer to determine if this is a tap or drag
-      // Don't set state immediately to avoid visual glitches when dragging
-      setLastTapTime(currentTime);
+      setLastTapTime(Date.now());
     },
 
     onPanResponderMove: (evt, gestureState) => {
+      // If multi-touch detected, abort this gesture to allow zoom/pan
+      if (evt.nativeEvent.touches.length > 1) {
+        setCurrentVector(null);
+        setIsDragging(false);
+        return false;
+      }
+      
       // If we've moved more than a small threshold, this is a drag, not a tap
       if (Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5) {
         // We're now in dragging mode if we have a selected asset OR setting reference
@@ -60,8 +65,6 @@ export function useVectorDrawing({
         // Only update if we're in dragging mode
         if (isDragging) {
           const { locationX, locationY } = evt.nativeEvent;
-          endPoint.setValue({ x: locationX, y: locationY });
-
           setCurrentVector((prev) => ({
             ...prev,
             end: { x: locationX, y: locationY },
