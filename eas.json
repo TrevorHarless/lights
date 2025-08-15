@@ -5,9 +5,10 @@
   "build": {
     "development": {
       "ios": {
-        "simulator": false,
       },
-      "developmentClient": true
+      "developmentClient": true,
+      "environment": "development",
+      "distribution": "internal"
     },
     "preview": {
       "ios": {
