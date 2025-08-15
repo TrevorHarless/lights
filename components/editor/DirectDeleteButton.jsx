@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Animated, TouchableOpacity } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 
 /**
  * A standalone delete button component that's rendered directly at the root level

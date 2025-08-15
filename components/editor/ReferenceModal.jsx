@@ -5,7 +5,7 @@ import { Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInp
 export function ReferenceModal({ visible, onClose, onConfirm, onCancel }) {
   const [lengthInput, setLengthInput] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
-  const [shouldFocusInput, setShouldFocusInput] = useState(false);
+  const [, setShouldFocusInput] = useState(false);
   const inputRef = useRef(null);
 
   // Handle modal showing with smooth timing
@@ -172,7 +172,7 @@ export function ReferenceModal({ visible, onClose, onConfirm, onCancel }) {
               marginTop: 8,
               lineHeight: 16,
             }}>
-              Example: If your garage door is 10 feet wide, enter "10"
+              Example: If your garage door is 10 feet wide, enter &quot;10&quot;
             </Text>
           </View>
 
