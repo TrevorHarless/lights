@@ -77,6 +77,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     selectedStringId,
     deletedString,
     addLightString,
+    updateLightString,
     deleteLightString,
     undoDelete,
     clearAllLightStrings,
@@ -121,7 +122,10 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     panResponder: stringPanResponder 
   } = useVectorDrawing({
     selectedAsset,
+    lightStrings,
+    selectedStringId,
     onVectorComplete: addLightString,
+    onUpdateLightString: updateLightString,
     onTapSelection: selectLightString,
     findClosestLightString,
     deselectLightString,

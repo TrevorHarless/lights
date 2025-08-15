@@ -15,9 +15,10 @@ const SimpleLightRenderer = ({
   const lightScale = getLightSizeScale ? getLightSizeScale() : 1;
 
   // Memoize all light positions and styles - MUCH simpler than SVG
-  const { lightViews, selectionLines, currentVectorLine } = useMemo(() => {
+  const { lightViews, selectionLines, selectionHandles, currentVectorLine } = useMemo(() => {
     const views = [];
     const lines = [];
+    const handles = [];
     let vectorLine = null;
 
     // Process existing light strings
@@ -48,6 +49,56 @@ const SimpleLightRenderer = ({
               opacity: 0.7,
               transform: [{ rotate: `${angle}rad` }],
               transformOrigin: 'left center',
+            }}
+          />
+        );
+
+        // Add handles at start and end points
+        const handleSize = 12;
+        const handleRadius = handleSize / 2;
+        
+        // Start handle
+        handles.push(
+          <View
+            key={`handle-start-${string.id}`}
+            style={{
+              position: 'absolute',
+              left: start.x - handleRadius,
+              top: start.y - handleRadius,
+              width: handleSize,
+              height: handleSize,
+              borderRadius: handleRadius,
+              backgroundColor: '#007aff',
+              borderWidth: 2,
+              borderColor: '#ffffff',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.3,
+              shadowRadius: 2,
+              elevation: 3,
+            }}
+          />
+        );
+
+        // End handle
+        handles.push(
+          <View
+            key={`handle-end-${string.id}`}
+            style={{
+              position: 'absolute',
+              left: end.x - handleRadius,
+              top: end.y - handleRadius,
+              width: handleSize,
+              height: handleSize,
+              borderRadius: handleRadius,
+              backgroundColor: '#007aff',
+              borderWidth: 2,
+              borderColor: '#ffffff',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.3,
+              shadowRadius: 2,
+              elevation: 3,
             }}
           />
         );
@@ -137,6 +188,7 @@ const SimpleLightRenderer = ({
     return {
       lightViews: views,
       selectionLines: lines,
+      selectionHandles: handles,
       currentVectorLine: vectorLine,
     };
   }, [lightStrings, currentVector, isDragging, selectedStringId, getAssetById, calculateLightPositions, lightScale, getLightRenderStyle]);
@@ -148,6 +200,7 @@ const SimpleLightRenderer = ({
   return (
     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} pointerEvents="none">
       {selectionLines}
+      {selectionHandles}
       {currentVectorLine}
       {lightViews}
     </View>

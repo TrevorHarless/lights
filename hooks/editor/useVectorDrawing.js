@@ -3,7 +3,10 @@ import { PanResponder } from 'react-native';
 
 export function useVectorDrawing({
   selectedAsset,
+  lightStrings = [],
+  selectedStringId = null,
   onVectorComplete,
+  onUpdateLightString = null,
   onTapSelection,
   findClosestLightString,
   deselectLightString,
@@ -13,22 +16,72 @@ export function useVectorDrawing({
   const [currentVector, setCurrentVector] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [lastTapTime, setLastTapTime] = useState(0);
+  const [dragHandle, setDragHandle] = useState(null); // { stringId, handleType: 'start' | 'end' }
+
+  // Check if a point is within a handle's touch area
+  const findHandleAtPoint = (point) => {
+    if (!selectedStringId || !lightStrings.length) return null;
+    
+    const selectedString = lightStrings.find(s => s.id === selectedStringId);
+    if (!selectedString) return null;
+    
+    const handleRadius = 15; // Touch area radius (slightly larger than visual handle)
+    
+    // Check start handle
+    const distanceToStart = Math.sqrt(
+      Math.pow(point.x - selectedString.start.x, 2) + 
+      Math.pow(point.y - selectedString.start.y, 2)
+    );
+    
+    if (distanceToStart <= handleRadius) {
+      return { stringId: selectedStringId, handleType: 'start' };
+    }
+    
+    // Check end handle
+    const distanceToEnd = Math.sqrt(
+      Math.pow(point.x - selectedString.end.x, 2) + 
+      Math.pow(point.y - selectedString.end.y, 2)
+    );
+    
+    if (distanceToEnd <= handleRadius) {
+      return { stringId: selectedStringId, handleType: 'end' };
+    }
+    
+    return null;
+  };
 
   // Create PanResponder for handling gestures
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: (evt) => {
-      // Only capture if we have a single touch and either have an asset selected or in reference mode
+      // Only capture if we have a single touch
       const touches = evt.nativeEvent.touches;
-      return touches.length === 1 && (selectedAsset || isSettingReference);
+      if (touches.length !== 1) return false;
+      
+      // Capture if we have an asset selected, in reference mode, or touching a handle
+      const point = { x: evt.nativeEvent.locationX, y: evt.nativeEvent.locationY };
+      const handle = findHandleAtPoint(point);
+      
+      return selectedAsset || isSettingReference || handle;
     },
     
     onMoveShouldSetPanResponder: (evt) => {
       // Don't capture moves if there are multiple touches (zoom/pan in progress)
       const touches = evt.nativeEvent.touches;
-      return touches.length === 1 && (selectedAsset || isSettingReference);
+      return touches.length === 1 && (selectedAsset || isSettingReference || dragHandle);
     },
 
     onPanResponderGrant: (evt, gestureState) => {
+      const { locationX, locationY } = evt.nativeEvent;
+      const point = { x: locationX, y: locationY };
+      
+      // Check if touching a handle first (highest priority)
+      const handle = findHandleAtPoint(point);
+      if (handle) {
+        setDragHandle(handle);
+        setIsDragging(true);
+        return;
+      }
+      
       setLastTapTime(Date.now());
     },
 
@@ -37,7 +90,21 @@ export function useVectorDrawing({
       if (evt.nativeEvent.touches.length > 1) {
         setCurrentVector(null);
         setIsDragging(false);
+        setDragHandle(null);
         return false;
+      }
+      
+      const { locationX, locationY } = evt.nativeEvent;
+      
+      // Handle dragging (moving string endpoints)
+      if (dragHandle && onUpdateLightString) {
+        const newPosition = { x: locationX, y: locationY };
+        const updates = dragHandle.handleType === 'start' 
+          ? { start: newPosition }
+          : { end: newPosition };
+        
+        onUpdateLightString(dragHandle.stringId, updates);
+        return;
       }
       
       // If we've moved more than a small threshold, this is a drag, not a tap
@@ -47,7 +114,6 @@ export function useVectorDrawing({
           setIsDragging(true);
 
           // Initialize the vector for drawing
-          const { locationX, locationY } = evt.nativeEvent;
           const startPos = {
             x: locationX - gestureState.dx,
             y: locationY - gestureState.dy,
@@ -62,9 +128,8 @@ export function useVectorDrawing({
           });
         }
 
-        // Only update if we're in dragging mode
-        if (isDragging) {
-          const { locationX, locationY } = evt.nativeEvent;
+        // Only update if we're in dragging mode (but not handle dragging)
+        if (isDragging && !dragHandle) {
           setCurrentVector((prev) => ({
             ...prev,
             end: { x: locationX, y: locationY },
@@ -79,6 +144,13 @@ export function useVectorDrawing({
         Math.abs(gestureState.dx) < 5 &&
         Math.abs(gestureState.dy) < 5 &&
         Date.now() - lastTapTime < 300;
+
+      // If we were dragging a handle, just clean up
+      if (dragHandle) {
+        setDragHandle(null);
+        setIsDragging(false);
+        return;
+      }
 
       if (isTap) {
         // This was a tap - handle selection
@@ -110,6 +182,7 @@ export function useVectorDrawing({
       // Reset state if the gesture is terminated
       setCurrentVector(null);
       setIsDragging(false);
+      setDragHandle(null);
     },
   });
 
