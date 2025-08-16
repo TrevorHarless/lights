@@ -132,7 +132,11 @@ export default function CreateProjectModal({
                     }}
                     disabled={creating}
                   >
-                    <MaterialIcons name="close" size={isTablet ? 20 : 16} color="#374151" />
+                    <MaterialIcons
+                      name="close"
+                      size={isTablet ? 20 : 16}
+                      color="#374151"
+                    />
                   </TouchableOpacity>
 
                   <Text className="text-2xl font-bold text-gray-800">
@@ -146,7 +150,8 @@ export default function CreateProjectModal({
               <View className="p-8">
                 <TextInput
                   ref={nameInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-lg text-gray-800 font-medium mb-6"
+                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
+                  style={{ fontSize: 18, fontWeight: '500' }}
                   placeholder="Enter project name"
                   value={newProjectName}
                   onChangeText={setNewProjectName}
@@ -158,7 +163,8 @@ export default function CreateProjectModal({
 
                 <TextInput
                   ref={phoneInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-lg text-gray-800 font-medium mb-6"
+                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
+                  style={{ fontSize: 18, fontWeight: '500' }}
                   placeholder="Contact number (optional)"
                   value={newProjectPhone}
                   onChangeText={setNewProjectPhone}
@@ -171,7 +177,8 @@ export default function CreateProjectModal({
 
                 <TextInput
                   ref={addressInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-lg text-gray-800 font-medium mb-6"
+                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
+                  style={{ fontSize: 18, fontWeight: '500' }}
                   placeholder="Project address (optional)"
                   value={newProjectAddress}
                   onChangeText={setNewProjectAddress}
@@ -184,7 +191,8 @@ export default function CreateProjectModal({
 
                 <TextInput
                   ref={descriptionInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-lg text-gray-800 font-medium mb-6 h-32"
+                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6 h-32"
+                  style={{ fontSize: 18, fontWeight: '500' }}
                   placeholder="Add a description (optional)"
                   value={newProjectDescription}
                   onChangeText={setNewProjectDescription}
@@ -247,15 +255,15 @@ export default function CreateProjectModal({
                 {/* Large Create Button */}
                 <TouchableOpacity
                   className={`mt-8 rounded-2xl py-4 px-8 items-center shadow-lg ${
-                    creating || !newProjectName.trim() 
-                      ? 'bg-gray-300' 
-                      : 'bg-primary-600 active:bg-primary-700'
+                    creating || !newProjectName.trim()
+                      ? "bg-gray-300"
+                      : "bg-primary-600 active:bg-primary-700"
                   }`}
                   onPress={handleCreateProject}
                   disabled={creating || !newProjectName.trim()}
                 >
                   <Text className="text-white text-lg font-semibold">
-                    {creating ? 'Creating Project...' : 'Create Project'}
+                    {creating ? "Creating Project..." : "Create Project"}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -291,7 +299,8 @@ export default function CreateProjectModal({
               <View className="p-6 space-y-6">
                 <TextInput
                   ref={nameInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 font-medium mb-5"
+                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 mb-5"
+                  style={{ fontSize: 16, fontWeight: '500' }}
                   placeholder="Enter project name"
                   value={newProjectName}
                   onChangeText={setNewProjectName}
@@ -303,7 +312,8 @@ export default function CreateProjectModal({
 
                 <TextInput
                   ref={phoneInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 font-medium mb-5"
+                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 mb-5"
+                  style={{ fontSize: 16, fontWeight: '500' }}
                   placeholder="Contact number (optional)"
                   value={newProjectPhone}
                   onChangeText={setNewProjectPhone}
@@ -316,7 +326,8 @@ export default function CreateProjectModal({
 
                 <TextInput
                   ref={addressInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 font-medium mb-5"
+                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 mb-5"
+                  style={{ fontSize: 16, fontWeight: '500' }}
                   placeholder="Project address (optional)"
                   value={newProjectAddress}
                   onChangeText={setNewProjectAddress}
@@ -329,7 +340,8 @@ export default function CreateProjectModal({
 
                 <TextInput
                   ref={descriptionInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 font-medium mb-5 h-28"
+                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 mb-5 h-28"
+                  style={{ fontSize: 16, fontWeight: '500' }}
                   placeholder="Add a description (optional)"
                   value={newProjectDescription}
                   onChangeText={setNewProjectDescription}
@@ -392,15 +404,15 @@ export default function CreateProjectModal({
                 {/* Large Create Button */}
                 <TouchableOpacity
                   className={`mt-8 rounded-2xl py-4 px-8 items-center shadow-lg ${
-                    creating || !newProjectName.trim() 
-                      ? 'bg-gray-300' 
-                      : 'bg-primary-600 active:bg-primary-700'
+                    creating || !newProjectName.trim()
+                      ? "bg-gray-300"
+                      : "bg-primary-600 active:bg-primary-700"
                   }`}
                   onPress={handleCreateProject}
                   disabled={creating || !newProjectName.trim()}
                 >
                   <Text className="text-white text-lg font-semibold">
-                    {creating ? 'Creating Project...' : 'Create Project'}
+                    {creating ? "Creating Project..." : "Create Project"}
                   </Text>
                 </TouchableOpacity>
               </View>

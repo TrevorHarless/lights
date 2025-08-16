@@ -92,6 +92,7 @@ export default function SignUpScreen() {
               <Text className="text-gray-700 font-medium mb-2 ml-1">Email</Text>
               <TextInput
                 className={`bg-white border border-gray-200 rounded-xl ${isTablet ? "p-5" : "p-4"} text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md`}
+                style={{ fontSize: isTablet ? 18 : 16, fontWeight: '500' }}
                 placeholder="Enter your email"
                 placeholderTextColor="#9ca3af"
                 value={email}
@@ -117,6 +118,7 @@ export default function SignUpScreen() {
               <TextInput
                 ref={passwordRef}
                 className={`bg-white border border-gray-200 rounded-xl ${isTablet ? "px-5 py-5" : "px-4 py-4"} text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md`}
+                style={{ fontSize: isTablet ? 18 : 16, fontWeight: '500' }}
                 placeholder="Enter your password"
                 placeholderTextColor="#9ca3af"
                 value={password}
@@ -141,6 +143,7 @@ export default function SignUpScreen() {
               <TextInput
                 ref={confirmPasswordRef}
                 className={`bg-white border border-gray-200 rounded-xl ${isTablet ? "px-5 py-5" : "px-4 py-4"} text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md`}
+                style={{ fontSize: isTablet ? 18 : 16, fontWeight: '500' }}
                 placeholder="Confirm your password"
                 placeholderTextColor="#9ca3af"
                 value={confirmPassword}
