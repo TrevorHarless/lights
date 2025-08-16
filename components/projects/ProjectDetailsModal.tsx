@@ -1,7 +1,7 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Image } from "expo-image";
 import React from "react";
-import { Modal, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Linking, Modal, Text, TouchableOpacity, View } from "react-native";
 import { Project } from "~/types/project";
 
 interface ProjectDetailsModalProps {
@@ -20,6 +20,40 @@ export default function ProjectDetailsModal({
   onDelete,
 }: ProjectDetailsModalProps) {
   if (!project) return null;
+
+  const handlePhonePress = async (phoneNumber: string) => {
+    const url = `tel:${phoneNumber}`;
+    const supported = await Linking.canOpenURL(url);
+    
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert("Error", "Phone calls are not supported on this device");
+    }
+  };
+
+  const handleAddressPress = (address: string) => {
+    const encodedAddress = encodeURIComponent(address);
+    
+    Alert.alert(
+      "Open Address",
+      "Choose how to open this address:",
+      [
+        {
+          text: "Apple Maps",
+          onPress: () => Linking.openURL(`http://maps.apple.com/?q=${encodedAddress}`)
+        },
+        {
+          text: "Google Maps",
+          onPress: () => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`)
+        },
+        {
+          text: "Cancel",
+          style: "cancel"
+        }
+      ]
+    );
+  };
 
   return (
     <Modal
@@ -74,10 +108,13 @@ export default function ProjectDetailsModal({
                 <Text className="text-sm font-semibold text-gray-700 mb-2">
                   Address
                 </Text>
-                <View className="flex-row items-center">
-                  <FontAwesome name="map-marker" size={16} color="#6b7280" />
-                  <Text className="text-gray-600 ml-2">{project.address}</Text>
-                </View>
+                <TouchableOpacity
+                  onPress={() => handleAddressPress(project.address!)}
+                  className="flex-row items-center"
+                >
+                  <FontAwesome name="map-marker" size={16} color="#3b82f6" />
+                  <Text className="text-blue-600 ml-2 underline">{project.address}</Text>
+                </TouchableOpacity>
               </View>
             )}
 
@@ -86,12 +123,15 @@ export default function ProjectDetailsModal({
                 <Text className="text-sm font-semibold text-gray-700 mb-2">
                   Contact Number
                 </Text>
-                <View className="flex-row items-center">
-                  <FontAwesome name="phone" size={16} color="#6b7280" />
-                  <Text className="text-gray-600 ml-2">
+                <TouchableOpacity
+                  onPress={() => handlePhonePress(project.phone_number!)}
+                  className="flex-row items-center"
+                >
+                  <FontAwesome name="phone" size={16} color="#3b82f6" />
+                  <Text className="text-blue-600 ml-2 underline">
                     {project.phone_number}
                   </Text>
-                </View>
+                </TouchableOpacity>
               </View>
             )}
 
