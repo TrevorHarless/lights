@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { Dimensions, TouchableOpacity, View } from 'react-native';
 
 export function FloatingSelectionControls({
   // String selection props
@@ -19,6 +19,10 @@ export function FloatingSelectionControls({
   // Mode
   interactionMode = 'string',
 }) {
+  // Device detection for responsive design
+  const { width } = Dimensions.get('window');
+  const isTablet = width >= 768;
+
   const hasStringSelection = selectedStringId && selectedStringEndpoint;
   const hasWreathSelection = selectedWreathId;
   const hasSingleLightSelection = selectedSingleLightIds && selectedSingleLightIds.length > 0;
@@ -50,18 +54,18 @@ export function FloatingSelectionControls({
   return (
     <View style={{
       position: 'absolute',
-      top: 120, // Above the image container, below the top toolbar
-      right: 20,
+      top: isTablet ? 140 : 120, // Above the image container, below the top toolbar
+      right: isTablet ? 24 : 20,
       zIndex: 1001,
-      gap: 10,
+      gap: isTablet ? 16 : 10,
     }}>
       {/* Delete button - works for strings, wreaths, and single lights */}
       <TouchableOpacity 
         onPress={handleDelete}
         style={{
-          width: 50,
-          height: 50,
-          borderRadius: 25,
+          width: isTablet ? 60 : 50,
+          height: isTablet ? 60 : 50,
+          borderRadius: isTablet ? 30 : 25,
           backgroundColor: '#EF4444',
           justifyContent: 'center',
           alignItems: 'center',
@@ -71,16 +75,16 @@ export function FloatingSelectionControls({
           shadowRadius: 4,
           elevation: 5,
         }}>
-        <MaterialIcons name="delete" size={24} color="white" />
+        <MaterialIcons name="delete" size={isTablet ? 32 : 24} color="white" />
       </TouchableOpacity>
 
       {/* Deselect button - NEW for better UX */}
       <TouchableOpacity 
         onPress={handleDeselect}
         style={{
-          width: 50,
-          height: 50,
-          borderRadius: 25,
+          width: isTablet ? 60 : 50,
+          height: isTablet ? 60 : 50,
+          borderRadius: isTablet ? 30 : 25,
           backgroundColor: 'rgba(255, 255, 255, 0.9)',
           justifyContent: 'center',
           alignItems: 'center',
@@ -90,7 +94,7 @@ export function FloatingSelectionControls({
           shadowRadius: 4,
           elevation: 5,
         }}>
-        <MaterialIcons name="close" size={24} color="#333" />
+        <MaterialIcons name="close" size={isTablet ? 32 : 24} color="#333" />
       </TouchableOpacity>
     </View>
   );
