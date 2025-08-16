@@ -98,10 +98,10 @@ export default function ProjectCard({ project, onPress, isTablet = false, numCol
 
           <View style={{ flex: 1 }}>
             <Text style={{
-              fontSize: isTablet && numColumns > 1 ? 18 : 20,
+              fontSize: isTablet && numColumns > 1 ? 22 : 20,
               fontWeight: '700',
               color: '#1f2937',
-              marginBottom: isTablet ? 6 : 4,
+              marginBottom: isTablet ? 8 : 4,
               letterSpacing: -0.3
             }}>
               {project.name}
@@ -109,9 +109,9 @@ export default function ProjectCard({ project, onPress, isTablet = false, numCol
             {project.description && (
               <Text 
                 style={{
-                  fontSize: isTablet && numColumns > 1 ? 15 : 15,
+                  fontSize: isTablet && numColumns > 1 ? 18 : 15,
                   color: '#6b7280',
-                  lineHeight: isTablet && numColumns > 1 ? 20 : 20,
+                  lineHeight: isTablet && numColumns > 1 ? 24 : 20,
                   fontStyle: 'italic'
                 }}
                 numberOfLines={isTablet && numColumns > 1 ? 3 : undefined}
