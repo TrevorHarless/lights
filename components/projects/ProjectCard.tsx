@@ -1,19 +1,40 @@
 import { Image } from "expo-image";
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, Text, TouchableOpacity, View } from "react-native";
 import { Project } from "~/types/project";
 
 interface ProjectCardProps {
   project: Project;
   onPress: (project: Project) => void;
+  isTablet?: boolean;
+  numColumns?: number;
 }
 
-export default function ProjectCard({ project, onPress }: ProjectCardProps) {
+export default function ProjectCard({ project, onPress, isTablet = false, numColumns = 1 }: ProjectCardProps) {
+  const { width } = Dimensions.get('window');
+  
+  // Calculate card width for grid layout
+  const getCardWidth = () => {
+    if (!isTablet || numColumns === 1) {
+      return undefined; // Let it use full width
+    }
+    const screenPadding = 48; // 24px on each side
+    const cardGap = 16 * (numColumns - 1); // 16px gap between cards
+    const availableWidth = width - screenPadding - cardGap;
+    return availableWidth / numColumns;
+  };
+  
+  const cardWidth = getCardWidth();
+  const marginHorizontal = isTablet && numColumns > 1 ? 8 : 16;
+  const marginBottom = isTablet ? 24 : 16;
+  const cardPadding = isTablet ? 24 : 20;
+  const imageSize = isTablet ? 96 : 72;
   return (
     <View style={{
       backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      marginHorizontal: 16,
-      marginBottom: 16,
+      width: cardWidth,
+      marginHorizontal: marginHorizontal,
+      marginBottom: marginBottom,
       borderRadius: 20,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
@@ -22,14 +43,14 @@ export default function ProjectCard({ project, onPress }: ProjectCardProps) {
       elevation: 6,
     }}>
       <TouchableOpacity
-        style={{ padding: 20 }}
+        style={{ padding: cardPadding }}
         onPress={() => onPress(project)}
         activeOpacity={0.95}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={{
-            borderRadius: 16,
-            marginRight: 16,
+            borderRadius: isTablet ? 20 : 16,
+            marginRight: isTablet ? 20 : 16,
             backgroundColor: '#f3f4f6',
             overflow: 'hidden',
             shadowColor: '#000',
@@ -41,7 +62,11 @@ export default function ProjectCard({ project, onPress }: ProjectCardProps) {
             {project.image_url ? (
               <Image
                 source={{ uri: project.image_url }}
-                style={{ width: 72, height: 72, borderRadius: 16 }}
+                style={{ 
+                  width: imageSize, 
+                  height: imageSize, 
+                  borderRadius: isTablet ? 20 : 16 
+                }}
                 contentFit="cover"
                 onError={(error) => {
                   console.log(
@@ -56,35 +81,41 @@ export default function ProjectCard({ project, onPress }: ProjectCardProps) {
               />
             ) : (
               <View style={{
-                width: 72,
-                height: 72,
-                borderRadius: 16,
+                width: imageSize,
+                height: imageSize,
+                borderRadius: isTablet ? 20 : 16,
                 backgroundColor: '#e5e7eb',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <Text style={{ fontSize: 28, color: '#9ca3af' }}>📷</Text>
+                <Text style={{ 
+                  fontSize: isTablet ? 36 : 28, 
+                  color: '#9ca3af' 
+                }}>📷</Text>
               </View>
             )}
           </View>
 
           <View style={{ flex: 1 }}>
             <Text style={{
-              fontSize: 20,
+              fontSize: isTablet && numColumns > 1 ? 18 : 20,
               fontWeight: '700',
               color: '#1f2937',
-              marginBottom: 4,
+              marginBottom: isTablet ? 6 : 4,
               letterSpacing: -0.3
             }}>
               {project.name}
             </Text>
             {project.description && (
-              <Text style={{
-                fontSize: 15,
-                color: '#6b7280',
-                lineHeight: 20,
-                fontStyle: 'italic'
-              }}>
+              <Text 
+                style={{
+                  fontSize: isTablet && numColumns > 1 ? 15 : 15,
+                  color: '#6b7280',
+                  lineHeight: isTablet && numColumns > 1 ? 20 : 20,
+                  fontStyle: 'italic'
+                }}
+                numberOfLines={isTablet && numColumns > 1 ? 3 : undefined}
+              >
                 {project.description}
               </Text>
             )}

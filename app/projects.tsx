@@ -2,7 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useRouter } from "expo-router";
 import React from "react";
-import { FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Dimensions, FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "~/contexts/AuthContext";
 import "../global.css";
@@ -20,6 +20,12 @@ export default function ProjectsScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const { pendingChanges } = useSync();
+  
+  const { width } = Dimensions.get('window');
+  const isTablet = width >= 768;
+  const numColumns = isTablet ? 3 : 1;
+  const contentPadding = isTablet ? 24 : 16;
+  
   const {
     projects,
     allProjects,
@@ -43,7 +49,12 @@ export default function ProjectsScreen() {
   } = useProjects(user);
 
   const renderProject = ({ item }: { item: any }) => (
-    <ProjectCard project={item} onPress={handleShowProjectDetails} />
+    <ProjectCard 
+      project={item} 
+      onPress={handleShowProjectDetails}
+      isTablet={isTablet}
+      numColumns={numColumns}
+    />
   );
 
   if (loading) {
@@ -340,9 +351,18 @@ export default function ProjectsScreen() {
           data={projects}
           renderItem={renderProject}
           keyExtractor={(item) => item.id}
-          style={{ flex: 1, paddingTop: 16 }}
+          numColumns={numColumns}
+          key={numColumns}
+          style={{ flex: 1, paddingTop: contentPadding }}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ 
+            paddingBottom: 20,
+            paddingHorizontal: isTablet ? contentPadding : 0
+          }}
+          columnWrapperStyle={isTablet ? {
+            justifyContent: 'flex-start',
+            paddingHorizontal: 0
+          } : undefined}
         />
       )}
 
