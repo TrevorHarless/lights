@@ -1,8 +1,9 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Alert, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 
 import { LightSelectionPopover } from './LightSelectionPopover';
+import { RemeasureConfirmModal } from './RemeasureConfirmModal';
 
 export function BottomToolbar({
   // Set Scale functionality
@@ -21,41 +22,44 @@ export function BottomToolbar({
   // Undo functionality
   canUndo,
   onUndo,
+  // NEW: Mode toggle functionality
+  interactionMode,
+  onModeToggle,
 }) {
   const [showLightPopover, setShowLightPopover] = useState(false);
+  const [showRemeasureModal, setShowRemeasureModal] = useState(false);
 
   const handleRulerPress = () => {
     if (isSettingReference) {
       // Cancel the reference setting process
       onCancelReference();
     } else if (hasReference) {
-      // Show confirmation dialog before clearing existing reference
-      Alert.alert(
-        "Remeasure Reference",
-        "Are you sure you want to remeasure? This will remove your current measurement.",
-        [
-          {
-            text: "Cancel",
-            style: "cancel"
-          },
-          {
-            text: "Yes, Remeasure",
-            style: "destructive",
-            onPress: () => {
-              onClearReference();
-              onStartReference();
-            }
-          }
-        ]
-      );
+      // Show confirmation modal before clearing existing reference
+      setShowRemeasureModal(true);
     } else {
       // Start new reference
       onStartReference();
     }
   };
 
+  const handleRemeasureConfirm = () => {
+    setShowRemeasureModal(false);
+    onClearReference();
+    onStartReference();
+  };
+
+  const handleRemeasureCancel = () => {
+    setShowRemeasureModal(false);
+  };
+
   const handleLightPress = () => {
     setShowLightPopover(true);
+  };
+
+  const handleModeToggle = () => {
+    // Toggle between string and tap modes only (wreath mode is auto-activated)
+    const newMode = interactionMode === 'tap' ? 'string' : 'tap';
+    onModeToggle(newMode);
   };
 
   return (
@@ -85,6 +89,18 @@ export function BottomToolbar({
             name="straighten" 
             size={28} 
             color={hasReference ? '#4CAF50' : (isSettingReference ? '#FF9800' : 'white')} 
+          />
+        </TouchableOpacity>
+        
+        {/* Mode Toggle - NEW */}
+        <TouchableOpacity 
+          style={{ padding: 8 }} 
+          onPress={handleModeToggle}
+        >
+          <MaterialIcons 
+            name={interactionMode === 'tap' ? 'touch-app' : 'timeline'} 
+            size={28} 
+            color={interactionMode === 'tap' ? '#FF9800' : 'white'} 
           />
         </TouchableOpacity>
         
@@ -127,6 +143,13 @@ export function BottomToolbar({
         getAssetsByCategory={getAssetsByCategory}
         getCategories={getCategories}
         getLightRenderStyle={getLightRenderStyle}
+      />
+
+      {/* Remeasure Confirmation Modal */}
+      <RemeasureConfirmModal
+        visible={showRemeasureModal}
+        onCancel={handleRemeasureCancel}
+        onConfirm={handleRemeasureConfirm}
       />
     </>
   );

@@ -1,39 +1,39 @@
 {
   "expo": {
-    "name": "lights-app",
+    "name": "Holiday Lights Pro",
     "slug": "lights",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
     "scheme": "lightsapp",
     "userInterfaceStyle": "light",
-    "statusBarStyle": "dark",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.tgharles.lightsapp",
       "buildNumber": "1",
+      "scheme": "lightsapp",
       "userInterfaceStyle": "light",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to your camera to take photos for your projects",
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select images for your projects",
         "NSLocationWhenInUseUsageDescription": "This app may use location for project addresses",
-        "CFBundleDisplayName": "Lights App",
+        "CFBundleDisplayName": "Holiday Lights Pro",
         "UIStatusBarStyle": "UIStatusBarStyleDarkContent",
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "icon": {
+        "dark": "./assets/images/ios-dark.png",
+        "light": "./assets/images/ios-light.png",
+        "tinted": "./assets/images/ios-tinted.png"
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "statusBar": {
-        "barStyle": "dark-content",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.tgharles.lightsapp",
+      "scheme": "lightsapp",
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.READ_EXTERNAL_STORAGE",
@@ -42,8 +42,7 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "output": "static"
     },
     "plugins": [
       "expo-router",
@@ -67,6 +66,14 @@
         {
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200
         }
       ]
     ],

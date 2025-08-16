@@ -1,7 +1,7 @@
 // components/projects/LightStringRenderer.jsx
 import React, { useMemo } from 'react';
 import { View } from 'react-native';
-import Svg, { G, Path, Defs, Use } from 'react-native-svg';
+import Svg, { G, Path, Defs } from 'react-native-svg';
 
 const LightStringRenderer = ({
   lightStrings,

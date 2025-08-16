@@ -105,6 +105,17 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
     setSelectedStringId(null);
   }, []);
 
+  // Update a light string's start or end position
+  const updateLightString = useCallback((stringId, updates) => {
+    setLightStrings(prev => 
+      prev.map(string => 
+        string.id === stringId 
+          ? { ...string, ...updates }
+          : string
+      )
+    );
+  }, []);
+
   // Helper function to get a readable name for the string type
   const getAssetTypeNameForString = useCallback(
     (string) => {
@@ -254,6 +265,7 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
     selectedStringId,
     deletedString, // Add deleted string to check if undo is available
     addLightString,
+    updateLightString, // New update function
     deleteLightString,
     undoDelete, // New undo function
     clearAllLightStrings,

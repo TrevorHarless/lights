@@ -1,4 +1,4 @@
-import { Session, User } from "@supabase/supabase-js";
+import { Session, User, AuthChangeEvent } from "@supabase/supabase-js";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "~/lib/supabase";
 
@@ -19,7 +19,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.log('🔐 AUTH: Error retrieving session:', error.message);
+        // Clear any stale auth data
+        supabase.auth.signOut();
+      }
+      console.log('🔐 AUTH: Retrieved session on app start:', session ? `User: ${session.user?.email}` : 'No session found');
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -27,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);

@@ -5,14 +5,13 @@
   "build": {
     "development": {
       "ios": {
-        "simulator": false,
       },
-      "developmentClient": true
+      "developmentClient": true,
+      "environment": "development",
+      "distribution": "internal"
     },
     "preview": {
-      "ios": {
-        "simulator": false,
-      }
+      "distribution": "internal"
     },
     "production": {
       "ios": {
@@ -24,7 +23,7 @@
     "production": {
       "ios": {
         "appleId": "trevorharless@icloud.com",
-        "ascAppId": "trevorharless",
+        "ascAppId": "6751132656",
         "appleTeamId": "52LCF4WAHV"
       }
     }
