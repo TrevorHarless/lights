@@ -26,6 +26,8 @@ export function LightSelectionPopover({
 }) {
   const [selectedCategory, setSelectedCategory] = React.useState('string');
   const [showCustomModal, setShowCustomModal] = React.useState(false);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = React.useState(false);
+  const [assetToDelete, setAssetToDelete] = React.useState(null);
   
   const categories = getCategories ? getCategories() : ['string'];
   const categoryAssets = getAssetsByCategory ? getAssetsByCategory(selectedCategory) : lightAssets;
@@ -48,10 +50,22 @@ export function LightSelectionPopover({
     }
   };
 
-  const handleRemoveCustomAsset = (assetId) => {
-    if (onRemoveCustomAsset) {
-      onRemoveCustomAsset(assetId);
+  const handleRemoveCustomAsset = (asset) => {
+    setAssetToDelete(asset);
+    setDeleteConfirmVisible(true);
+  };
+
+  const confirmDelete = () => {
+    if (onRemoveCustomAsset && assetToDelete) {
+      onRemoveCustomAsset(assetToDelete.id);
     }
+    setDeleteConfirmVisible(false);
+    setAssetToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirmVisible(false);
+    setAssetToDelete(null);
   };
 
   return (
@@ -171,7 +185,7 @@ export function LightSelectionPopover({
                       style={styles.deleteButton}
                       onPress={(e) => {
                         e.stopPropagation();
-                        handleRemoveCustomAsset(asset.id);
+                        handleRemoveCustomAsset(asset);
                       }}
                     >
                       <MaterialIcons name="close" size={14} color="white" />
@@ -195,6 +209,43 @@ export function LightSelectionPopover({
         onCreateAsset={handleCreateCustomAsset}
         getLightRenderStyle={getLightRenderStyle}
       />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={deleteConfirmVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={cancelDelete}
+      >
+        <View style={styles.deleteOverlay}>
+          <View style={styles.deleteModal}>
+            <View style={styles.deleteHeader}>
+              <MaterialIcons name="warning" size={32} color="#EF4444" />
+              <Text style={styles.deleteTitle}>Delete Custom Light</Text>
+            </View>
+            
+            <Text style={styles.deleteMessage}>
+              Are you sure you want to delete &ldquo;{assetToDelete?.name}&rdquo;? This action cannot be undone.
+            </Text>
+            
+            <View style={styles.deleteActions}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={cancelDelete}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.deleteConfirmButton}
+                onPress={confirmDelete}
+              >
+                <Text style={styles.deleteConfirmButtonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 }
@@ -306,7 +357,7 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     position: 'absolute',
-    top: -6,
+    bottom: -6,
     right: -6,
     width: 20,
     height: 20,
@@ -316,5 +367,74 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: 'white',
+  },
+  deleteOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteModal: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 24,
+    width: '85%',
+    maxWidth: 400,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  deleteHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  deleteTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginTop: 8,
+  },
+  deleteMessage: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  deleteActions: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#F9FAFB',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  deleteConfirmButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+  },
+  deleteConfirmButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
   },
 });

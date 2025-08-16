@@ -115,7 +115,6 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     singleLights,
     selectedSingleLightIds,
     addSingleLight,
-    removeSingleLight,
     removeSingleLights,
     selectSingleLight,
     deselectAllSingleLights,
