@@ -75,6 +75,9 @@ export function CustomLightModal({
   const [selectedSpacing, setSelectedSpacing] = useState(36);
   const [customColor, setCustomColor] = useState('');
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [isPatternMode, setIsPatternMode] = useState(false);
+  const [patternColors, setPatternColors] = useState(['#FFFFFF']);
+  const [editingPatternIndex, setEditingPatternIndex] = useState(null);
 
   const handleCreate = () => {
     if (!name.trim()) {
@@ -82,11 +85,13 @@ export function CustomLightModal({
     }
 
     const config = {
-      backgroundColor: customColor || selectedColor,
-      shadowColor: customColor || selectedColor,
       baseSize: selectedSize,
       spacing: selectedSpacing,
       shadowOpacity: 0.8,
+      isPattern: isPatternMode,
+      patternColors: isPatternMode ? patternColors : undefined,
+      backgroundColor: !isPatternMode ? (customColor || selectedColor) : undefined,
+      shadowColor: !isPatternMode ? (customColor || selectedColor) : undefined,
     };
 
     const asset = onCreateAsset(name.trim(), config);
@@ -98,26 +103,82 @@ export function CustomLightModal({
     setSelectedSpacing(36);
     setCustomColor('');
     setShowColorPicker(false);
+    setIsPatternMode(false);
+    setPatternColors(['#FFFFFF']);
+    setEditingPatternIndex(null);
     
     onClose();
     return asset;
   };
 
   const handleColorPickerChange = (color) => {
-    setCustomColor(color);
-    setSelectedColor(''); // Clear preset selection when using color picker
+    if (editingPatternIndex !== null) {
+      // Update pattern color
+      const newPattern = [...patternColors];
+      newPattern[editingPatternIndex] = color;
+      setPatternColors(newPattern);
+      setEditingPatternIndex(null);
+    } else {
+      // Update single color
+      setCustomColor(color);
+      setSelectedColor(''); // Clear preset selection when using color picker
+    }
   };
 
-  // Generate preview style manually since we don't have an asset yet
-  const previewStyle = {
-    width: selectedSize * 1.8,
-    height: selectedSize * 1.8,
-    borderRadius: selectedSize * 0.9,
-    backgroundColor: customColor || selectedColor,
-    shadowColor: customColor || selectedColor,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: selectedSize * 0.4,
+  const addPatternColor = () => {
+    setPatternColors([...patternColors, '#FFFFFF']);
+  };
+
+  const removePatternColor = (index) => {
+    if (patternColors.length > 1) {
+      setPatternColors(patternColors.filter((_, i) => i !== index));
+    }
+  };
+
+  const editPatternColor = (index) => {
+    setEditingPatternIndex(index);
+    setShowColorPicker(true);
+  };
+
+  // Generate preview - show multiple lights for patterns
+  const generatePreview = () => {
+    const lightSize = selectedSize * 1.8;
+    
+    if (isPatternMode) {
+      // Show first 5 lights of the pattern
+      return patternColors.slice(0, 5).map((color, index) => (
+        <View
+          key={index}
+          style={{
+            width: lightSize * 0.8,
+            height: lightSize * 0.8,
+            borderRadius: lightSize * 0.4,
+            backgroundColor: color,
+            shadowColor: color,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.8,
+            shadowRadius: selectedSize * 0.3,
+            marginHorizontal: 2,
+          }}
+        />
+      ));
+    } else {
+      // Single color preview
+      return (
+        <View
+          style={{
+            width: lightSize,
+            height: lightSize,
+            borderRadius: lightSize * 0.5,
+            backgroundColor: customColor || selectedColor,
+            shadowColor: customColor || selectedColor,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.8,
+            shadowRadius: selectedSize * 0.4,
+          }}
+        />
+      );
+    }
   };
 
   return (
@@ -140,8 +201,8 @@ export function CustomLightModal({
             {/* Preview */}
             <View style={styles.previewSection}>
               <Text style={styles.sectionTitle}>Preview</Text>
-              <View style={styles.previewContainer}>
-                <View style={[styles.previewLight, previewStyle]} />
+              <View style={[styles.previewContainer, isPatternMode && styles.patternPreviewContainer]}>
+                {generatePreview()}
               </View>
             </View>
 
@@ -157,25 +218,84 @@ export function CustomLightModal({
               />
             </View>
 
-            {/* Color Selection */}
+            {/* Mode Toggle */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Color</Text>
-              <View style={styles.colorGrid}>
-                {PRESET_COLORS.map((color) => (
-                  <TouchableOpacity
-                    key={color}
-                    style={[
-                      styles.colorOption,
-                      { backgroundColor: color },
-                      selectedColor === color && !customColor && styles.selectedColorOption
-                    ]}
-                    onPress={() => {
-                      setSelectedColor(color);
-                      setCustomColor('');
-                    }}
-                  />
-                ))}
+              <Text style={styles.sectionTitle}>Type</Text>
+              <View style={styles.modeToggle}>
+                <TouchableOpacity
+                  style={[styles.modeButton, !isPatternMode && styles.selectedModeButton]}
+                  onPress={() => setIsPatternMode(false)}
+                >
+                  <Text style={[styles.modeButtonText, !isPatternMode && styles.selectedModeButtonText]}>
+                    Single Color
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modeButton, isPatternMode && styles.selectedModeButton]}
+                  onPress={() => setIsPatternMode(true)}
+                >
+                  <Text style={[styles.modeButtonText, isPatternMode && styles.selectedModeButtonText]}>
+                    Pattern
+                  </Text>
+                </TouchableOpacity>
               </View>
+            </View>
+
+            {/* Color Selection or Pattern Creation */}
+            {isPatternMode ? (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Pattern Colors</Text>
+                <View style={styles.patternColorsContainer}>
+                  {patternColors.map((color, index) => (
+                    <View key={index} style={styles.patternColorItem}>
+                      <TouchableOpacity
+                        style={[styles.patternColorSwatch, { backgroundColor: color }]}
+                        onPress={() => editPatternColor(index)}
+                      />
+                      <Text style={styles.patternColorIndex}>{index + 1}</Text>
+                      {patternColors.length > 1 && (
+                        <TouchableOpacity
+                          style={styles.removePatternColor}
+                          onPress={() => removePatternColor(index)}
+                        >
+                          <MaterialIcons name="close" size={14} color="#EF4444" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  ))}
+                  
+                  {patternColors.length < 8 && (
+                    <TouchableOpacity
+                      style={styles.addPatternColor}
+                      onPress={addPatternColor}
+                    >
+                      <MaterialIcons name="add" size={20} color="#3B82F6" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <Text style={styles.patternHint}>
+                  Tap colors to edit, pattern repeats every {patternColors.length} light{patternColors.length !== 1 ? 's' : ''}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Color</Text>
+                <View style={styles.colorGrid}>
+                  {PRESET_COLORS.map((color) => (
+                    <TouchableOpacity
+                      key={color}
+                      style={[
+                        styles.colorOption,
+                        { backgroundColor: color },
+                        selectedColor === color && !customColor && styles.selectedColorOption
+                      ]}
+                      onPress={() => {
+                        setSelectedColor(color);
+                        setCustomColor('');
+                      }}
+                    />
+                  ))}
+                </View>
               
               {/* More Colors Button */}
               <TouchableOpacity
@@ -197,7 +317,8 @@ export function CustomLightModal({
                 placeholderTextColor="#999"
                 autoCapitalize="characters"
               />
-            </View>
+              </View>
+            )}
 
             {/* Size Selection */}
             <View style={styles.section}>
@@ -516,5 +637,93 @@ const styles = StyleSheet.create({
   selectedExtendedColor: {
     borderColor: '#3B82F6',
     borderWidth: 3,
+  },
+  patternPreviewContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modeToggle: {
+    flexDirection: 'row',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    padding: 2,
+  },
+  modeButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  selectedModeButton: {
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  modeButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  selectedModeButtonText: {
+    color: '#3B82F6',
+  },
+  patternColorsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 8,
+  },
+  patternColorItem: {
+    alignItems: 'center',
+    position: 'relative',
+  },
+  patternColorSwatch: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+  },
+  patternColorIndex: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  removePatternColor: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addPatternColor: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: '#3B82F6',
+    borderStyle: 'dashed',
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  patternHint: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontStyle: 'italic',
+    marginTop: 8,
+    textAlign: 'center',
   },
 });

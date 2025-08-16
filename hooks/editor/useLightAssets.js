@@ -281,14 +281,26 @@ export function useLightAssets() {
       spacing: config.spacing || 36,
       baseSize: config.baseSize || 12,
       renderType: 'style',
-      renderStyle: {
-        backgroundColor: config.backgroundColor || '#ffffff',
-        shadowColor: config.shadowColor || config.backgroundColor || '#ffffff',
-        shadowOpacity: config.shadowOpacity || 0.8,
-        shadowRadius: (config.baseSize || 12) * 0.4,
-        borderColor: config.borderColor,
-        borderWidth: config.borderColor ? 2 : undefined,
-      },
+      renderStyle: config.isPattern ? 
+        // Pattern render function
+        (lightIndex = 0) => {
+          const color = config.patternColors[lightIndex % config.patternColors.length];
+          return {
+            backgroundColor: color,
+            shadowColor: color,
+            shadowOpacity: config.shadowOpacity || 0.8,
+            shadowRadius: (config.baseSize || 12) * 0.4,
+          };
+        } :
+        // Single color render style
+        {
+          backgroundColor: config.backgroundColor || '#ffffff',
+          shadowColor: config.shadowColor || config.backgroundColor || '#ffffff',
+          shadowOpacity: config.shadowOpacity || 0.8,
+          shadowRadius: (config.baseSize || 12) * 0.4,
+          borderColor: config.borderColor,
+          borderWidth: config.borderColor ? 2 : undefined,
+        },
     };
 
     setCustomAssets(prev => [...prev, customAsset]);
