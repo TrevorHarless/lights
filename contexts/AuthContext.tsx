@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         console.log('🔐 AUTH: Error retrieving session:', error.message);
         // Clear any stale auth data
-        supabase.auth.signOut({ scope: 'local' });
+        supabase.auth.signOut();
       }
       console.log('🔐 AUTH: Retrieved session on app start:', session ? `User: ${session.user?.email}` : 'No session found');
       setSession(session);
