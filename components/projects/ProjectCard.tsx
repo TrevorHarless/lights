@@ -104,7 +104,7 @@ export default function ProjectCard({ project, onPress, isTablet = false, numCol
               marginBottom: isTablet ? 8 : 4,
               letterSpacing: -0.3
             }}>
-              {project.name}
+              {project.name.length > 20 ? `${project.name.substring(0, 20)}...` : project.name}
             </Text>
             {project.description && (
               <Text 
@@ -116,7 +116,7 @@ export default function ProjectCard({ project, onPress, isTablet = false, numCol
                 }}
                 numberOfLines={isTablet && numColumns > 1 ? 3 : undefined}
               >
-                {project.description}
+                {project.description.length > 20 ? `${project.description.substring(0, 20)}...` : project.description}
               </Text>
             )}
           </View>
