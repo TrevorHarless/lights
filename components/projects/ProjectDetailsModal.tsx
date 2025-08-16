@@ -10,6 +10,7 @@ interface ProjectDetailsModalProps {
   onClose: () => void;
   onOpenEditor: (project: Project) => void;
   onDelete: (project: Project) => void;
+  onEdit: (project: Project) => void;
 }
 
 export default function ProjectDetailsModal({
@@ -18,6 +19,7 @@ export default function ProjectDetailsModal({
   onClose,
   onOpenEditor,
   onDelete,
+  onEdit,
 }: ProjectDetailsModalProps) {
   if (!project) return null;
 
@@ -70,6 +72,12 @@ export default function ProjectDetailsModal({
                 {project.name}
               </Text>
               <View className="flex-row">
+                <TouchableOpacity
+                  onPress={() => onEdit(project)}
+                  className="p-2 mr-2"
+                >
+                  <FontAwesome name="pencil" size={20} color="#3b82f6" />
+                </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => onDelete(project)}
                   className="p-2 mr-2"

@@ -8,6 +8,7 @@ import { useAuth } from "~/contexts/AuthContext";
 import "../global.css";
 import {
   CreateProjectModal,
+  EditProjectModal,
   ProjectCard,
   ProjectDetailsModal,
 } from "~/components/projects";
@@ -28,13 +29,17 @@ export default function ProjectsScreen() {
     setModalVisible,
     projectDetailsModalVisible,
     setProjectDetailsModalVisible,
+    editModalVisible,
+    setEditModalVisible,
     selectedProject,
     searchQuery,
     setSearchQuery,
     handleShowProjectDetails,
     handleOpenEditor,
+    handleEditProject,
     handleDeleteProject,
     handleProjectCreated,
+    handleProjectUpdated,
   } = useProjects(user);
 
   const renderProject = ({ item }: { item: any }) => (
@@ -354,6 +359,14 @@ export default function ProjectsScreen() {
         onClose={() => setProjectDetailsModalVisible(false)}
         onOpenEditor={handleOpenEditor}
         onDelete={handleDeleteProject}
+        onEdit={handleEditProject}
+      />
+
+      <EditProjectModal
+        visible={editModalVisible}
+        project={selectedProject}
+        onClose={() => setEditModalVisible(false)}
+        onProjectUpdated={handleProjectUpdated}
       />
     </SafeAreaView>
   );
