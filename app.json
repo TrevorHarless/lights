@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.tgharles.lightsapp",
-      "buildNumber": "1.0.1",
+      "buildNumber": "2.0.0",
       "scheme": "lightsapp",
       "userInterfaceStyle": "light",
       "infoPlist": {
