@@ -163,13 +163,13 @@ export default function ProjectsScreen() {
               </Text>
             )}
           </View>
-          <View style={{ flexDirection: "row", gap: 12 }}>
+          <View style={{ flexDirection: "row", gap: isTablet ? 16 : 12 }}>
             <TouchableOpacity
               style={{
-                width: 48,
-                height: 48,
+                width: isTablet ? 56 : 48,
+                height: isTablet ? 56 : 48,
                 backgroundColor: "#6b7280",
-                borderRadius: 24,
+                borderRadius: isTablet ? 28 : 24,
                 alignItems: "center",
                 justifyContent: "center",
                 shadowColor: "#000",
@@ -180,10 +180,10 @@ export default function ProjectsScreen() {
               }}
               onPress={() => router.push("/profile")}
             >
-              <FontAwesome name="user" size={20} color="white" />
+              <FontAwesome name="user" size={isTablet ? 24 : 20} color="white" />
             </TouchableOpacity>
             <SyncButton
-              size={20}
+              size={isTablet ? 24 : 20}
               color="white"
               style={{
                 shadowColor: "#000",
@@ -191,14 +191,17 @@ export default function ProjectsScreen() {
                 shadowOpacity: 0.15,
                 shadowRadius: 8,
                 elevation: 6,
+                width: isTablet ? 56 : 48,
+                height: isTablet ? 56 : 48,
+                borderRadius: isTablet ? 28 : 24,
               }}
             />
             <TouchableOpacity
               style={{
-                width: 48,
-                height: 48,
+                width: isTablet ? 56 : 48,
+                height: isTablet ? 56 : 48,
                 backgroundColor: "#374151",
-                borderRadius: 24,
+                borderRadius: isTablet ? 28 : 24,
                 alignItems: "center",
                 justifyContent: "center",
                 shadowColor: "#000",
@@ -209,7 +212,7 @@ export default function ProjectsScreen() {
               }}
               onPress={() => setModalVisible(true)}
             >
-              <FontAwesome name="plus" size={20} color="white" />
+              <FontAwesome name="plus" size={isTablet ? 24 : 20} color="white" />
             </TouchableOpacity>
           </View>
         </View>

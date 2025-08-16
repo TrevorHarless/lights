@@ -125,10 +125,14 @@ export default function CreateProjectModal({
                 <View className="flex-row items-center justify-between">
                   <TouchableOpacity
                     onPress={handleClose}
-                    className="w-10 h-10 items-center justify-center"
+                    className="bg-gray-100 rounded-full items-center justify-center"
+                    style={{
+                      width: isTablet ? 44 : 36,
+                      height: isTablet ? 44 : 36,
+                    }}
                     disabled={creating}
                   >
-                    <MaterialIcons name="close" size={24} color="#374151" />
+                    <MaterialIcons name="close" size={isTablet ? 20 : 16} color="#374151" />
                   </TouchableOpacity>
 
                   <Text className="text-2xl font-bold text-gray-800">
@@ -265,10 +269,14 @@ export default function CreateProjectModal({
               <View className="flex-row items-center justify-between">
                 <TouchableOpacity
                   onPress={handleClose}
-                  className="w-10 h-10 items-center justify-center"
+                  className="bg-gray-100 rounded-full items-center justify-center"
+                  style={{
+                    width: 36,
+                    height: 36,
+                  }}
                   disabled={creating}
                 >
-                  <MaterialIcons name="close" size={24} color="#374151" />
+                  <MaterialIcons name="close" size={16} color="#374151" />
                 </TouchableOpacity>
 
                 <Text className="text-xl font-bold text-gray-800">
