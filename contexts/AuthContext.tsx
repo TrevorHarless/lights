@@ -19,7 +19,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.log('🔐 AUTH: Error retrieving session:', error.message);
+        // Clear any stale auth data
+        supabase.auth.signOut({ scope: 'local' });
+      }
       console.log('🔐 AUTH: Retrieved session on app start:', session ? `User: ${session.user?.email}` : 'No session found');
       setSession(session);
       setUser(session?.user ?? null);
