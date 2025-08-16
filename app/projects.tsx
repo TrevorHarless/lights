@@ -2,10 +2,15 @@ import { MaterialIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Dimensions, FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  FlatList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "~/contexts/AuthContext";
-import "../global.css";
 import {
   CreateProjectModal,
   EditProjectModal,
@@ -13,19 +18,21 @@ import {
   ProjectDetailsModal,
 } from "~/components/projects";
 import { SyncButton } from "~/components/sync/SyncButton";
-import { useProjects } from "~/hooks/projects/useProjects";
+import { useAuth } from "~/contexts/AuthContext";
 import { useSync } from "~/contexts/SyncContext";
+import { useProjects } from "~/hooks/projects/useProjects";
+import "../global.css";
 
 export default function ProjectsScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const { pendingChanges } = useSync();
-  
-  const { width } = Dimensions.get('window');
+
+  const { width } = Dimensions.get("window");
   const isTablet = width >= 768;
   const numColumns = isTablet ? 3 : 1;
   const contentPadding = isTablet ? 24 : 16;
-  
+
   const {
     projects,
     allProjects,
@@ -49,8 +56,8 @@ export default function ProjectsScreen() {
   } = useProjects(user);
 
   const renderProject = ({ item }: { item: any }) => (
-    <ProjectCard 
-      project={item} 
+    <ProjectCard
+      project={item}
       onPress={handleShowProjectDetails}
       isTablet={isTablet}
       numColumns={numColumns}
@@ -59,26 +66,37 @@ export default function ProjectsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}>
-          <View style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
             paddingHorizontal: 32,
-            paddingVertical: 24,
-            borderRadius: 20,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.1,
-            shadowRadius: 12,
-            elevation: 8,
-            alignItems: 'center',
-          }}>
-            <Text style={{ 
-              fontSize: 18, 
-              color: '#374151', 
-              fontWeight: '600',
-              textAlign: 'center'
-            }}>
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              paddingHorizontal: 32,
+              paddingVertical: 24,
+              borderRadius: 20,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              elevation: 8,
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                color: "#374151",
+                fontWeight: "600",
+                textAlign: "center",
+              }}
+            >
               Loading projects...
             </Text>
           </View>
@@ -88,73 +106,87 @@ export default function ProjectsScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
       {/* Header */}
-      <View style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
-      }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View
+        style={{
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 4,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <View style={{ flex: 1 }}>
-            <Text style={{ 
-              fontSize: 28, 
-              fontWeight: '700', 
-              color: '#1f2937',
-              letterSpacing: -0.5 
-            }}>
+            <Text
+              style={{
+                fontSize: 28,
+                fontWeight: "700",
+                color: "#1f2937",
+                letterSpacing: -0.5,
+              }}
+            >
               My Projects
             </Text>
             {pendingChanges > 0 && (
-              <Text style={{ 
-                fontSize: 12, 
-                color: '#f59e0b',
-                fontWeight: '500',
-                marginTop: 2
-              }}>
-                {pendingChanges} unsaved change{pendingChanges === 1 ? '' : 's'}
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: "#f59e0b",
+                  fontWeight: "500",
+                  marginTop: 2,
+                }}
+              >
+                {pendingChanges} unsaved change{pendingChanges === 1 ? "" : "s"}
               </Text>
             )}
             {syncing && (
-              <Text style={{ 
-                fontSize: 12, 
-                color: '#3b82f6',
-                fontWeight: '500',
-                marginTop: 2
-              }}>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: "#3b82f6",
+                  fontWeight: "500",
+                  marginTop: 2,
+                }}
+              >
                 Syncing...
               </Text>
             )}
           </View>
-          <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flexDirection: "row", gap: 12 }}>
             <TouchableOpacity
               style={{
                 width: 48,
                 height: 48,
-                backgroundColor: '#6b7280',
+                backgroundColor: "#6b7280",
                 borderRadius: 24,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: '#000',
+                alignItems: "center",
+                justifyContent: "center",
+                shadowColor: "#000",
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.15,
                 shadowRadius: 8,
                 elevation: 6,
               }}
-              onPress={() => router.push('/profile')}
+              onPress={() => router.push("/profile")}
             >
               <FontAwesome name="user" size={20} color="white" />
             </TouchableOpacity>
-            <SyncButton 
-              size={20} 
+            <SyncButton
+              size={20}
               color="white"
               style={{
-                shadowColor: '#000',
+                shadowColor: "#000",
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.15,
                 shadowRadius: 8,
@@ -165,11 +197,11 @@ export default function ProjectsScreen() {
               style={{
                 width: 48,
                 height: 48,
-                backgroundColor: '#374151',
+                backgroundColor: "#374151",
                 borderRadius: 24,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: '#000',
+                alignItems: "center",
+                justifyContent: "center",
+                shadowColor: "#000",
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.15,
                 shadowRadius: 8,
@@ -183,29 +215,42 @@ export default function ProjectsScreen() {
         </View>
 
         {/* Search Bar */}
-        <View style={{
-          marginTop: 16,
-        }}>
-          <View style={{
-            flexDirection: 'row',
+        <View
+          style={{
+            marginTop: isTablet ? 20 : 16,
             alignItems: 'center',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            borderRadius: 16,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 8,
-            elevation: 4,
-          }}>
-            <MaterialIcons name="search" size={20} color="#6b7280" style={{ marginRight: 12 }} />
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              borderRadius: isTablet ? 20 : 16,
+              paddingHorizontal: isTablet ? 20 : 16,
+              paddingVertical: isTablet ? 16 : 12,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.08,
+              shadowRadius: 8,
+              elevation: 4,
+              width: isTablet ? 450 : '100%',
+              maxWidth: isTablet ? 450 : '100%',
+              marginHorizontal: isTablet ? 0 : 20,
+            }}
+          >
+            <MaterialIcons
+              name="search"
+              size={isTablet ? 24 : 20}
+              color="#6b7280"
+              style={{ marginRight: isTablet ? 16 : 12 }}
+            />
             <TextInput
               style={{
                 flex: 1,
-                fontSize: 16,
-                color: '#1f2937',
-                fontWeight: '500',
+                fontSize: isTablet ? 18 : 16,
+                color: "#1f2937",
+                fontWeight: "500",
               }}
               placeholder="Search projects..."
               placeholderTextColor="#9ca3af"
@@ -218,11 +263,15 @@ export default function ProjectsScreen() {
               <TouchableOpacity
                 onPress={() => setSearchQuery("")}
                 style={{
-                  marginLeft: 8,
-                  padding: 4,
+                  marginLeft: isTablet ? 12 : 8,
+                  padding: isTablet ? 6 : 4,
                 }}
               >
-                <MaterialIcons name="clear" size={18} color="#6b7280" />
+                <MaterialIcons
+                  name="clear"
+                  size={isTablet ? 20 : 18}
+                  color="#6b7280"
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -231,45 +280,58 @@ export default function ProjectsScreen() {
 
       {/* Content */}
       {allProjects.length === 0 ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}>
-          <View style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
             paddingHorizontal: 32,
-            paddingVertical: 40,
-            borderRadius: 24,
-            alignItems: 'center',
-            maxWidth: 320,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.1,
-            shadowRadius: 16,
-            elevation: 8,
-          }}>
-            <Text style={{ 
-              fontSize: 24, 
-              fontWeight: '700', 
-              color: '#1f2937', 
-              marginBottom: 8, 
-              textAlign: 'center'
-            }}>
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              paddingHorizontal: 32,
+              paddingVertical: 40,
+              borderRadius: 24,
+              alignItems: "center",
+              maxWidth: 320,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.1,
+              shadowRadius: 16,
+              elevation: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: "700",
+                color: "#1f2937",
+                marginBottom: 8,
+                textAlign: "center",
+              }}
+            >
               No projects yet
             </Text>
-            <Text style={{ 
-              fontSize: 16, 
-              color: '#6b7280', 
-              textAlign: 'center', 
-              marginBottom: 24,
-              lineHeight: 22
-            }}>
+            <Text
+              style={{
+                fontSize: 16,
+                color: "#6b7280",
+                textAlign: "center",
+                marginBottom: 24,
+                lineHeight: 22,
+              }}
+            >
               Create your first project to start organizing your lighting work
             </Text>
             <TouchableOpacity
               style={{
-                backgroundColor: '#374151',
+                backgroundColor: "#374151",
                 paddingHorizontal: 24,
                 paddingVertical: 12,
                 borderRadius: 16,
-                shadowColor: '#000',
+                shadowColor: "#000",
                 shadowOffset: { width: 0, height: 3 },
                 shadowOpacity: 0.15,
                 shadowRadius: 6,
@@ -277,11 +339,13 @@ export default function ProjectsScreen() {
               }}
               onPress={() => setModalVisible(true)}
             >
-              <Text style={{ 
-                color: 'white', 
-                fontWeight: '600',
-                fontSize: 16
-              }}>
+              <Text
+                style={{
+                  color: "white",
+                  fontWeight: "600",
+                  fontSize: 16,
+                }}
+              >
                 Get Started
               </Text>
             </TouchableOpacity>
@@ -289,46 +353,65 @@ export default function ProjectsScreen() {
         </View>
       ) : projects.length === 0 && searchQuery.length > 0 ? (
         // No search results found
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}>
-          <View style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
             paddingHorizontal: 32,
-            paddingVertical: 40,
-            borderRadius: 24,
-            alignItems: 'center',
-            maxWidth: 320,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.1,
-            shadowRadius: 16,
-            elevation: 8,
-          }}>
-            <MaterialIcons name="search-off" size={48} color="#9ca3af" style={{ marginBottom: 16 }} />
-            <Text style={{ 
-              fontSize: 20, 
-              fontWeight: '700', 
-              color: '#1f2937', 
-              marginBottom: 8, 
-              textAlign: 'center'
-            }}>
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              paddingHorizontal: 32,
+              paddingVertical: 40,
+              borderRadius: 24,
+              alignItems: "center",
+              maxWidth: 320,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.1,
+              shadowRadius: 16,
+              elevation: 8,
+            }}
+          >
+            <MaterialIcons
+              name="search-off"
+              size={48}
+              color="#9ca3af"
+              style={{ marginBottom: 16 }}
+            />
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "700",
+                color: "#1f2937",
+                marginBottom: 8,
+                textAlign: "center",
+              }}
+            >
               No projects found
             </Text>
-            <Text style={{ 
-              fontSize: 16, 
-              color: '#6b7280', 
-              textAlign: 'center', 
-              marginBottom: 24,
-              lineHeight: 22
-            }}>
-              No projects match &ldquo;{searchQuery}&rdquo;. Try a different search term.
+            <Text
+              style={{
+                fontSize: 16,
+                color: "#6b7280",
+                textAlign: "center",
+                marginBottom: 24,
+                lineHeight: 22,
+              }}
+            >
+              No projects match &ldquo;{searchQuery}&rdquo;. Try a different
+              search term.
             </Text>
             <TouchableOpacity
               style={{
-                backgroundColor: '#374151',
+                backgroundColor: "#374151",
                 paddingHorizontal: 20,
                 paddingVertical: 10,
                 borderRadius: 14,
-                shadowColor: '#000',
+                shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.15,
                 shadowRadius: 4,
@@ -336,11 +419,13 @@ export default function ProjectsScreen() {
               }}
               onPress={() => setSearchQuery("")}
             >
-              <Text style={{ 
-                color: 'white', 
-                fontWeight: '600',
-                fontSize: 14
-              }}>
+              <Text
+                style={{
+                  color: "white",
+                  fontWeight: "600",
+                  fontSize: 14,
+                }}
+              >
                 Clear Search
               </Text>
             </TouchableOpacity>
@@ -355,14 +440,18 @@ export default function ProjectsScreen() {
           key={numColumns}
           style={{ flex: 1, paddingTop: contentPadding }}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ 
+          contentContainerStyle={{
             paddingBottom: 20,
-            paddingHorizontal: isTablet ? contentPadding : 0
+            paddingHorizontal: isTablet ? contentPadding : 0,
           }}
-          columnWrapperStyle={isTablet ? {
-            justifyContent: 'flex-start',
-            paddingHorizontal: 0
-          } : undefined}
+          columnWrapperStyle={
+            isTablet
+              ? {
+                  justifyContent: "flex-start",
+                  paddingHorizontal: 0,
+                }
+              : undefined
+          }
         />
       )}
 
