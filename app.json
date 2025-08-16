@@ -4,10 +4,8 @@
     "slug": "lights",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
     "scheme": "lightsapp",
     "userInterfaceStyle": "light",
-    "statusBarStyle": "dark",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
@@ -30,11 +28,6 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "statusBar": {
-        "barStyle": "dark-content",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -47,8 +40,7 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "output": "static"
     },
     "plugins": [
       "expo-router",
