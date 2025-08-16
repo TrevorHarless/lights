@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
+  Dimensions,
   ScrollView,
   Text,
   TextInput,
@@ -24,6 +25,12 @@ export default function ProfileScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [clearingProjects, setClearingProjects] = useState(false);
+  
+  const { width } = Dimensions.get('window');
+  const isTablet = width >= 768;
+  const contentMaxWidth = isTablet ? 600 : '100%';
+  const horizontalPadding = isTablet ? 40 : 20;
+  const sectionSpacing = isTablet ? 32 : 24;
 
   const handleSignOut = async () => {
     Alert.alert(
@@ -155,7 +162,7 @@ export default function ProfileScreen() {
             <FontAwesome name="arrow-left" size={20} color="#374151" />
           </TouchableOpacity>
           <Text style={{ 
-            fontSize: 28, 
+            fontSize: isTablet ? 32 : 28, 
             fontWeight: '700', 
             color: '#1f2937',
             letterSpacing: -0.5 
@@ -169,53 +176,60 @@ export default function ProfileScreen() {
       {/* Content */}
       <ScrollView 
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 20 }}
+        contentContainerStyle={{ 
+          padding: horizontalPadding,
+          alignItems: isTablet ? 'center' : 'stretch'
+        }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* User Info Section */}
         <View style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          borderRadius: 16,
-          padding: 20,
-          marginBottom: 24,
+          width: contentMaxWidth,
+          maxWidth: contentMaxWidth
+        }}>
+          {/* User Info Section */}
+          <View style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: isTablet ? 20 : 16,
+            padding: isTablet ? 28 : 20,
+            marginBottom: sectionSpacing,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.1,
           shadowRadius: 12,
           elevation: 6,
         }}>
-          <Text style={{
-            fontSize: 20,
-            fontWeight: '700',
-            color: '#1f2937',
-            marginBottom: 12,
-          }}>
+            <Text style={{
+              fontSize: isTablet ? 24 : 20,
+              fontWeight: '700',
+              color: '#1f2937',
+              marginBottom: isTablet ? 16 : 12,
+            }}>
             Account Information
           </Text>
-          <Text style={{
-            fontSize: 16,
-            color: '#6b7280',
-            marginBottom: 4,
-          }}>
+            <Text style={{
+              fontSize: isTablet ? 18 : 16,
+              color: '#6b7280',
+              marginBottom: isTablet ? 6 : 4,
+            }}>
             Email
           </Text>
-          <Text style={{
-            fontSize: 16,
-            fontWeight: '600',
-            color: '#374151',
-            marginBottom: 16,
-          }}>
+            <Text style={{
+              fontSize: isTablet ? 18 : 16,
+              fontWeight: '600',
+              color: '#374151',
+              marginBottom: isTablet ? 20 : 16,
+            }}>
             {user?.email}
           </Text>
         </View>
 
-        {/* Change Password Section */}
-        <View style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          borderRadius: 16,
-          padding: 20,
-          marginBottom: 24,
+          {/* Change Password Section */}
+          <View style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: isTablet ? 20 : 16,
+            padding: isTablet ? 28 : 20,
+            marginBottom: sectionSpacing,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.1,
@@ -427,9 +441,10 @@ export default function ProfileScreen() {
             }}>
               Sign Out
             </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
   );
 }

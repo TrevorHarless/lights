@@ -1,9 +1,9 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
+  Dimensions,
   Modal,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -70,14 +70,18 @@ export function CustomLightModal({
   getLightRenderStyle 
 }) {
   const [name, setName] = useState('');
-  const [selectedColor, setSelectedColor] = useState('#FFFFFF');
+  const [selectedColor, setSelectedColor] = useState('#FF0000');
   const [selectedSize, setSelectedSize] = useState(12);
   const [selectedSpacing, setSelectedSpacing] = useState(36);
   const [customColor, setCustomColor] = useState('');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [isPatternMode, setIsPatternMode] = useState(false);
-  const [patternColors, setPatternColors] = useState(['#FFFFFF']);
+  const [patternColors, setPatternColors] = useState(['#FF0000']);
   const [editingPatternIndex, setEditingPatternIndex] = useState(null);
+  
+  // Device detection for responsive design
+  const { width } = Dimensions.get('window');
+  const isTablet = width >= 768;
 
   const handleCreate = () => {
     if (!name.trim()) {
@@ -98,13 +102,13 @@ export function CustomLightModal({
     
     // Reset form
     setName('');
-    setSelectedColor('#FFFFFF');
+    setSelectedColor('#FF0000');
     setSelectedSize(12);
     setSelectedSpacing(36);
     setCustomColor('');
     setShowColorPicker(false);
     setIsPatternMode(false);
-    setPatternColors(['#FFFFFF']);
+    setPatternColors(['#FF0000']);
     setEditingPatternIndex(null);
     
     onClose();
@@ -126,7 +130,7 @@ export function CustomLightModal({
   };
 
   const addPatternColor = () => {
-    setPatternColors([...patternColors, '#FFFFFF']);
+    setPatternColors([...patternColors, '#FF0000']);
   };
 
   const removePatternColor = (index) => {
@@ -188,29 +192,96 @@ export function CustomLightModal({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Create Custom Light</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#666" />
+      <View style={{
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        <View style={{
+          backgroundColor: 'white',
+          borderRadius: isTablet ? 24 : 20,
+          width: isTablet ? 700 : '90%',
+          maxWidth: isTablet ? 700 : '90%',
+          maxHeight: isTablet ? '85%' : '80%',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.25,
+          shadowRadius: 20,
+          elevation: 10,
+        }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: isTablet ? 28 : 20,
+            borderBottomWidth: 1,
+            borderBottomColor: '#E5E7EB',
+          }}>
+            <Text style={{
+              fontSize: isTablet ? 24 : 18,
+              fontWeight: '600',
+              color: '#333',
+            }}>Create Custom Light</Text>
+            <TouchableOpacity onPress={onClose} style={{
+              padding: isTablet ? 8 : 4,
+              width: isTablet ? 44 : 32,
+              height: isTablet ? 44 : 32,
+              borderRadius: isTablet ? 22 : 16,
+              backgroundColor: '#f3f4f6',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <MaterialIcons name="close" size={isTablet ? 28 : 24} color="#666" />
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView style={{
+            padding: isTablet ? 28 : 20,
+          }} showsVerticalScrollIndicator={false}>
             {/* Preview */}
-            <View style={styles.previewSection}>
-              <Text style={styles.sectionTitle}>Preview</Text>
-              <View style={[styles.previewContainer, isPatternMode && styles.patternPreviewContainer]}>
+            <View style={{
+              marginBottom: isTablet ? 32 : 24,
+            }}>
+              <Text style={{
+                fontSize: isTablet ? 20 : 16,
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: isTablet ? 16 : 12,
+              }}>Preview</Text>
+              <View style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: isTablet ? 120 : 80,
+                backgroundColor: '#F8F9FA',
+                borderRadius: isTablet ? 16 : 12,
+                marginTop: isTablet ? 12 : 8,
+                flexDirection: isPatternMode ? 'row' : 'column',
+              }}>
                 {generatePreview()}
               </View>
             </View>
 
             {/* Name Input */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Name</Text>
+            <View style={{
+              marginBottom: isTablet ? 32 : 24,
+            }}>
+              <Text style={{
+                fontSize: isTablet ? 20 : 16,
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: isTablet ? 16 : 12,
+              }}>Name</Text>
               <TextInput
-                style={styles.textInput}
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#E5E7EB',
+                  borderRadius: isTablet ? 12 : 8,
+                  paddingHorizontal: isTablet ? 16 : 12,
+                  paddingVertical: isTablet ? 14 : 10,
+                  fontSize: isTablet ? 18 : 16,
+                  color: '#333',
+                }}
                 value={name}
                 onChangeText={setName}
                 placeholder="Enter light name"
@@ -219,22 +290,66 @@ export function CustomLightModal({
             </View>
 
             {/* Mode Toggle */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Type</Text>
-              <View style={styles.modeToggle}>
+            <View style={{
+              marginBottom: isTablet ? 32 : 24,
+            }}>
+              <Text style={{
+                fontSize: isTablet ? 20 : 16,
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: isTablet ? 16 : 12,
+              }}>Type</Text>
+              <View style={{
+                flexDirection: 'row',
+                backgroundColor: '#F3F4F6',
+                borderRadius: isTablet ? 12 : 8,
+                padding: isTablet ? 4 : 2,
+              }}>
                 <TouchableOpacity
-                  style={[styles.modeButton, !isPatternMode && styles.selectedModeButton]}
+                  style={{
+                    flex: 1,
+                    paddingVertical: isTablet ? 12 : 8,
+                    paddingHorizontal: isTablet ? 20 : 16,
+                    borderRadius: isTablet ? 8 : 6,
+                    alignItems: 'center',
+                    backgroundColor: !isPatternMode ? 'white' : 'transparent',
+                    shadowColor: !isPatternMode ? '#000' : 'transparent',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: !isPatternMode ? 0.1 : 0,
+                    shadowRadius: 2,
+                    elevation: !isPatternMode ? 2 : 0,
+                  }}
                   onPress={() => setIsPatternMode(false)}
                 >
-                  <Text style={[styles.modeButtonText, !isPatternMode && styles.selectedModeButtonText]}>
+                  <Text style={{
+                    fontSize: isTablet ? 16 : 14,
+                    fontWeight: '500',
+                    color: !isPatternMode ? '#3B82F6' : '#6B7280',
+                  }}>
                     Single Color
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.modeButton, isPatternMode && styles.selectedModeButton]}
+                  style={{
+                    flex: 1,
+                    paddingVertical: isTablet ? 12 : 8,
+                    paddingHorizontal: isTablet ? 20 : 16,
+                    borderRadius: isTablet ? 8 : 6,
+                    alignItems: 'center',
+                    backgroundColor: isPatternMode ? 'white' : 'transparent',
+                    shadowColor: isPatternMode ? '#000' : 'transparent',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: isPatternMode ? 0.1 : 0,
+                    shadowRadius: 2,
+                    elevation: isPatternMode ? 2 : 0,
+                  }}
                   onPress={() => setIsPatternMode(true)}
                 >
-                  <Text style={[styles.modeButtonText, isPatternMode && styles.selectedModeButtonText]}>
+                  <Text style={{
+                    fontSize: isTablet ? 16 : 14,
+                    fontWeight: '500',
+                    color: isPatternMode ? '#3B82F6' : '#6B7280',
+                  }}>
                     Pattern
                   </Text>
                 </TouchableOpacity>
@@ -243,22 +358,61 @@ export function CustomLightModal({
 
             {/* Color Selection or Pattern Creation */}
             {isPatternMode ? (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Pattern Colors</Text>
-                <View style={styles.patternColorsContainer}>
+              <View style={{
+                marginBottom: isTablet ? 32 : 24,
+              }}>
+                <Text style={{
+                  fontSize: isTablet ? 20 : 16,
+                  fontWeight: '600',
+                  color: '#333',
+                  marginBottom: isTablet ? 16 : 12,
+                }}>Pattern Colors</Text>
+                <View style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: isTablet ? 16 : 12,
+                  marginTop: isTablet ? 12 : 8,
+                }}>
                   {patternColors.map((color, index) => (
-                    <View key={index} style={styles.patternColorItem}>
+                    <View key={index} style={{
+                      alignItems: 'center',
+                      position: 'relative',
+                    }}>
                       <TouchableOpacity
-                        style={[styles.patternColorSwatch, { backgroundColor: color }]}
+                        style={{
+                          width: isTablet ? 60 : 44,
+                          height: isTablet ? 60 : 44,
+                          borderRadius: isTablet ? 30 : 22,
+                          backgroundColor: color,
+                          borderWidth: 2,
+                          borderColor: '#E5E7EB',
+                        }}
                         onPress={() => editPatternColor(index)}
                       />
-                      <Text style={styles.patternColorIndex}>{index + 1}</Text>
+                      <Text style={{
+                        fontSize: isTablet ? 14 : 12,
+                        fontWeight: '600',
+                        color: '#6B7280',
+                        marginTop: isTablet ? 6 : 4,
+                      }}>{index + 1}</Text>
                       {patternColors.length > 1 && (
                         <TouchableOpacity
-                          style={styles.removePatternColor}
+                          style={{
+                            position: 'absolute',
+                            top: isTablet ? -6 : -4,
+                            right: isTablet ? -6 : -4,
+                            width: isTablet ? 24 : 20,
+                            height: isTablet ? 24 : 20,
+                            borderRadius: isTablet ? 12 : 10,
+                            backgroundColor: 'white',
+                            borderWidth: 1,
+                            borderColor: '#EF4444',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
                           onPress={() => removePatternColor(index)}
                         >
-                          <MaterialIcons name="close" size={14} color="#EF4444" />
+                          <MaterialIcons name="close" size={isTablet ? 16 : 14} color="#EF4444" />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -266,29 +420,59 @@ export function CustomLightModal({
                   
                   {patternColors.length < 8 && (
                     <TouchableOpacity
-                      style={styles.addPatternColor}
+                      style={{
+                        width: isTablet ? 60 : 44,
+                        height: isTablet ? 60 : 44,
+                        borderRadius: isTablet ? 30 : 22,
+                        borderWidth: 2,
+                        borderColor: '#3B82F6',
+                        borderStyle: 'dashed',
+                        backgroundColor: '#F8FAFC',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
                       onPress={addPatternColor}
                     >
-                      <MaterialIcons name="add" size={20} color="#3B82F6" />
+                      <MaterialIcons name="add" size={isTablet ? 28 : 20} color="#3B82F6" />
                     </TouchableOpacity>
                   )}
                 </View>
-                <Text style={styles.patternHint}>
-                  Tap colors to edit, pattern repeats every {patternColors.length} light{patternColors.length !== 1 ? 's' : ''}
+                <Text style={{
+                  fontSize: isTablet ? 14 : 12,
+                  color: '#6B7280',
+                  fontStyle: 'italic',
+                  marginTop: isTablet ? 12 : 8,
+                  textAlign: 'center',
+                }}>
+                  Tap colors to edit
                 </Text>
               </View>
             ) : (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Color</Text>
-                <View style={styles.colorGrid}>
+              <View style={{
+                marginBottom: isTablet ? 32 : 24,
+              }}>
+                <Text style={{
+                  fontSize: isTablet ? 20 : 16,
+                  fontWeight: '600',
+                  color: '#333',
+                  marginBottom: isTablet ? 16 : 12,
+                }}>Color</Text>
+                <View style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: isTablet ? 16 : 12,
+                }}>
                   {PRESET_COLORS.map((color) => (
                     <TouchableOpacity
                       key={color}
-                      style={[
-                        styles.colorOption,
-                        { backgroundColor: color },
-                        selectedColor === color && !customColor && styles.selectedColorOption
-                      ]}
+                      style={{
+                        width: isTablet ? 60 : 44,
+                        height: isTablet ? 60 : 44,
+                        borderRadius: isTablet ? 30 : 22,
+                        backgroundColor: color,
+                        borderWidth: 3,
+                        borderColor: selectedColor === color && !customColor ? '#3B82F6' : 'transparent',
+                      }}
                       onPress={() => {
                         setSelectedColor(color);
                         setCustomColor('');
@@ -299,18 +483,49 @@ export function CustomLightModal({
               
               {/* More Colors Button */}
               <TouchableOpacity
-                style={styles.moreColorsButton}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingHorizontal: isTablet ? 20 : 16,
+                  paddingVertical: isTablet ? 14 : 10,
+                  backgroundColor: '#EBF4FF',
+                  borderRadius: isTablet ? 12 : 8,
+                  borderWidth: 1,
+                  borderColor: '#3B82F6',
+                  gap: isTablet ? 8 : 6,
+                  marginTop: isTablet ? 16 : 12,
+                  marginBottom: isTablet ? 12 : 8,
+                }}
                 onPress={() => setShowColorPicker(true)}
               >
-                <MaterialIcons name="palette" size={18} color="#3B82F6" />
-                <Text style={styles.moreColorsText}>More Colors</Text>
-                <MaterialIcons name="expand-more" size={18} color="#3B82F6" />
+                <MaterialIcons name="palette" size={isTablet ? 22 : 18} color="#3B82F6" />
+                <Text style={{
+                  color: '#3B82F6',
+                  fontWeight: '500',
+                  fontSize: isTablet ? 16 : 14,
+                }}>More Colors</Text>
+                <MaterialIcons name="expand-more" size={isTablet ? 22 : 18} color="#3B82F6" />
               </TouchableOpacity>
               
               {/* Custom Hex Input */}
-              <Text style={styles.subsectionTitle}>Or enter hex color:</Text>
+              <Text style={{
+                fontSize: isTablet ? 16 : 14,
+                fontWeight: '500',
+                color: '#666',
+                marginTop: isTablet ? 16 : 12,
+                marginBottom: isTablet ? 12 : 8,
+              }}>Or enter hex color:</Text>
               <TextInput
-                style={styles.textInput}
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#E5E7EB',
+                  borderRadius: isTablet ? 12 : 8,
+                  paddingHorizontal: isTablet ? 16 : 12,
+                  paddingVertical: isTablet ? 14 : 10,
+                  fontSize: isTablet ? 18 : 16,
+                  color: '#333',
+                }}
                 value={customColor}
                 onChangeText={setCustomColor}
                 placeholder="#FF0000"
@@ -321,22 +536,38 @@ export function CustomLightModal({
             )}
 
             {/* Size Selection */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Size</Text>
-              <View style={styles.optionGrid}>
+            <View style={{
+              marginBottom: isTablet ? 32 : 24,
+            }}>
+              <Text style={{
+                fontSize: isTablet ? 20 : 16,
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: isTablet ? 16 : 12,
+              }}>Size</Text>
+              <View style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: isTablet ? 12 : 8,
+              }}>
                 {SIZE_PRESETS.map((size) => (
                   <TouchableOpacity
                     key={size.value}
-                    style={[
-                      styles.optionButton,
-                      selectedSize === size.value && styles.selectedOption
-                    ]}
+                    style={{
+                      paddingHorizontal: isTablet ? 20 : 16,
+                      paddingVertical: isTablet ? 12 : 8,
+                      borderRadius: isTablet ? 24 : 20,
+                      borderWidth: 1,
+                      borderColor: selectedSize === size.value ? '#3B82F6' : '#E5E7EB',
+                      backgroundColor: selectedSize === size.value ? '#EBF4FF' : '#F8F9FA',
+                    }}
                     onPress={() => setSelectedSize(size.value)}
                   >
-                    <Text style={[
-                      styles.optionText,
-                      selectedSize === size.value && styles.selectedOptionText
-                    ]}>
+                    <Text style={{
+                      fontSize: isTablet ? 16 : 14,
+                      fontWeight: '500',
+                      color: selectedSize === size.value ? '#3B82F6' : '#666',
+                    }}>
                       {size.label}
                     </Text>
                   </TouchableOpacity>
@@ -345,22 +576,38 @@ export function CustomLightModal({
             </View>
 
             {/* Spacing Selection */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Spacing</Text>
-              <View style={styles.optionGrid}>
+            <View style={{
+              marginBottom: isTablet ? 32 : 24,
+            }}>
+              <Text style={{
+                fontSize: isTablet ? 20 : 16,
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: isTablet ? 16 : 12,
+              }}>Spacing</Text>
+              <View style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: isTablet ? 12 : 8,
+              }}>
                 {SPACING_PRESETS.map((spacing) => (
                   <TouchableOpacity
                     key={spacing.value}
-                    style={[
-                      styles.optionButton,
-                      selectedSpacing === spacing.value && styles.selectedOption
-                    ]}
+                    style={{
+                      paddingHorizontal: isTablet ? 20 : 16,
+                      paddingVertical: isTablet ? 12 : 8,
+                      borderRadius: isTablet ? 24 : 20,
+                      borderWidth: 1,
+                      borderColor: selectedSpacing === spacing.value ? '#3B82F6' : '#E5E7EB',
+                      backgroundColor: selectedSpacing === spacing.value ? '#EBF4FF' : '#F8F9FA',
+                    }}
                     onPress={() => setSelectedSpacing(spacing.value)}
                   >
-                    <Text style={[
-                      styles.optionText,
-                      selectedSpacing === spacing.value && styles.selectedOptionText
-                    ]}>
+                    <Text style={{
+                      fontSize: isTablet ? 16 : 14,
+                      fontWeight: '500',
+                      color: selectedSpacing === spacing.value ? '#3B82F6' : '#666',
+                    }}>
                       {spacing.label}
                     </Text>
                   </TouchableOpacity>
@@ -371,11 +618,21 @@ export function CustomLightModal({
 
           {/* Create Button */}
           <TouchableOpacity
-            style={[styles.createButton, !name.trim() && styles.disabledButton]}
+            style={{
+              backgroundColor: !name.trim() ? '#E5E7EB' : '#3B82F6',
+              borderRadius: isTablet ? 16 : 12,
+              paddingVertical: isTablet ? 20 : 16,
+              margin: isTablet ? 28 : 20,
+              alignItems: 'center',
+            }}
             onPress={handleCreate}
             disabled={!name.trim()}
           >
-            <Text style={[styles.createButtonText, !name.trim() && styles.disabledButtonText]}>
+            <Text style={{
+              color: !name.trim() ? '#9CA3AF' : 'white',
+              fontSize: isTablet ? 18 : 16,
+              fontWeight: '600',
+            }}>
               Create Light
             </Text>
           </TouchableOpacity>
@@ -389,35 +646,84 @@ export function CustomLightModal({
         animationType="fade"
         onRequestClose={() => setShowColorPicker(false)}
       >
-        <View style={styles.colorPickerOverlay}>
-          <View style={styles.colorPickerModal}>
-            <View style={styles.colorPickerHeader}>
-              <Text style={styles.colorPickerTitle}>Choose Color</Text>
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: isTablet ? 24 : 20,
+            width: '85%',
+            maxWidth: isTablet ? 600 : 400,
+            paddingBottom: isTablet ? 28 : 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.25,
+            shadowRadius: 20,
+            elevation: 10,
+          }}>
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: isTablet ? 28 : 20,
+              borderBottomWidth: 1,
+              borderBottomColor: '#E5E7EB',
+            }}>
+              <Text style={{
+                fontSize: isTablet ? 24 : 18,
+                fontWeight: '600',
+                color: '#333',
+              }}>Choose Color</Text>
               <TouchableOpacity 
                 onPress={() => setShowColorPicker(false)}
-                style={styles.closeButton}
+                style={{
+                  padding: isTablet ? 8 : 4,
+                  width: isTablet ? 44 : 32,
+                  height: isTablet ? 44 : 32,
+                  borderRadius: isTablet ? 22 : 16,
+                  backgroundColor: '#f3f4f6',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <MaterialIcons name="close" size={24} color="#666" />
+                <MaterialIcons name="close" size={isTablet ? 28 : 24} color="#666" />
               </TouchableOpacity>
             </View>
             
-            <ScrollView style={styles.colorPickerContainer} showsVerticalScrollIndicator={false}>
-              <View style={styles.extendedColorGrid}>
+            <ScrollView style={{
+              padding: isTablet ? 28 : 20,
+              maxHeight: isTablet ? 500 : 400,
+            }} showsVerticalScrollIndicator={false}>
+              <View style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: isTablet ? 12 : 8,
+                justifyContent: 'center',
+              }}>
                 {EXTENDED_COLORS.map((color, index) => (
                   <TouchableOpacity
                     key={index}
-                    style={[
-                      styles.extendedColorOption,
-                      { backgroundColor: color },
-                      (customColor === color || (!customColor && selectedColor === color)) && styles.selectedExtendedColor
-                    ]}
+                    style={{
+                      width: isTablet ? 48 : 36,
+                      height: isTablet ? 48 : 36,
+                      borderRadius: isTablet ? 24 : 18,
+                      backgroundColor: color,
+                      borderWidth: (customColor === color || (!customColor && selectedColor === color)) ? 3 : 2,
+                      borderColor: (customColor === color || (!customColor && selectedColor === color)) ? '#3B82F6' : 'transparent',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      margin: isTablet ? 3 : 2,
+                    }}
                     onPress={() => {
                       handleColorPickerChange(color);
                       setShowColorPicker(false);
                     }}
                   >
                     {(customColor === color || (!customColor && selectedColor === color)) && (
-                      <MaterialIcons name="check" size={16} color={color === '#FFFFFF' ? '#333' : 'white'} />
+                      <MaterialIcons name="check" size={isTablet ? 20 : 16} color={color === '#FFFFFF' ? '#333' : 'white'} />
                     )}
                   </TouchableOpacity>
                 ))}
@@ -430,300 +736,3 @@ export function CustomLightModal({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modal: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    width: '90%',
-    maxHeight: '80%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  content: {
-    padding: 20,
-  },
-  previewSection: {
-    marginBottom: 24,
-  },
-  previewContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 80,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  previewLight: {
-    // Dynamic styles applied from previewStyle
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  subsectionTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    color: '#333',
-  },
-  colorGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  colorOption: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 3,
-    borderColor: 'transparent',
-  },
-  selectedColorOption: {
-    borderColor: '#3B82F6',
-  },
-  optionGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  optionButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#F8F9FA',
-  },
-  selectedOption: {
-    backgroundColor: '#EBF4FF',
-    borderColor: '#3B82F6',
-  },
-  optionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
-  },
-  selectedOptionText: {
-    color: '#3B82F6',
-  },
-  createButton: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
-    paddingVertical: 16,
-    margin: 20,
-    alignItems: 'center',
-  },
-  disabledButton: {
-    backgroundColor: '#E5E7EB',
-  },
-  createButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  disabledButtonText: {
-    color: '#9CA3AF',
-  },
-  moreColorsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: '#EBF4FF',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#3B82F6',
-    gap: 6,
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  moreColorsText: {
-    color: '#3B82F6',
-    fontWeight: '500',
-    fontSize: 14,
-  },
-  colorPickerOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  colorPickerModal: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    width: '85%',
-    maxWidth: 400,
-    paddingBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  colorPickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  colorPickerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  colorPickerContainer: {
-    padding: 20,
-    maxHeight: 400,
-  },
-  extendedColorGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    justifyContent: 'center',
-  },
-  extendedColorOption: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    justifyContent: 'center',
-    alignItems: 'center',
-    margin: 2,
-  },
-  selectedExtendedColor: {
-    borderColor: '#3B82F6',
-    borderWidth: 3,
-  },
-  patternPreviewContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modeToggle: {
-    flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    padding: 2,
-  },
-  modeButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  selectedModeButton: {
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  modeButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6B7280',
-  },
-  selectedModeButtonText: {
-    color: '#3B82F6',
-  },
-  patternColorsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginTop: 8,
-  },
-  patternColorItem: {
-    alignItems: 'center',
-    position: 'relative',
-  },
-  patternColorSwatch: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
-  },
-  patternColorIndex: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginTop: 4,
-  },
-  removePatternColor: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#EF4444',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addPatternColor: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: '#3B82F6',
-    borderStyle: 'dashed',
-    backgroundColor: '#F8FAFC',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  patternHint: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontStyle: 'italic',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-});

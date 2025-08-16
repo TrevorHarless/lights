@@ -1,10 +1,10 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
+  Dimensions,
   Image,
   Modal,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -28,6 +28,10 @@ export function LightSelectionPopover({
   const [showCustomModal, setShowCustomModal] = React.useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = React.useState(false);
   const [assetToDelete, setAssetToDelete] = React.useState(null);
+  
+  // Device detection for responsive design
+  const { width } = Dimensions.get('window');
+  const isTablet = width >= 768;
   
   const categories = getCategories ? getCategories() : ['string'];
   const categoryAssets = getAssetsByCategory ? getAssetsByCategory(selectedCategory) : lightAssets;
@@ -76,15 +80,52 @@ export function LightSelectionPopover({
       onRequestClose={onClose}
     >
       <TouchableOpacity 
-        style={styles.overlay} 
+        style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+        }} 
         activeOpacity={1} 
         onPress={onClose}
       >
-        <View style={styles.popover}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Choose Light Style</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color="#666" />
+        <View style={{
+          backgroundColor: 'white',
+          borderTopLeftRadius: isTablet ? 30 : 20,
+          borderTopRightRadius: isTablet ? 30 : 20,
+          paddingTop: isTablet ? 32 : 20,
+          paddingBottom: isTablet ? 32 : 40,
+          paddingHorizontal: isTablet ? 32 : 20,
+          maxHeight: isTablet ? '70%' : '50%',
+          width: '100%',
+          maxWidth: '100%',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
+          elevation: 8,
+        }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: isTablet ? 28 : 20,
+          }}>
+            <Text style={{
+              fontSize: isTablet ? 24 : 18,
+              fontWeight: '600',
+              color: '#333',
+            }}>Choose Light Style</Text>
+            <TouchableOpacity onPress={onClose} style={{
+              padding: isTablet ? 8 : 4,
+              width: isTablet ? 44 : 32,
+              height: isTablet ? 44 : 32,
+              borderRadius: isTablet ? 22 : 16,
+              backgroundColor: '#f3f4f6',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <MaterialIcons name="close" size={isTablet ? 28 : 24} color="#666" />
             </TouchableOpacity>
           </View>
 
@@ -93,23 +134,31 @@ export function LightSelectionPopover({
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categoryTabs}
-              style={{ marginBottom: 16 }}
+              contentContainerStyle={{
+                paddingHorizontal: 4,
+              }}
+              style={{ marginBottom: isTablet ? 24 : 16 }}
             >
               {categories.map((category) => (
                 <TouchableOpacity
                   key={category}
-                  style={[
-                    styles.categoryTab,
-                    selectedCategory === category && styles.selectedCategoryTab
-                  ]}
+                  style={{
+                    paddingHorizontal: isTablet ? 32 : 16,
+                    paddingVertical: isTablet ? 16 : 8,
+                    marginHorizontal: isTablet ? 8 : 4,
+                    borderRadius: isTablet ? 28 : 20,
+                    backgroundColor: selectedCategory === category ? '#EBF4FF' : '#F3F4F6',
+                    borderWidth: 1,
+                    borderColor: selectedCategory === category ? '#3B82F6' : '#E5E7EB',
+                  }}
                   onPress={() => setSelectedCategory(category)}
                 >
                   <Text
-                    style={[
-                      styles.categoryTabText,
-                      selectedCategory === category && styles.selectedCategoryTabText
-                    ]}
+                    style={{
+                      fontSize: isTablet ? 18 : 14,
+                      fontWeight: '500',
+                      color: selectedCategory === category ? '#3B82F6' : '#6B7280',
+                    }}
                   >
                     {getCategoryDisplayName(category)}
                   </Text>
@@ -121,19 +170,43 @@ export function LightSelectionPopover({
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={{
+              paddingHorizontal: 4,
+              alignItems: 'center',
+            }}
           >
             {/* Create Custom Button - only show in custom category */}
             {selectedCategory === 'custom' && (
               <TouchableOpacity
                 onPress={() => setShowCustomModal(true)}
-                style={styles.assetButton}
+                style={{
+                  alignItems: 'center',
+                  marginHorizontal: isTablet ? 12 : 8,
+                  paddingVertical: isTablet ? 12 : 8,
+                }}
                 activeOpacity={0.7}
               >
-                <View style={[styles.assetContainer, styles.createButton]}>
-                  <MaterialIcons name="add" size={32} color="#3B82F6" />
+                <View style={{
+                  width: isTablet ? 96 : 64,
+                  height: isTablet ? 96 : 64,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: isTablet ? 20 : 12,
+                  borderWidth: 2,
+                  borderStyle: 'dashed',
+                  borderColor: '#3B82F6',
+                  backgroundColor: '#F8FAFC',
+                  position: 'relative',
+                }}>
+                  <MaterialIcons name="add" size={isTablet ? 48 : 32} color="#3B82F6" />
                 </View>
-                <Text style={styles.assetName}>
+                <Text style={{
+                  marginTop: isTablet ? 12 : 8,
+                  textAlign: 'center',
+                  fontSize: isTablet ? 16 : 12,
+                  color: '#6B7280',
+                  fontWeight: '500',
+                }}>
                   Create New
                 </Text>
               </TouchableOpacity>
@@ -143,30 +216,44 @@ export function LightSelectionPopover({
               <TouchableOpacity
                 key={asset.id}
                 onPress={() => onSelectAsset(asset)}
-                style={styles.assetButton}
+                style={{
+                  alignItems: 'center',
+                  marginHorizontal: isTablet ? 12 : 8,
+                  paddingVertical: isTablet ? 12 : 8,
+                }}
                 activeOpacity={0.7}
               >
                 <View
-                  style={[
-                    styles.assetContainer,
-                    selectedAsset?.id === asset.id && styles.selectedAsset
-                  ]}
+                  style={{
+                    width: isTablet ? 96 : 64,
+                    height: isTablet ? 96 : 64,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: isTablet ? 20 : 12,
+                    borderWidth: 2,
+                    borderColor: selectedAsset?.id === asset.id ? '#3B82F6' : '#E5E7EB',
+                    backgroundColor: selectedAsset?.id === asset.id ? '#EBF4FF' : 'white',
+                    position: 'relative',
+                  }}
                 >
                   {asset.renderType === 'image' && asset.image ? (
                     <Image 
                       source={asset.image} 
-                      style={{ width: 40, height: 40 }}
+                      style={{ 
+                        width: isTablet ? 60 : 40, 
+                        height: isTablet ? 60 : 40 
+                      }}
                       resizeMode="contain"
                     />
                   ) : (
                     <View
                       style={[
                         {
-                          width: 40,
-                          height: 40,
+                          width: isTablet ? 60 : 40,
+                          height: isTablet ? 60 : 40,
                           alignItems: 'center',
                           justifyContent: 'center',
-                          borderRadius: 20,
+                          borderRadius: isTablet ? 30 : 20,
                         },
                         getLightRenderStyle && getLightRenderStyle(asset.id, 0.8, 0)
                       ]}
@@ -174,26 +261,54 @@ export function LightSelectionPopover({
                   )}
 
                   {selectedAsset?.id === asset.id && (
-                    <View style={styles.checkmark}>
-                      <MaterialIcons name="check" size={14} color="white" />
+                    <View style={{
+                      position: 'absolute',
+                      top: isTablet ? -6 : -4,
+                      right: isTablet ? -6 : -4,
+                      width: isTablet ? 32 : 24,
+                      height: isTablet ? 32 : 24,
+                      backgroundColor: '#3B82F6',
+                      borderRadius: isTablet ? 16 : 12,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      <MaterialIcons name="check" size={isTablet ? 20 : 14} color="white" />
                     </View>
                   )}
 
                   {/* Delete button for custom assets */}
                   {asset.category === 'custom' && (
                     <TouchableOpacity
-                      style={styles.deleteButton}
+                      style={{
+                        position: 'absolute',
+                        bottom: isTablet ? -8 : -6,
+                        right: isTablet ? -8 : -6,
+                        width: isTablet ? 28 : 20,
+                        height: isTablet ? 28 : 20,
+                        backgroundColor: '#EF4444',
+                        borderRadius: isTablet ? 14 : 10,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: 2,
+                        borderColor: 'white',
+                      }}
                       onPress={(e) => {
                         e.stopPropagation();
                         handleRemoveCustomAsset(asset);
                       }}
                     >
-                      <MaterialIcons name="close" size={14} color="white" />
+                      <MaterialIcons name="close" size={isTablet ? 18 : 14} color="white" />
                     </TouchableOpacity>
                   )}
                 </View>
 
-                <Text style={styles.assetName}>
+                <Text style={{
+                  marginTop: isTablet ? 12 : 8,
+                  textAlign: 'center',
+                  fontSize: isTablet ? 16 : 12,
+                  color: '#6B7280',
+                  fontWeight: '500',
+                }}>
                   {asset.name}
                 </Text>
               </TouchableOpacity>
@@ -217,30 +332,89 @@ export function LightSelectionPopover({
         animationType="fade"
         onRequestClose={cancelDelete}
       >
-        <View style={styles.deleteOverlay}>
-          <View style={styles.deleteModal}>
-            <View style={styles.deleteHeader}>
-              <MaterialIcons name="warning" size={32} color="#EF4444" />
-              <Text style={styles.deleteTitle}>Delete Custom Light</Text>
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: isTablet ? 24 : 16,
+            padding: isTablet ? 32 : 24,
+            width: '85%',
+            maxWidth: isTablet ? 500 : 400,
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.25,
+            shadowRadius: 20,
+            elevation: 10,
+          }}>
+            <View style={{
+              alignItems: 'center',
+              marginBottom: isTablet ? 24 : 16,
+            }}>
+              <MaterialIcons name="warning" size={isTablet ? 40 : 32} color="#EF4444" />
+              <Text style={{
+                fontSize: isTablet ? 22 : 18,
+                fontWeight: '600',
+                color: '#333',
+                marginTop: isTablet ? 12 : 8,
+              }}>Delete Custom Light</Text>
             </View>
             
-            <Text style={styles.deleteMessage}>
+            <Text style={{
+              fontSize: isTablet ? 18 : 16,
+              color: '#666',
+              textAlign: 'center',
+              lineHeight: isTablet ? 26 : 22,
+              marginBottom: isTablet ? 32 : 24,
+            }}>
               Are you sure you want to delete &ldquo;{assetToDelete?.name}&rdquo;? This action cannot be undone.
             </Text>
             
-            <View style={styles.deleteActions}>
+            <View style={{
+              flexDirection: 'row',
+              gap: isTablet ? 16 : 12,
+              width: '100%',
+            }}>
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={{
+                  flex: 1,
+                  paddingVertical: isTablet ? 16 : 12,
+                  paddingHorizontal: isTablet ? 24 : 20,
+                  borderRadius: isTablet ? 12 : 8,
+                  borderWidth: 1,
+                  borderColor: '#D1D5DB',
+                  backgroundColor: '#F9FAFB',
+                  alignItems: 'center',
+                }}
                 onPress={cancelDelete}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={{
+                  fontSize: isTablet ? 18 : 16,
+                  fontWeight: '500',
+                  color: '#6B7280',
+                }}>Cancel</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={styles.deleteConfirmButton}
+                style={{
+                  flex: 1,
+                  paddingVertical: isTablet ? 16 : 12,
+                  paddingHorizontal: isTablet ? 24 : 20,
+                  borderRadius: isTablet ? 12 : 8,
+                  backgroundColor: '#EF4444',
+                  alignItems: 'center',
+                }}
                 onPress={confirmDelete}
               >
-                <Text style={styles.deleteConfirmButtonText}>Delete</Text>
+                <Text style={{
+                  fontSize: isTablet ? 18 : 16,
+                  fontWeight: '600',
+                  color: 'white',
+                }}>Delete</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -250,191 +424,3 @@ export function LightSelectionPopover({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  popover: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
-    paddingHorizontal: 20,
-    maxHeight: '50%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  scrollContent: {
-    paddingHorizontal: 4,
-    alignItems: 'center',
-  },
-  assetButton: {
-    alignItems: 'center',
-    marginHorizontal: 8,
-    paddingVertical: 8,
-  },
-  assetContainer: {
-    width: 64,
-    height: 64,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
-    backgroundColor: 'white',
-    position: 'relative',
-  },
-  selectedAsset: {
-    borderColor: '#3B82F6',
-    backgroundColor: '#EBF4FF',
-  },
-  checkmark: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    width: 24,
-    height: 24,
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  assetName: {
-    marginTop: 8,
-    textAlign: 'center',
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  categoryTabs: {
-    paddingHorizontal: 4,
-  },
-  categoryTab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginHorizontal: 4,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  selectedCategoryTab: {
-    backgroundColor: '#EBF4FF',
-    borderColor: '#3B82F6',
-  },
-  categoryTabText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6B7280',
-  },
-  selectedCategoryTabText: {
-    color: '#3B82F6',
-  },
-  createButton: {
-    borderStyle: 'dashed',
-    borderWidth: 2,
-    borderColor: '#3B82F6',
-    backgroundColor: '#F8FAFC',
-  },
-  deleteButton: {
-    position: 'absolute',
-    bottom: -6,
-    right: -6,
-    width: 20,
-    height: 20,
-    backgroundColor: '#EF4444',
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  deleteOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deleteModal: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 24,
-    width: '85%',
-    maxWidth: 400,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  deleteHeader: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  deleteTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginTop: 8,
-  },
-  deleteMessage: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  deleteActions: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#F9FAFB',
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#6B7280',
-  },
-  deleteConfirmButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    backgroundColor: '#EF4444',
-    alignItems: 'center',
-  },
-  deleteConfirmButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'white',
-  },
-});

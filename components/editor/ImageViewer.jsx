@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -35,6 +36,10 @@ import { useWreathGestures } from '~/hooks/editor/useWreathGestures';
 import { useWreathShapes } from '~/hooks/editor/useWreathShapes';
 
 const ImageViewer = ({ imgSource, onGoBack }) => {
+  // Device detection for responsive design
+  const { width } = Dimensions.get('window');
+  const isTablet = width >= 768;
+
   // Asset management hooks
   const { 
     lightAssets, 
@@ -403,15 +408,15 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
         {nightModeEnabled && (
           <View style={{ 
             position: 'absolute', 
-            top: 64, 
+            top: isTablet ? 84 : 64, 
             right: 12, 
             zIndex: 1000 
           }}>
             <View style={{
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: 12,
-              paddingHorizontal: 12,
-              paddingVertical: 10,
+              borderRadius: isTablet ? 20 : 12,
+              paddingHorizontal: isTablet ? 20 : 12,
+              paddingVertical: isTablet ? 18 : 10,
               flexDirection: 'row',
               alignItems: 'center',
               shadowColor: '#000',
@@ -419,22 +424,22 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
               shadowOpacity: 0.15,
               shadowRadius: 4,
               elevation: 4,
-              gap: 10,
+              gap: isTablet ? 18 : 10,
             }}>
               <Text style={{
-                fontSize: 13,
+                fontSize: isTablet ? 18 : 13,
                 fontWeight: '600',
                 color: '#333',
-                minWidth: 35,
+                minWidth: isTablet ? 50 : 35,
               }}>
                 {Math.round(nightModeIntensity * 100)}%
               </Text>
               
               <TouchableOpacity
                 style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 14,
+                  width: isTablet ? 44 : 28,
+                  height: isTablet ? 44 : 28,
+                  borderRadius: isTablet ? 22 : 14,
                   backgroundColor: nightModeIntensity <= 0.1 ? '#f5f5f5' : '#333',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -445,16 +450,16 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
                 disabled={nightModeIntensity <= 0.1}>
                 <MaterialIcons 
                   name="remove" 
-                  size={16} 
+                  size={isTablet ? 24 : 16} 
                   color={nightModeIntensity <= 0.1 ? '#ccc' : 'white'} 
                 />
               </TouchableOpacity>
               
               <TouchableOpacity
                 style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 14,
+                  width: isTablet ? 44 : 28,
+                  height: isTablet ? 44 : 28,
+                  borderRadius: isTablet ? 22 : 14,
                   backgroundColor: nightModeIntensity >= 0.9 ? '#f5f5f5' : '#333',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -465,7 +470,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
                 disabled={nightModeIntensity >= 0.9}>
                 <MaterialIcons 
                   name="add" 
-                  size={16} 
+                  size={isTablet ? 24 : 16} 
                   color={nightModeIntensity >= 0.9 ? '#ccc' : 'white'} 
                 />
               </TouchableOpacity>
@@ -479,9 +484,9 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
             top: 12,
             left: 12,
             zIndex: 1000,
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: isTablet ? 60 : 40,
+            height: isTablet ? 60 : 40,
+            borderRadius: isTablet ? 30 : 20,
             backgroundColor: 'rgba(255, 255, 255, 0.9)',
             justifyContent: 'center',
             alignItems: 'center',
@@ -494,20 +499,20 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           onPress={onGoBack}>
           <MaterialIcons
             name="arrow-back"
-            size={22}
+            size={isTablet ? 32 : 22}
             color="#333"
           />
         </TouchableOpacity>
 
         {/* Top Right Button Group */}
         <View style={{ position: 'absolute', top: 12, right: 12, zIndex: 1000 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: isTablet ? 16 : 8 }}>
             {/* Night Mode Toggle */}
             <TouchableOpacity
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
+                width: isTablet ? 60 : 40,
+                height: isTablet ? 60 : 40,
+                borderRadius: isTablet ? 30 : 20,
                 backgroundColor: nightModeEnabled ? 'rgba(25, 25, 50, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -520,7 +525,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
               onPress={toggleNightMode}>
               <MaterialIcons
                 name={nightModeEnabled ? 'nightlight-round' : 'wb-sunny'}
-                size={22}
+                size={isTablet ? 32 : 22}
                 color={nightModeEnabled ? '#FFD700' : '#333'}
               />
             </TouchableOpacity>
@@ -530,9 +535,9 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
               onPress={handleExport}
               disabled={isExporting}
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
+                width: isTablet ? 60 : 40,
+                height: isTablet ? 60 : 40,
+                borderRadius: isTablet ? 30 : 20,
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -543,9 +548,9 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
                 elevation: 4,
               }}>
               {isExporting ? (
-                <ActivityIndicator size="small" color="#333" />
+                <ActivityIndicator size={isTablet ? "large" : "small"} color="#333" />
               ) : (
-                <MaterialIcons name="file-download" size={22} color="#333" />
+                <MaterialIcons name="file-download" size={isTablet ? 32 : 22} color="#333" />
               )}
             </TouchableOpacity>
 
@@ -553,9 +558,9 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
             <TouchableOpacity
               onPress={resetZoom}
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
+                width: isTablet ? 60 : 40,
+                height: isTablet ? 60 : 40,
+                borderRadius: isTablet ? 30 : 20,
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -565,16 +570,16 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
                 shadowRadius: 4,
                 elevation: 4,
               }}>
-              <MaterialIcons name="zoom-out-map" size={22} color="#333" />
+              <MaterialIcons name="zoom-out-map" size={isTablet ? 32 : 22} color="#333" />
             </TouchableOpacity>
 
             {/* Menu Button */}
             <TouchableOpacity 
               onPress={() => setIsMenuExpanded(!isMenuExpanded)} 
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
+                width: isTablet ? 60 : 40,
+                height: isTablet ? 60 : 40,
+                borderRadius: isTablet ? 30 : 20,
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -584,7 +589,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
                 shadowRadius: 4,
                 elevation: 4,
               }}>
-              <MaterialIcons name={isMenuExpanded ? 'close' : 'more-horiz'} size={22} color="#333" />
+              <MaterialIcons name={isMenuExpanded ? 'close' : 'more-horiz'} size={isTablet ? 32 : 22} color="#333" />
             </TouchableOpacity>
           </View>
 
@@ -592,9 +597,9 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           {isMenuExpanded && (
             <View style={{ 
               position: 'absolute', 
-              top: 50, 
+              top: isTablet ? 70 : 50, 
               right: 0, 
-              minWidth: 120,
+              minWidth: isTablet ? 200 : 120,
             }}>
               <TouchableOpacity
                 onPress={() => {
@@ -606,17 +611,24 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
                   flexDirection: 'row',
                   alignItems: 'center',
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  paddingHorizontal: 12,
-                  paddingVertical: 10,
-                  borderRadius: 12,
+                  paddingHorizontal: isTablet ? 28 : 12,
+                  paddingVertical: isTablet ? 24 : 10,
+                  borderRadius: isTablet ? 24 : 12,
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.15,
                   shadowRadius: 4,
                   elevation: 4,
                 }}>
-                <MaterialIcons name="delete-sweep" size={18} color="#EF4444" />
-                <Text style={{ marginLeft: 8, fontWeight: '600', color: '#EF4444', fontSize: 14 }}>Clear All</Text>
+                <MaterialIcons name="delete-sweep" size={isTablet ? 32 : 18} color="#EF4444" />
+                <Text style={{ 
+                  marginLeft: isTablet ? 20 : 8, 
+                  fontWeight: '600', 
+                  color: '#EF4444', 
+                  fontSize: isTablet ? 20 : 14 
+                }}>
+                  Clear All
+                </Text>
               </TouchableOpacity>
             </View>
           )}

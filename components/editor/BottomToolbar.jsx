@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { Dimensions, TouchableOpacity, View } from 'react-native';
 
 import { LightSelectionPopover } from './LightSelectionPopover';
 import { RemeasureConfirmModal } from './RemeasureConfirmModal';
@@ -31,6 +31,10 @@ export function BottomToolbar({
 }) {
   const [showLightPopover, setShowLightPopover] = useState(false);
   const [showRemeasureModal, setShowRemeasureModal] = useState(false);
+  
+  // Device detection for responsive design
+  const { width } = Dimensions.get('window');
+  const isTablet = width >= 768;
 
   const handleRulerPress = () => {
     if (isSettingReference) {
@@ -69,11 +73,11 @@ export function BottomToolbar({
     <>
       <View style={{ 
         backgroundColor: '#333',
-        marginHorizontal: 60,
-        marginBottom: 40,
-        borderRadius: 20,
-        paddingVertical: 16,
-        paddingHorizontal: 20,
+        marginHorizontal: isTablet ? 120 : 60,
+        marginBottom: isTablet ? 60 : 40,
+        borderRadius: isTablet ? 30 : 20,
+        paddingVertical: isTablet ? 24 : 16,
+        paddingHorizontal: isTablet ? 32 : 20,
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
@@ -85,49 +89,65 @@ export function BottomToolbar({
       }}>
         {/* Ruler/Measurement Tool */}
         <TouchableOpacity 
-          style={{ padding: 8 }} 
+          style={{ 
+            padding: isTablet ? 16 : 8,
+            borderRadius: isTablet ? 20 : 12,
+            backgroundColor: 'transparent',
+          }} 
           onPress={handleRulerPress}
         >
           <MaterialIcons 
             name="straighten" 
-            size={28} 
+            size={isTablet ? 40 : 28} 
             color={hasReference ? '#4CAF50' : (isSettingReference ? '#FF9800' : 'white')} 
           />
         </TouchableOpacity>
         
         {/* Mode Toggle - NEW */}
         <TouchableOpacity 
-          style={{ padding: 8 }} 
+          style={{ 
+            padding: isTablet ? 16 : 8,
+            borderRadius: isTablet ? 20 : 12,
+            backgroundColor: 'transparent',
+          }} 
           onPress={handleModeToggle}
         >
           <MaterialIcons 
             name={interactionMode === 'tap' ? 'touch-app' : 'timeline'} 
-            size={28} 
+            size={isTablet ? 40 : 28} 
             color={interactionMode === 'tap' ? '#FF9800' : 'white'} 
           />
         </TouchableOpacity>
         
         {/* Light Bulb */}
         <TouchableOpacity 
-          style={{ padding: 8 }} 
+          style={{ 
+            padding: isTablet ? 16 : 8,
+            borderRadius: isTablet ? 20 : 12,
+            backgroundColor: 'transparent',
+          }} 
           onPress={handleLightPress}
         >
           <MaterialIcons 
             name="lightbulb-outline" 
-            size={28} 
+            size={isTablet ? 40 : 28} 
             color={selectedAsset ? '#4CAF50' : 'white'} 
           />
         </TouchableOpacity>
         
         {/* Back/Undo Arrow */}
         <TouchableOpacity 
-          style={{ padding: 8 }} 
+          style={{ 
+            padding: isTablet ? 16 : 8,
+            borderRadius: isTablet ? 20 : 12,
+            backgroundColor: 'transparent',
+          }} 
           onPress={onUndo}
           disabled={!canUndo}
         >
           <MaterialIcons 
             name="undo" 
-            size={28} 
+            size={isTablet ? 40 : 28} 
             color={canUndo ? 'white' : '#666'} 
           />
         </TouchableOpacity>
