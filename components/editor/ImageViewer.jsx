@@ -41,7 +41,9 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     getAssetById: getLightAssetById,
     getAssetsByCategory: getLightAssetsByCategory,
     getCategories: getLightCategories,
-    getLightRenderStyle
+    getLightRenderStyle,
+    createCustomAsset,
+    removeCustomAsset
   } = useLightAssets();
 
   const {
@@ -55,7 +57,12 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
 
   // Combined asset helpers
   const getAssetById = (id) => getLightAssetById(id) || getWreathAssetById(id);
-  const getAssetsByCategory = (category) => category === 'wreath' ? wreathAssets : getLightAssetsByCategory(category);
+  const getAssetsByCategory = (category) => {
+    if (category === 'wreath') {
+      return wreathAssets;
+    }
+    return getLightAssetsByCategory(category);
+  };
   const getCategories = () => [...getLightCategories(), 'wreath'];
 
   // Reference scale hook
@@ -723,6 +730,8 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
           onUndo={handleUndo}
           interactionMode={interactionMode}
           onModeToggle={setInteractionMode}
+          onCreateCustomAsset={createCustomAsset}
+          onRemoveCustomAsset={removeCustomAsset}
         />
 
         {/* Reference modal */}
