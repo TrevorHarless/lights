@@ -2,6 +2,9 @@
 import React from "react";
 
 export function useLightAssets() {
+  // Custom assets state
+  const [customAssets, setCustomAssets] = React.useState([]);
+
   // Light asset definitions - using only renderStyle for consistent rendering
   const lightAssets = [
     // Professional Grade LED String Lights
@@ -196,17 +199,27 @@ export function useLightAssets() {
 
   const [selectedAsset, setSelectedAsset] = React.useState(null);
 
+  // Combine predefined and custom assets
+  const allAssets = [...lightAssets, ...customAssets];
+
   // Find the asset by ID
-  const getAssetById = (id) => lightAssets.find((asset) => asset.id === id);
+  const getAssetById = (id) => allAssets.find((asset) => asset.id === id);
 
   // Filter assets by category
-  const getAssetsByCategory = (category) =>
-    lightAssets.filter((asset) => asset.category === category);
+  const getAssetsByCategory = (category) => {
+    if (category === 'custom') {
+      return customAssets;
+    }
+    return lightAssets.filter((asset) => asset.category === category);
+  };
 
   // Get all categories
-  const getCategories = () => [
-    ...new Set(lightAssets.map((asset) => asset.category)),
-  ];
+  const getCategories = () => {
+    const categories = [...new Set(lightAssets.map((asset) => asset.category))];
+    // Always include custom category so users can discover the feature
+    categories.push('custom');
+    return categories;
+  };
 
   // Get all types within a category
   const getTypesByCategory = (category) => {
@@ -258,8 +271,37 @@ export function useLightAssets() {
     return style;
   };
 
+  // Create a new custom light asset
+  const createCustomAsset = (name, config) => {
+    const customAsset = {
+      id: `custom-${Date.now()}`,
+      name: name,
+      category: 'custom',
+      type: 'custom',
+      spacing: config.spacing || 36,
+      baseSize: config.baseSize || 12,
+      renderType: 'style',
+      renderStyle: {
+        backgroundColor: config.backgroundColor || '#ffffff',
+        shadowColor: config.shadowColor || config.backgroundColor || '#ffffff',
+        shadowOpacity: config.shadowOpacity || 0.8,
+        shadowRadius: (config.baseSize || 12) * 0.4,
+        borderColor: config.borderColor,
+        borderWidth: config.borderColor ? 2 : undefined,
+      },
+    };
+
+    setCustomAssets(prev => [...prev, customAsset]);
+    return customAsset;
+  };
+
+  // Remove a custom asset
+  const removeCustomAsset = (id) => {
+    setCustomAssets(prev => prev.filter(asset => asset.id !== id));
+  };
+
   return {
-    lightAssets,
+    lightAssets: allAssets,
     selectedAsset,
     setSelectedAsset,
     getAssetById,
@@ -267,5 +309,8 @@ export function useLightAssets() {
     getCategories,
     getTypesByCategory,
     getLightRenderStyle,
+    createCustomAsset,
+    removeCustomAsset,
+    customAssets,
   };
 }

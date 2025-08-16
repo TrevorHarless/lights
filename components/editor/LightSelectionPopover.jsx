@@ -10,6 +10,8 @@ import {
   View,
 } from 'react-native';
 
+import { CustomLightModal } from './CustomLightModal';
+
 export function LightSelectionPopover({ 
   visible, 
   onClose, 
@@ -18,9 +20,12 @@ export function LightSelectionPopover({
   onSelectAsset,
   getAssetsByCategory,
   getCategories,
-  getLightRenderStyle
+  getLightRenderStyle,
+  onCreateCustomAsset,
+  onRemoveCustomAsset
 }) {
   const [selectedCategory, setSelectedCategory] = React.useState('string');
+  const [showCustomModal, setShowCustomModal] = React.useState(false);
   
   const categories = getCategories ? getCategories() : ['string'];
   const categoryAssets = getAssetsByCategory ? getAssetsByCategory(selectedCategory) : lightAssets;
@@ -30,7 +35,22 @@ export function LightSelectionPopover({
       case 'string': return 'String Lights';
       case 'wreath': return 'Wreaths';
       case 'net': return 'Net Lights';
+      case 'custom': return 'Custom';
       default: return category.charAt(0).toUpperCase() + category.slice(1);
+    }
+  };
+
+  const handleCreateCustomAsset = (name, config) => {
+    if (onCreateCustomAsset) {
+      const asset = onCreateCustomAsset(name, config);
+      setSelectedCategory('custom');
+      return asset;
+    }
+  };
+
+  const handleRemoveCustomAsset = (assetId) => {
+    if (onRemoveCustomAsset) {
+      onRemoveCustomAsset(assetId);
     }
   };
 
@@ -89,6 +109,22 @@ export function LightSelectionPopover({
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
+            {/* Create Custom Button - only show in custom category */}
+            {selectedCategory === 'custom' && (
+              <TouchableOpacity
+                onPress={() => setShowCustomModal(true)}
+                style={styles.assetButton}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.assetContainer, styles.createButton]}>
+                  <MaterialIcons name="add" size={32} color="#3B82F6" />
+                </View>
+                <Text style={styles.assetName}>
+                  Create New
+                </Text>
+              </TouchableOpacity>
+            )}
+
             {categoryAssets.map((asset) => (
               <TouchableOpacity
                 key={asset.id}
@@ -116,6 +152,7 @@ export function LightSelectionPopover({
                           height: 40,
                           alignItems: 'center',
                           justifyContent: 'center',
+                          borderRadius: 20,
                         },
                         getLightRenderStyle && getLightRenderStyle(asset.id, 0.8, 0)
                       ]}
@@ -127,6 +164,19 @@ export function LightSelectionPopover({
                       <MaterialIcons name="check" size={14} color="white" />
                     </View>
                   )}
+
+                  {/* Delete button for custom assets */}
+                  {asset.category === 'custom' && (
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        handleRemoveCustomAsset(asset.id);
+                      }}
+                    >
+                      <MaterialIcons name="close" size={14} color="white" />
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 <Text style={styles.assetName}>
@@ -137,6 +187,14 @@ export function LightSelectionPopover({
           </ScrollView>
         </View>
       </TouchableOpacity>
+
+      {/* Custom Light Creation Modal */}
+      <CustomLightModal
+        visible={showCustomModal}
+        onClose={() => setShowCustomModal(false)}
+        onCreateAsset={handleCreateCustomAsset}
+        getLightRenderStyle={getLightRenderStyle}
+      />
     </Modal>
   );
 }
@@ -239,5 +297,24 @@ const styles = StyleSheet.create({
   },
   selectedCategoryTabText: {
     color: '#3B82F6',
+  },
+  createButton: {
+    borderStyle: 'dashed',
+    borderWidth: 2,
+    borderColor: '#3B82F6',
+    backgroundColor: '#F8FAFC',
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 20,
+    height: 20,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
   },
 });

@@ -25,6 +25,9 @@ export function BottomToolbar({
   // NEW: Mode toggle functionality
   interactionMode,
   onModeToggle,
+  // Custom asset functionality
+  onCreateCustomAsset,
+  onRemoveCustomAsset,
 }) {
   const [showLightPopover, setShowLightPopover] = useState(false);
   const [showRemeasureModal, setShowRemeasureModal] = useState(false);
@@ -143,6 +146,8 @@ export function BottomToolbar({
         getAssetsByCategory={getAssetsByCategory}
         getCategories={getCategories}
         getLightRenderStyle={getLightRenderStyle}
+        onCreateCustomAsset={onCreateCustomAsset}
+        onRemoveCustomAsset={onRemoveCustomAsset}
       />
 
       {/* Remeasure Confirmation Modal */}
