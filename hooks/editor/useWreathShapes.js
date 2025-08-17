@@ -1,5 +1,5 @@
 // hooks/editor/useWreathShapes.js
-import React from "react";
+import React, { useCallback } from "react";
 
 export function useWreathShapes() {
   const [wreaths, setWreaths] = React.useState([]);
@@ -141,6 +141,17 @@ export function useWreathShapes() {
     setSelectedWreathId(state.selectedWreathId || null);
   };
 
+  // Load wreaths from saved data
+  const loadWreaths = useCallback((wreathsData) => {
+    console.log('💡 useWreathShapes: loadWreaths called with:', wreathsData);
+    if (wreathsData && Array.isArray(wreathsData)) {
+      setWreaths(wreathsData);
+      console.log('💡 useWreathShapes: Loaded', wreathsData.length, 'wreaths');
+    } else {
+      console.log('💡 useWreathShapes: No valid wreaths data to load');
+    }
+  }, []);
+
   return {
     wreaths,
     selectedWreathId,
@@ -158,5 +169,6 @@ export function useWreathShapes() {
     clearWreaths,
     saveState,
     restoreState,
+    loadWreaths,
   };
 }

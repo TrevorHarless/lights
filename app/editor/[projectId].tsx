@@ -99,7 +99,12 @@ export default function LightEditorScreen() {
       <SafeAreaView className="flex-1 bg-gray-50">
         {/* Main Content */}
         {project.image_url ? (
-          <ImageViewer imgSource={project.image_url} onGoBack={handleGoBack} />
+          <ImageViewer 
+            imgSource={project.image_url} 
+            onGoBack={handleGoBack} 
+            project={project}
+            projectId={projectId}
+          />
         ) : (
         <View className="flex-1 justify-center items-center px-8">
           <View className="bg-white p-8 rounded-3xl items-center max-w-sm">

@@ -1,3 +1,45 @@
+export interface LightString {
+  id: string
+  start: { x: number; y: number }
+  end: { x: number; y: number }
+  assetId: string
+  lightSpacing?: number
+}
+
+export interface SingleLight {
+  id: string
+  position: { x: number; y: number }
+  assetId: string
+  timestamp: number
+}
+
+export interface Wreath {
+  id: string
+  type: string
+  center: { x: number; y: number }
+  radius: number
+  assetId: string
+  lightSpacing: number
+  createdAt: number
+}
+
+export interface ReferenceScale {
+  referenceLine?: {
+    start: { x: number; y: number }
+    end: { x: number; y: number }
+  }
+  referenceLength?: number
+}
+
+export interface LightData {
+  lightStrings: LightString[]
+  singleLights: SingleLight[]
+  wreaths: Wreath[]
+  referenceScale?: ReferenceScale
+  lastSaved: string
+  version: string
+}
+
 export interface Project {
   id: string
   user_id: string
@@ -9,6 +51,7 @@ export interface Project {
   image_path?: string
   image_url_expires_at?: string  // When current URL expires
   image_url_cached_at?: string   // When URL was last cached
+  light_data?: LightData
   created_at: string
   updated_at: string
 }
