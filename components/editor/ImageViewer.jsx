@@ -18,18 +18,20 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import ViewShot from 'react-native-view-shot';
 
 import { BottomToolbar } from './BottomToolbar';
+import { ClearAllConfirmModal } from './ClearAllConfirmModal';
 import { FloatingSelectionControls } from './FloatingSelectionControls';
 import { ImageWithNightOverlay } from './ImageWithNightOverlay';
 import { ReferenceLineRenderer } from './ReferenceLineRenderer';
 import { ReferenceModal } from './ReferenceModal';
 import SimpleLightRenderer from './SimpleLightRenderer';
-import { SingleLightRenderer } from './SingleLightRenderer';
+import SingularLightRenderer from './SingularLightRenderer';
 import { WreathRenderer } from './WreathRenderer';
 
 import { useLightAssets } from '~/hooks/editor/useLightAssets';
 import { useLightStrings } from '~/hooks/editor/useLightStrings';
 import { useReferenceScale } from '~/hooks/editor/useReferenceScale';
-import { useSingleLights } from '~/hooks/editor/useSingleLights';
+import { useSingularLightGestures } from '~/hooks/editor/useSingularLightGestures';
+import { useSingularLights } from '~/hooks/editor/useSingularLights';
 import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
 import { useWreathAssets } from '~/hooks/editor/useWreathAssets';
 import { useWreathGestures } from '~/hooks/editor/useWreathGestures';
@@ -104,6 +106,24 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     loadLightStrings,
   } = useLightStrings(lightAssets, getScaledLightSpacing);
 
+  // Singular lights management
+  const {
+    singularLights,
+    selectedLightId,
+    deletedLight,
+    addSingularLight,
+    updateSingularLight,
+    moveSingularLight,
+    deleteSingularLight,
+    undoDelete: undoDeleteLight,
+    clearAllSingularLights,
+    selectSingularLight,
+    deselectSingularLight,
+    findSingularLightAtPoint,
+    getSingularLightById,
+    loadSingularLights,
+  } = useSingularLights(lightAssets);
+
   // Wreath management
   const {
     wreaths,
@@ -116,67 +136,48 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     getWreathById,
     findWreathAtPoint,
     getResizeHandles,
+    clearWreaths,
     loadWreaths,
   } = useWreathShapes();
 
-  // Single lights management - NEW
-  const {
-    singleLights,
-    selectedSingleLightIds,
-    addSingleLight,
-    removeSingleLights,
-    selectSingleLight,
-    deselectAllSingleLights,
-    findSingleLightAtPoint,
-    undoDeleteSingleLight,
-    canUndoSingleLight,
-    clearAllSingleLights,
-    loadSingleLights,
-  } = useSingleLights();
 
-  // Debug: Check what functions are available from useSingleLights
-  console.log('💡 ImageViewer: useSingleLights functions available:', {
-    loadSingleLights: typeof loadSingleLights,
-    addSingleLight: typeof addSingleLight,
-    clearAllSingleLights: typeof clearAllSingleLights
-  });
+  // Interaction mode state
+  const [interactionMode, setInteractionMode] = React.useState('string'); // 'string', 'tap', or 'wreath'
 
-  // Interaction mode state - UPDATED to include 'tap'
-  const [interactionMode, setInteractionMode] = React.useState('string'); // 'string', 'wreath', or 'tap'
-
-  // Auto-switch mode based on selected asset (but preserve tap mode)
+  // Auto-switch mode based on selected asset
   React.useEffect(() => {
-    if (selectedAsset && interactionMode !== 'tap') {
+    if (selectedAsset) {
       if (selectedAsset.category === 'wreath') {
         setInteractionMode('wreath');
       } else {
-        setInteractionMode('string');
+        // Default to tap mode for string assets unless already in string mode
+        setInteractionMode(interactionMode === 'string' ? 'string' : 'tap');
       }
     }
-  }, [selectedAsset, interactionMode]);
+  }, [selectedAsset]);
 
   // Enhanced tap selection handler
   const handleTapSelection = (type, id) => {
     // Clear other selections first
     deselectLightString();
     setSelectedWreathId(null);
-    deselectAllSingleLights();
+    deselectSingularLight();
     
     // Apply new selection
     switch (type) {
       case 'string':
         selectLightString(id);
         break;
-      case 'single':
-        selectSingleLight(id);
-        break;
       case 'wreath':
         setSelectedWreathId(id);
+        break;
+      case 'light':
+        selectSingularLight(id);
         break;
     }
   };
 
-  // String drawing gestures - UPDATED with tap mode support
+  // String drawing gestures
   const { 
     currentVector, 
     isDragging: isDrawingString, 
@@ -192,10 +193,6 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     deselectLightString,
     isSettingReference,
     onReferenceComplete: handleReferenceLineComplete,
-    // NEW: Tap mode parameters
-    interactionMode,
-    onSingleLightPlace: addSingleLight,
-    findSingleLightAtPoint,
   });
 
   // Wreath placement/manipulation gestures
@@ -216,9 +213,33 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     isEnabled: interactionMode === 'wreath',
   });
 
+  // Singular light tap/manipulation gestures
+  const { 
+    panResponder: singularLightPanResponder, 
+    isDragging: isManipulatingSingularLight 
+  } = useSingularLightGestures({
+    selectedAsset,
+    setSelectedAsset,
+    addSingularLight,
+    moveSingularLight,
+    findSingularLightAtPoint,
+    getSingularLightById,
+    selectedLightId,
+    setSelectedLightId: selectSingularLight,
+    getLightRenderStyle,
+    getLightSizeScale,
+    isEnabled: interactionMode === 'tap',
+  });
+
   // Use appropriate pan responder based on mode
-  const activePanResponder = interactionMode === 'wreath' ? wreathPanResponder : stringPanResponder;
-  const isDragging = interactionMode === 'wreath' ? isManipulatingWreath : isDrawingString;
+  const activePanResponder = 
+    interactionMode === 'wreath' ? wreathPanResponder :
+    interactionMode === 'tap' ? singularLightPanResponder :
+    stringPanResponder;
+  const isDragging = 
+    interactionMode === 'wreath' ? isManipulatingWreath :
+    interactionMode === 'tap' ? isManipulatingSingularLight :
+    isDrawingString;
 
   // State for selected string's endpoint position for delete button
   const [selectedStringEndpoint, setSelectedStringEndpoint] = useState(null);
@@ -228,10 +249,16 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
 
   // State for night mode
   const [nightModeEnabled, setNightModeEnabled] = useState(false);
-  const [nightModeIntensity, setNightModeIntensity] = useState(0.4);
+  const [nightModeIntensity, setNightModeIntensity] = useState(0.6);
 
   // State for menu
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+
+  // State for clear all confirmation
+  const [showClearAllModal, setShowClearAllModal] = useState(false);
+
+  // Debug: Set to true to show touchable areas for singular lights
+  const showTouchableAreas = false;
 
   // Zoom gesture state
   const scale = useSharedValue(1);
@@ -272,7 +299,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           
           console.log('💡 ImageViewer: About to load data into hooks');
           console.log('💡 ImageViewer: Light strings to load:', loadedData.lightStrings?.length || 0);
-          console.log('💡 ImageViewer: Single lights to load:', loadedData.singleLights?.length || 0);
+          console.log('💡 ImageViewer: Singular lights to load:', loadedData.singleLights?.length || 0);
           console.log('💡 ImageViewer: Wreaths to load:', loadedData.wreaths?.length || 0);
           
           // Apply loaded data to hooks
@@ -281,9 +308,8 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
             loadLightStrings(loadedData.lightStrings);
           }
           if (loadedData.singleLights?.length > 0) {
-            console.log('💡 ImageViewer: About to call loadSingleLights, function exists?', typeof loadSingleLights);
-            console.log('💡 ImageViewer: Calling loadSingleLights with:', loadedData.singleLights);
-            loadSingleLights(loadedData.singleLights);
+            console.log('💡 ImageViewer: Calling loadSingularLights with:', loadedData.singleLights);
+            loadSingularLights(loadedData.singleLights);
           }
           if (loadedData.wreaths?.length > 0) {
             console.log('💡 ImageViewer: Calling loadWreaths with:', loadedData.wreaths);
@@ -304,7 +330,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     };
 
     loadLightData();
-  }, [projectId, loadLightStrings, loadSingleLights, loadWreaths]);
+  }, [projectId, loadLightStrings, loadSingularLights, loadWreaths]);
 
   // Clear auto-save timer on unmount
   useEffect(() => {
@@ -329,7 +355,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       await lightDataStorage.saveProjectLightData(
         projectId,
         lightStrings,
-        singleLights,
+        singularLights,
         wreaths,
         referenceScale
       );
@@ -340,7 +366,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       // Update saved data for comparison
       setSavedLightData({
         lightStrings,
-        singleLights,
+        singleLights: singularLights,
         wreaths,
         referenceScale,
         lastSaved: now,
@@ -354,13 +380,13 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     } finally {
       setIsSaving(false);
     }
-  }, [projectId, isSaving, lightStrings, singleLights, wreaths, referenceLine, referenceLength]);
+  }, [projectId, isSaving, lightStrings, singularLights, wreaths, referenceLine, referenceLength]);
 
   // Check for unsaved changes
   useEffect(() => {
     const hasChanges = lightDataStorage.hasUnsavedChanges(
       lightStrings,
-      singleLights,
+      singularLights,
       wreaths,
       savedLightData
     );
@@ -376,7 +402,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
         handleSaveProject();
       }, 30000); // 30 seconds
     }
-  }, [lightStrings, singleLights, wreaths, savedLightData, isSaving, handleSaveProject]);
+  }, [lightStrings, singularLights, wreaths, savedLightData, isSaving, handleSaveProject]);
 
   // Pure pinch gesture for zoom only
   const pinchGesture = Gesture.Pinch()
@@ -448,12 +474,12 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     }
   }, [selectedStringId, lightStrings]);
 
-  // Handle undo action - UPDATED to support single lights
+  // Handle undo action
   const handleUndo = () => {
     if (deletedString) {
       undoDelete();
-    } else if (canUndoSingleLight) {
-      undoDeleteSingleLight();
+    } else if (deletedLight) {
+      undoDeleteLight();
     }
   };
 
@@ -470,12 +496,30 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     }
   };
 
-  // NEW: Delete handlers for single lights
-  const handleDeleteSingleLights = () => {
-    if (selectedSingleLightIds.length > 0) {
-      removeSingleLights(selectedSingleLightIds);
+  // Direct delete handler for singular lights
+  const handleDeleteSingularLight = () => {
+    if (selectedLightId) {
+      deleteSingularLight(selectedLightId);
     }
   };
+
+  // Clear all confirmation handlers
+  const handleClearAllRequest = () => {
+    setIsMenuExpanded(false);
+    setShowClearAllModal(true);
+  };
+
+  const handleClearAllCancel = () => {
+    setShowClearAllModal(false);
+  };
+
+  const handleClearAllConfirm = () => {
+    clearAllLightStrings();
+    clearAllSingularLights();
+    clearWreaths();
+    setShowClearAllModal(false);
+  };
+
 
   // Toggle night mode
   const toggleNightMode = () => {
@@ -768,11 +812,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
               minWidth: isTablet ? 200 : 120,
             }}>
               <TouchableOpacity
-                onPress={() => {
-                  clearAllLightStrings();
-                  clearAllSingleLights(); // NEW: Also clear single lights from tap mode
-                  setIsMenuExpanded(false);
-                }}
+                onPress={handleClearAllRequest}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -845,13 +885,13 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
                   getLightRenderStyle={getLightRenderStyle}
                 />
 
-                {/* NEW: Single light renderer */}
-                <SingleLightRenderer
-                  singleLights={singleLights}
-                  selectedSingleLightIds={selectedSingleLightIds}
-                  getAssetById={getAssetById}
+                {/* Singular lights */}
+                <SingularLightRenderer
+                  singularLights={singularLights}
+                  selectedLightId={selectedLightId}
                   getLightSizeScale={getLightSizeScale}
                   getLightRenderStyle={getLightRenderStyle}
+                  showTouchableAreas={showTouchableAreas}
                 />
 
                 {/* Reference line renderer */}
@@ -875,7 +915,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           </Animated.View>
         </GestureDetector>
 
-        {/* Floating Selection Controls - UPDATED with single lights */}
+        {/* Floating Selection Controls */}
         <FloatingSelectionControls
           selectedStringId={selectedStringId}
           selectedStringEndpoint={selectedStringEndpoint}
@@ -884,13 +924,13 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           selectedWreathId={selectedWreathId}
           onDeleteWreath={handleDeleteWreath}
           onDeselectWreath={() => setSelectedWreathId(null)}
-          selectedSingleLightIds={selectedSingleLightIds}
-          onDeleteSingleLights={handleDeleteSingleLights}
-          onDeselectSingleLights={deselectAllSingleLights}
+          selectedLightId={selectedLightId}
+          onDeleteSingularLight={handleDeleteSingularLight}
+          onDeselectSingularLight={deselectSingularLight}
           interactionMode={interactionMode}
         />
 
-        {/* Bottom Toolbar - UPDATED with mode toggle */}
+        {/* Bottom Toolbar */}
         <BottomToolbar
           hasReference={hasReference}
           isSettingReference={isSettingReference}
@@ -903,7 +943,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           getAssetsByCategory={getAssetsByCategory}
           getCategories={getCategories}
           getLightRenderStyle={getLightRenderStyle}
-          canUndo={!!deletedString || canUndoSingleLight}
+          canUndo={!!deletedString || !!deletedLight}
           onUndo={handleUndo}
           interactionMode={interactionMode}
           onModeToggle={setInteractionMode}
@@ -917,6 +957,13 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           onClose={cancelReferenceMode}
           onConfirm={confirmReferenceLength}
           onCancel={cancelReferenceMode}
+        />
+
+        {/* Clear All Confirmation Modal */}
+        <ClearAllConfirmModal
+          visible={showClearAllModal}
+          onCancel={handleClearAllCancel}
+          onConfirm={handleClearAllConfirm}
         />
       </View>
     </SafeAreaView>

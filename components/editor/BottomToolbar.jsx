@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Dimensions, TouchableOpacity, View } from 'react-native';
 
 import { LightSelectionPopover } from './LightSelectionPopover';
+import { ModeSelectionPopover } from './ModeSelectionPopover';
 import { RemeasureConfirmModal } from './RemeasureConfirmModal';
 
 export function BottomToolbar({
@@ -22,7 +23,7 @@ export function BottomToolbar({
   // Undo functionality
   canUndo,
   onUndo,
-  // NEW: Mode toggle functionality
+  // Mode toggle functionality
   interactionMode,
   onModeToggle,
   // Custom asset functionality
@@ -30,6 +31,7 @@ export function BottomToolbar({
   onRemoveCustomAsset,
 }) {
   const [showLightPopover, setShowLightPopover] = useState(false);
+  const [showModePopover, setShowModePopover] = useState(false);
   const [showRemeasureModal, setShowRemeasureModal] = useState(false);
   
   // Device detection for responsive design
@@ -63,10 +65,8 @@ export function BottomToolbar({
     setShowLightPopover(true);
   };
 
-  const handleModeToggle = () => {
-    // Toggle between string and tap modes only (wreath mode is auto-activated)
-    const newMode = interactionMode === 'tap' ? 'string' : 'tap';
-    onModeToggle(newMode);
+  const handleModePress = () => {
+    setShowModePopover(true);
   };
 
   return (
@@ -103,19 +103,28 @@ export function BottomToolbar({
           />
         </TouchableOpacity>
         
-        {/* Mode Toggle - NEW */}
+        {/* Mode Selection */}
         <TouchableOpacity 
           style={{ 
             padding: isTablet ? 16 : 8,
             borderRadius: isTablet ? 20 : 12,
             backgroundColor: 'transparent',
           }} 
-          onPress={handleModeToggle}
+          onPress={handleModePress}
         >
           <MaterialIcons 
-            name={interactionMode === 'tap' ? 'touch-app' : 'timeline'} 
+            name={
+              interactionMode === 'wreath' ? 'circle' : 
+              interactionMode === 'tap' ? 'touch-app' : 
+              'timeline'
+            } 
             size={isTablet ? 40 : 28} 
-            color={interactionMode === 'tap' ? '#FF9800' : 'white'} 
+            color={
+              interactionMode === 'wreath' ? '#FF9800' : 
+              interactionMode === 'tap' ? '#00BCD4' : 
+              interactionMode === 'string' ? '#E91E63' :
+              'white'
+            } 
           />
         </TouchableOpacity>
         
@@ -152,6 +161,14 @@ export function BottomToolbar({
           />
         </TouchableOpacity>
       </View>
+
+      {/* Mode Selection Popover */}
+      <ModeSelectionPopover
+        visible={showModePopover}
+        onClose={() => setShowModePopover(false)}
+        currentMode={interactionMode}
+        onSelectMode={onModeToggle}
+      />
 
       {/* Light Selection Popover */}
       <LightSelectionPopover
