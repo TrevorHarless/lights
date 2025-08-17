@@ -45,6 +45,15 @@ export function useReferenceScale() {
     setReferenceLength(null);
   }, []);
 
+  // Load reference scale from saved data
+  const loadReferenceScale = useCallback((referenceScale) => {
+    if (referenceScale && referenceScale.referenceLine && referenceScale.referenceLength) {
+      setReferenceLine(referenceScale.referenceLine);
+      setReferenceLength(referenceScale.referenceLength);
+      console.log('📏 Reference Scale: Loaded saved reference measurement');
+    }
+  }, []);
+
   // Calculate the scale factor (pixels per foot)
   const getScaleFactor = useCallback(() => {
     if (!referenceLine || !referenceLength) return null;
@@ -171,6 +180,7 @@ export function useReferenceScale() {
     handleReferenceLineComplete,
     confirmReferenceLength,
     clearReference,
+    loadReferenceScale,
 
     // Calculations
     getScaleFactor,

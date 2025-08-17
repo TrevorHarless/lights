@@ -82,6 +82,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     handleReferenceLineComplete,
     confirmReferenceLength,
     clearReference,
+    loadReferenceScale,
     getScaledLightSpacing,
     getLightSizeScale,
     hasReference,
@@ -289,8 +290,11 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
             loadWreaths(loadedData.wreaths);
           }
           
-          // TODO: Load reference scale if needed
-          // This would require adding a load method to useReferenceScale
+          // Load reference scale if it exists
+          if (loadedData.referenceScale) {
+            console.log('💡 ImageViewer: Loading reference scale:', loadedData.referenceScale);
+            loadReferenceScale(loadedData.referenceScale);
+          }
           
           console.log('💡 ImageViewer: Finished loading data into hooks');
         }
