@@ -1,9 +1,11 @@
 // hooks/useLightAssets.js
 import React from "react";
+import { customLightStorage } from "~/services/customLightStorage";
 
 export function useLightAssets() {
   // Custom assets state
   const [customAssets, setCustomAssets] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   // Light asset definitions - using only renderStyle for consistent rendering
   const lightAssets = [
@@ -199,6 +201,23 @@ export function useLightAssets() {
 
   const [selectedAsset, setSelectedAsset] = React.useState(null);
 
+  // Load custom assets from storage on mount
+  React.useEffect(() => {
+    const loadCustomAssets = async () => {
+      try {
+        const savedCustomAssets = await customLightStorage.getCustomLights();
+        setCustomAssets(savedCustomAssets);
+        console.log('💡 useLightAssets: Loaded', savedCustomAssets.length, 'custom light assets');
+      } catch (error) {
+        console.error('💡 useLightAssets: Error loading custom assets:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCustomAssets();
+  }, []);
+
   // Combine predefined and custom assets
   const allAssets = [...lightAssets, ...customAssets];
 
@@ -239,6 +258,9 @@ export function useLightAssets() {
     let baseStyle;
     if (typeof asset.renderStyle === "function") {
       baseStyle = asset.renderStyle(lightIndex);
+      if (asset.category === 'custom' && asset.isPattern) {
+        console.log('💡 getLightRenderStyle: Pattern asset', asset.name, 'lightIndex:', lightIndex, 'color:', baseStyle.backgroundColor);
+      }
     } else {
       baseStyle = asset.renderStyle || {};
     }
@@ -272,44 +294,59 @@ export function useLightAssets() {
   };
 
   // Create a new custom light asset
-  const createCustomAsset = (name, config) => {
-    const customAsset = {
-      id: `custom-${Date.now()}`,
-      name: name,
-      category: 'custom',
-      type: 'custom',
-      spacing: config.spacing || 36,
-      baseSize: config.baseSize || 12,
-      renderType: 'style',
-      renderStyle: config.isPattern ? 
-        // Pattern render function
-        (lightIndex = 0) => {
-          const color = config.patternColors[lightIndex % config.patternColors.length];
-          return {
-            backgroundColor: color,
-            shadowColor: color,
+  const createCustomAsset = async (name, config) => {
+    try {
+      const lightAssetData = {
+        name: name,
+        category: 'custom',
+        type: 'custom',
+        spacing: config.spacing || 36,
+        baseSize: config.baseSize || 12,
+        renderType: 'style',
+        isPattern: config.isPattern || false,
+        patternColors: config.patternColors,
+        backgroundColor: config.backgroundColor,
+        shadowColor: config.shadowColor,
+        shadowOpacity: config.shadowOpacity || 0.8,
+        borderColor: config.borderColor,
+        renderStyle: config.isPattern ? 
+          undefined : // Will be restored by storage service
+          {
+            backgroundColor: config.backgroundColor || '#ffffff',
+            shadowColor: config.shadowColor || config.backgroundColor || '#ffffff',
             shadowOpacity: config.shadowOpacity || 0.8,
             shadowRadius: (config.baseSize || 12) * 0.4,
-          };
-        } :
-        // Single color render style
-        {
-          backgroundColor: config.backgroundColor || '#ffffff',
-          shadowColor: config.shadowColor || config.backgroundColor || '#ffffff',
-          shadowOpacity: config.shadowOpacity || 0.8,
-          shadowRadius: (config.baseSize || 12) * 0.4,
-          borderColor: config.borderColor,
-          borderWidth: config.borderColor ? 2 : undefined,
-        },
-    };
+            borderColor: config.borderColor,
+            borderWidth: config.borderColor ? 2 : undefined,
+          },
+      };
 
-    setCustomAssets(prev => [...prev, customAsset]);
-    return customAsset;
+      const savedAsset = await customLightStorage.saveCustomLight(lightAssetData);
+      
+      // Update local state
+      setCustomAssets(prev => [...prev, savedAsset]);
+      
+      console.log('💡 useLightAssets: Created and saved custom asset:', savedAsset.name);
+      return savedAsset;
+    } catch (error) {
+      console.error('💡 useLightAssets: Error creating custom asset:', error);
+      throw error;
+    }
   };
 
   // Remove a custom asset
-  const removeCustomAsset = (id) => {
-    setCustomAssets(prev => prev.filter(asset => asset.id !== id));
+  const removeCustomAsset = async (id) => {
+    try {
+      await customLightStorage.deleteCustomLight(id);
+      
+      // Update local state
+      setCustomAssets(prev => prev.filter(asset => asset.id !== id));
+      
+      console.log('💡 useLightAssets: Removed custom asset:', id);
+    } catch (error) {
+      console.error('💡 useLightAssets: Error removing custom asset:', error);
+      throw error;
+    }
   };
 
   return {
@@ -324,5 +361,6 @@ export function useLightAssets() {
     createCustomAsset,
     removeCustomAsset,
     customAssets,
+    isLoading,
   };
 }

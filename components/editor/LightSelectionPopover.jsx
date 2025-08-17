@@ -46,11 +46,16 @@ export function LightSelectionPopover({
     }
   };
 
-  const handleCreateCustomAsset = (name, config) => {
+  const handleCreateCustomAsset = async (name, config) => {
     if (onCreateCustomAsset) {
-      const asset = onCreateCustomAsset(name, config);
-      setSelectedCategory('custom');
-      return asset;
+      try {
+        const asset = await onCreateCustomAsset(name, config);
+        setSelectedCategory('custom');
+        return asset;
+      } catch (error) {
+        console.error('Error creating custom asset:', error);
+        throw error;
+      }
     }
   };
 
@@ -59,9 +64,13 @@ export function LightSelectionPopover({
     setDeleteConfirmVisible(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (onRemoveCustomAsset && assetToDelete) {
-      onRemoveCustomAsset(assetToDelete.id);
+      try {
+        await onRemoveCustomAsset(assetToDelete.id);
+      } catch (error) {
+        console.error('Error removing custom asset:', error);
+      }
     }
     setDeleteConfirmVisible(false);
     setAssetToDelete(null);

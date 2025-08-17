@@ -83,7 +83,7 @@ export function CustomLightModal({
   const { width } = Dimensions.get('window');
   const isTablet = width >= 768;
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!name.trim()) {
       return;
     }
@@ -98,21 +98,26 @@ export function CustomLightModal({
       shadowColor: !isPatternMode ? (customColor || selectedColor) : undefined,
     };
 
-    const asset = onCreateAsset(name.trim(), config);
-    
-    // Reset form
-    setName('');
-    setSelectedColor('#FF0000');
-    setSelectedSize(12);
-    setSelectedSpacing(36);
-    setCustomColor('');
-    setShowColorPicker(false);
-    setIsPatternMode(false);
-    setPatternColors(['#FF0000']);
-    setEditingPatternIndex(null);
-    
-    onClose();
-    return asset;
+    try {
+      const asset = await onCreateAsset(name.trim(), config);
+      
+      // Reset form
+      setName('');
+      setSelectedColor('#FF0000');
+      setSelectedSize(12);
+      setSelectedSpacing(36);
+      setCustomColor('');
+      setShowColorPicker(false);
+      setIsPatternMode(false);
+      setPatternColors(['#FF0000']);
+      setEditingPatternIndex(null);
+      
+      onClose();
+      return asset;
+    } catch (error) {
+      console.error('Error creating custom light:', error);
+      // Could show an error message to user here
+    }
   };
 
   const handleColorPickerChange = (color) => {
