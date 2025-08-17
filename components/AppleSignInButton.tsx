@@ -21,8 +21,10 @@ export default function AppleSignInButton({
   const { signInWithApple } = useAuth();
 
   const handleAppleSignIn = async () => {
-    if (Platform.OS !== 'ios') {
-      Alert.alert('Not Available', 'Apple Sign In is only available on iOS devices');
+    if (Platform.OS !== 'ios' || loading) {
+      if (Platform.OS !== 'ios') {
+        Alert.alert('Not Available', 'Apple Sign In is only available on iOS devices');
+      }
       return;
     }
 
@@ -51,7 +53,6 @@ export default function AppleSignInButton({
       cornerRadius={cornerRadius}
       style={[{ opacity: loading ? 0.6 : 1 }, style]}
       onPress={handleAppleSignIn}
-      disabled={loading}
     />
   );
 }
