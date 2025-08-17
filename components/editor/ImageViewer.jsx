@@ -1,7 +1,7 @@
 // components/projects/ImageViewer.jsx
 import { MaterialIcons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -34,8 +34,9 @@ import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
 import { useWreathAssets } from '~/hooks/editor/useWreathAssets';
 import { useWreathGestures } from '~/hooks/editor/useWreathGestures';
 import { useWreathShapes } from '~/hooks/editor/useWreathShapes';
+import { lightDataStorage } from '~/services/lightDataStorage';
 
-const ImageViewer = ({ imgSource, onGoBack }) => {
+const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   // Device detection for responsive design
   const { width } = Dimensions.get('window');
   const isTablet = width >= 768;
@@ -99,6 +100,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     selectLightString,
     deselectLightString,
     findClosestLightString,
+    loadLightStrings,
   } = useLightStrings(lightAssets, getScaledLightSpacing);
 
   // Wreath management
@@ -113,6 +115,7 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     getWreathById,
     findWreathAtPoint,
     getResizeHandles,
+    loadWreaths,
   } = useWreathShapes();
 
   // Single lights management - NEW
@@ -127,7 +130,15 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
     undoDeleteSingleLight,
     canUndoSingleLight,
     clearAllSingleLights,
+    loadSingleLights,
   } = useSingleLights();
+
+  // Debug: Check what functions are available from useSingleLights
+  console.log('💡 ImageViewer: useSingleLights functions available:', {
+    loadSingleLights: typeof loadSingleLights,
+    addSingleLight: typeof addSingleLight,
+    clearAllSingleLights: typeof clearAllSingleLights
+  });
 
   // Interaction mode state - UPDATED to include 'tap'
   const [interactionMode, setInteractionMode] = React.useState('string'); // 'string', 'wreath', or 'tap'
@@ -234,6 +245,12 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [hasMediaPermission, setHasMediaPermission] = useState(false);
 
+  // Save state
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [savedLightData, setSavedLightData] = useState(null);
+  const autoSaveTimerRef = useRef(null);
+
   // Check for media library permissions
   useEffect(() => {
     (async () => {
@@ -241,6 +258,121 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
       setHasMediaPermission(status === 'granted');
     })();
   }, []);
+
+  // Load existing light data when component mounts
+  useEffect(() => {
+    const loadLightData = async () => {
+      if (!projectId) return;
+      
+      try {
+        const loadedData = await lightDataStorage.loadProjectLightData(projectId);
+        if (loadedData) {
+          setSavedLightData(loadedData);
+          
+          console.log('💡 ImageViewer: About to load data into hooks');
+          console.log('💡 ImageViewer: Light strings to load:', loadedData.lightStrings?.length || 0);
+          console.log('💡 ImageViewer: Single lights to load:', loadedData.singleLights?.length || 0);
+          console.log('💡 ImageViewer: Wreaths to load:', loadedData.wreaths?.length || 0);
+          
+          // Apply loaded data to hooks
+          if (loadedData.lightStrings?.length > 0) {
+            console.log('💡 ImageViewer: Calling loadLightStrings with:', loadedData.lightStrings);
+            loadLightStrings(loadedData.lightStrings);
+          }
+          if (loadedData.singleLights?.length > 0) {
+            console.log('💡 ImageViewer: About to call loadSingleLights, function exists?', typeof loadSingleLights);
+            console.log('💡 ImageViewer: Calling loadSingleLights with:', loadedData.singleLights);
+            loadSingleLights(loadedData.singleLights);
+          }
+          if (loadedData.wreaths?.length > 0) {
+            console.log('💡 ImageViewer: Calling loadWreaths with:', loadedData.wreaths);
+            loadWreaths(loadedData.wreaths);
+          }
+          
+          // TODO: Load reference scale if needed
+          // This would require adding a load method to useReferenceScale
+          
+          console.log('💡 ImageViewer: Finished loading data into hooks');
+        }
+      } catch (error) {
+        console.error('Error loading light data:', error);
+      }
+    };
+
+    loadLightData();
+  }, [projectId, loadLightStrings, loadSingleLights, loadWreaths]);
+
+  // Clear auto-save timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Save project light data
+  const handleSaveProject = useCallback(async () => {
+    if (!projectId || isSaving) return;
+
+    setIsSaving(true);
+    try {
+      const referenceScale = referenceLine && referenceLength ? {
+        referenceLine,
+        referenceLength
+      } : undefined;
+
+      await lightDataStorage.saveProjectLightData(
+        projectId,
+        lightStrings,
+        singleLights,
+        wreaths,
+        referenceScale
+      );
+
+      const now = new Date().toISOString();
+      setHasUnsavedChanges(false);
+
+      // Update saved data for comparison
+      setSavedLightData({
+        lightStrings,
+        singleLights,
+        wreaths,
+        referenceScale,
+        lastSaved: now,
+        version: '1.0'
+      });
+
+      console.log('💡 ImageViewer: Successfully saved project');
+    } catch (error) {
+      console.error('Error saving project:', error);
+      Alert.alert('Save Error', 'Failed to save your project. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [projectId, isSaving, lightStrings, singleLights, wreaths, referenceLine, referenceLength]);
+
+  // Check for unsaved changes
+  useEffect(() => {
+    const hasChanges = lightDataStorage.hasUnsavedChanges(
+      lightStrings,
+      singleLights,
+      wreaths,
+      savedLightData
+    );
+    setHasUnsavedChanges(hasChanges);
+
+    // Auto-save after 30 seconds of changes
+    if (hasChanges && !isSaving) {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+      
+      autoSaveTimerRef.current = setTimeout(() => {
+        handleSaveProject();
+      }, 30000); // 30 seconds
+    }
+  }, [lightStrings, singleLights, wreaths, savedLightData, isSaving, handleSaveProject]);
 
   // Pure pinch gesture for zoom only
   const pinchGesture = Gesture.Pinch()
@@ -528,6 +660,36 @@ const ImageViewer = ({ imgSource, onGoBack }) => {
                 size={isTablet ? 32 : 22}
                 color={nightModeEnabled ? '#FFD700' : '#333'}
               />
+            </TouchableOpacity>
+
+            {/* Save Button */}
+            <TouchableOpacity
+              onPress={handleSaveProject}
+              disabled={isSaving}
+              style={{
+                width: isTablet ? 60 : 40,
+                height: isTablet ? 60 : 40,
+                borderRadius: isTablet ? 30 : 20,
+                backgroundColor: hasUnsavedChanges 
+                  ? 'rgba(59, 130, 246, 0.9)' // Blue when unsaved changes
+                  : 'rgba(34, 197, 94, 0.9)', // Green when saved
+                justifyContent: 'center',
+                alignItems: 'center',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.15,
+                shadowRadius: 4,
+                elevation: 4,
+              }}>
+              {isSaving ? (
+                <ActivityIndicator size={isTablet ? "large" : "small"} color="white" />
+              ) : (
+                <MaterialIcons 
+                  name={hasUnsavedChanges ? "save" : "check"} 
+                  size={isTablet ? 32 : 22} 
+                  color="white" 
+                />
+              )}
             </TouchableOpacity>
 
             {/* Export Button */}

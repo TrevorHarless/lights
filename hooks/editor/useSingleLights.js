@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export function useSingleLights() {
   const [singleLights, setSingleLights] = useState([]);
@@ -79,6 +79,17 @@ export function useSingleLights() {
 
   const canUndoSingleLight = deletedSingleLights.length > 0;
 
+  // Load single lights from saved data
+  const loadSingleLights = useCallback((singleLightsData) => {
+    console.log('💡 useSingleLights: loadSingleLights called with:', singleLightsData);
+    if (singleLightsData && Array.isArray(singleLightsData)) {
+      setSingleLights(singleLightsData);
+      console.log('💡 useSingleLights: Loaded', singleLightsData.length, 'single lights');
+    } else {
+      console.log('💡 useSingleLights: No valid single lights data to load');
+    }
+  }, []);
+
   return {
     // State
     singleLights,
@@ -102,5 +113,8 @@ export function useSingleLights() {
     // Undo system
     undoDeleteSingleLight,
     canUndoSingleLight,
+
+    // Load functionality
+    loadSingleLights,
   };
 }
