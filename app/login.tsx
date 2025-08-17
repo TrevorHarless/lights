@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 import {
   Alert,
   Dimensions,
+  Platform,
   SafeAreaView,
   ScrollView,
   Text,
@@ -11,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "~/contexts/AuthContext";
+import AppleSignInButton from "~/components/AppleSignInButton";
 import "../global.css";
 
 export default function LoginScreen() {
@@ -19,6 +21,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const passwordRef = useRef<TextInput>(null);
+
 
   const { width } = Dimensions.get("window");
   const isTablet = width >= 768;
@@ -126,6 +129,24 @@ export default function LoginScreen() {
                 {loading ? "Signing in..." : "Sign In"}
               </Text>
             </TouchableOpacity>
+            
+            {Platform.OS === 'ios' && (
+              <>
+                <View className="flex-row items-center my-6">
+                  <View className="flex-1 h-px bg-gray-300" />
+                  <Text className="mx-4 text-gray-500 text-sm">or</Text>
+                  <View className="flex-1 h-px bg-gray-300" />
+                </View>
+                
+                <AppleSignInButton
+                  style={{
+                    width: '100%',
+                    height: isTablet ? 56 : 48,
+                  }}
+                  cornerRadius={12}
+                />
+              </>
+            )}
           </View>
 
           {/* Footer */}
