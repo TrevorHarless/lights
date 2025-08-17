@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 import {
   Alert,
   Dimensions,
+  Platform,
   SafeAreaView,
   ScrollView,
   Text,
@@ -11,6 +12,8 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "~/contexts/AuthContext";
+import AppleSignInButton from "~/components/AppleSignInButton";
+import * as AppleAuthentication from 'expo-apple-authentication';
 import "../global.css";
 
 export default function SignUpScreen() {
@@ -21,6 +24,7 @@ export default function SignUpScreen() {
   const { signUp } = useAuth();
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
+
 
   const { width } = Dimensions.get("window");
   const isTablet = width >= 768;
@@ -172,6 +176,25 @@ export default function SignUpScreen() {
                 {loading ? "Creating Account..." : "Create Account"}
               </Text>
             </TouchableOpacity>
+            
+            {Platform.OS === 'ios' && (
+              <>
+                <View className="flex-row items-center my-6">
+                  <View className="flex-1 h-px bg-gray-300" />
+                  <Text className="mx-4 text-gray-500 text-sm">or</Text>
+                  <View className="flex-1 h-px bg-gray-300" />
+                </View>
+                
+                <AppleSignInButton
+                  buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
+                  style={{
+                    width: '100%',
+                    height: isTablet ? 56 : 48,
+                  }}
+                  cornerRadius={12}
+                />
+              </>
+            )}
           </View>
 
           {/* Footer */}

@@ -1,5 +1,6 @@
 import { Session, User, AuthChangeEvent } from "@supabase/supabase-js";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { supabase } from "~/lib/supabase";
 
 interface AuthContextType {
@@ -8,6 +9,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithApple: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -33,7 +35,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        console.log('🔐 AUTH: User signed in');
+      } else if (event === 'SIGNED_OUT') {
+        console.log('🔐 AUTH: User signed out');
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -58,6 +66,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
+  const signInWithApple = async () => {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (credential.identityToken) {
+        const {
+          error,
+          data: { user },
+        } = await supabase.auth.signInWithIdToken({
+          provider: 'apple',
+          token: credential.identityToken,
+        });
+        
+        if (error) {
+          console.error('🍎 APPLE AUTH: Sign-in failed:', error.message);
+        } else {
+          console.log('🍎 APPLE AUTH: Successfully signed in');
+        }
+        
+        return { error };
+      } else {
+        console.error('🍎 APPLE AUTH: No identity token received');
+        return { error: { message: 'No identity token received' } };
+      }
+    } catch (e: any) {
+      if (e.code === 'ERR_REQUEST_CANCELED') {
+        return { error: { message: 'User canceled Apple sign-in' } };
+      } else {
+        console.error('🍎 APPLE AUTH: Error:', e.message);
+        return { error: e };
+      }
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -68,6 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signIn,
     signUp,
+    signInWithApple,
     signOut,
   };
 

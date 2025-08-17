@@ -155,95 +155,44 @@ class LoggedSupabaseClient {
     return {
       ...originalAuth,
       signInWithPassword: async (credentials: any) => {
-        console.log(`🔐 SUPABASE AUTH: SIGN_IN_WITH_PASSWORD`, `email: ${credentials.email}`)
-        const startTime = Date.now()
-        try {
-          const result = await originalAuth.signInWithPassword(credentials)
-          const duration = Date.now() - startTime
-          console.log(`🔐 SUPABASE AUTH: SIGN_IN_WITH_PASSWORD completed in ${duration}ms`, result.error ? `❌ Error: ${result.error.message}` : '✅ Success')
-          return result
-        } catch (error) {
-          const duration = Date.now() - startTime
-          console.error(`🔐 SUPABASE AUTH: SIGN_IN_WITH_PASSWORD failed in ${duration}ms`, error)
-          throw error
+        const result = await originalAuth.signInWithPassword(credentials)
+        if (result.error) {
+          console.error('🔐 AUTH: Sign-in failed:', result.error.message)
         }
+        return result
       },
       signUp: async (credentials: any) => {
-        console.log(`🔐 SUPABASE AUTH: SIGN_UP`, `email: ${credentials.email}`)
-        const startTime = Date.now()
-        try {
-          const result = await originalAuth.signUp(credentials)
-          const duration = Date.now() - startTime
-          console.log(`🔐 SUPABASE AUTH: SIGN_UP completed in ${duration}ms`, result.error ? `❌ Error: ${result.error.message}` : '✅ Success')
-          return result
-        } catch (error) {
-          const duration = Date.now() - startTime
-          console.error(`🔐 SUPABASE AUTH: SIGN_UP failed in ${duration}ms`, error)
-          throw error
+        const result = await originalAuth.signUp(credentials)
+        if (result.error) {
+          console.error('🔐 AUTH: Sign-up failed:', result.error.message)
         }
+        return result
       },
       signOut: async () => {
-        console.log(`🔐 SUPABASE AUTH: SIGN_OUT`)
-        const startTime = Date.now()
-        try {
-          const result = await originalAuth.signOut()
-          const duration = Date.now() - startTime
-          console.log(`🔐 SUPABASE AUTH: SIGN_OUT completed in ${duration}ms`, result.error ? `❌ Error: ${result.error.message}` : '✅ Success')
-          return result
-        } catch (error) {
-          const duration = Date.now() - startTime
-          console.error(`🔐 SUPABASE AUTH: SIGN_OUT failed in ${duration}ms`, error)
-          throw error
+        const result = await originalAuth.signOut()
+        if (result.error) {
+          console.error('🔐 AUTH: Sign-out failed:', result.error.message)
         }
+        return result
       },
       getUser: async () => {
-        console.log(`🔐 SUPABASE AUTH: GET_USER`)
-        const startTime = Date.now()
-        try {
-          const result = await originalAuth.getUser()
-          const duration = Date.now() - startTime
-          console.log(`🔐 SUPABASE AUTH: GET_USER completed in ${duration}ms`, result.error ? `❌ Error: ${result.error.message}` : '✅ Success')
-          return result
-        } catch (error) {
-          const duration = Date.now() - startTime
-          console.error(`🔐 SUPABASE AUTH: GET_USER failed in ${duration}ms`, error)
-          throw error
-        }
+        return originalAuth.getUser()
       },
       getSession: async () => {
-        console.log(`🔐 SUPABASE AUTH: GET_SESSION`)
-        const startTime = Date.now()
-        try {
-          const result = await originalAuth.getSession()
-          const duration = Date.now() - startTime
-          console.log(`🔐 SUPABASE AUTH: GET_SESSION completed in ${duration}ms`, result.error ? `❌ Error: ${result.error.message}` : '✅ Success')
-          return result
-        } catch (error) {
-          const duration = Date.now() - startTime
-          console.error(`🔐 SUPABASE AUTH: GET_SESSION failed in ${duration}ms`, error)
-          throw error
-        }
+        return originalAuth.getSession()
       },
       updateUser: async (attributes: any) => {
-        console.log(`🔐 SUPABASE AUTH: UPDATE_USER`, attributes)
-        const startTime = Date.now()
-        try {
-          const result = await originalAuth.updateUser(attributes)
-          const duration = Date.now() - startTime
-          console.log(`🔐 SUPABASE AUTH: UPDATE_USER completed in ${duration}ms`, result.error ? `❌ Error: ${result.error.message}` : '✅ Success')
-          return result
-        } catch (error) {
-          const duration = Date.now() - startTime
-          console.error(`🔐 SUPABASE AUTH: UPDATE_USER failed in ${duration}ms`, error)
-          throw error
+        return originalAuth.updateUser(attributes)
+      },
+      signInWithIdToken: async (credentials: any) => {
+        const result = await originalAuth.signInWithIdToken(credentials)
+        if (result.error) {
+          console.error('🔐 AUTH: Apple sign-in failed:', result.error.message)
         }
+        return result
       },
       onAuthStateChange: (callback: any) => {
-        console.log(`🔐 SUPABASE AUTH: ON_AUTH_STATE_CHANGE - Setting up listener`)
-        return originalAuth.onAuthStateChange((event, session) => {
-          console.log(`🔐 SUPABASE AUTH: AUTH_STATE_CHANGE event: ${event}`, session ? `user: ${session.user?.email}` : 'no session')
-          callback(event, session)
-        })
+        return originalAuth.onAuthStateChange(callback)
       }
     }
   }
