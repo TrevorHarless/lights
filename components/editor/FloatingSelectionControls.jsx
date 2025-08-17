@@ -12,10 +12,10 @@ export function FloatingSelectionControls({
   selectedWreathId,
   onDeleteWreath,
   onDeselectWreath,
-  // NEW: Single light selection props
-  selectedSingleLightIds,
-  onDeleteSingleLights,
-  onDeselectSingleLights,
+  // Singular light selection props
+  selectedLightId,
+  onDeleteSingularLight,
+  onDeselectSingularLight,
   // Mode
   interactionMode = 'string',
 }) {
@@ -25,27 +25,27 @@ export function FloatingSelectionControls({
 
   const hasStringSelection = selectedStringId && selectedStringEndpoint;
   const hasWreathSelection = selectedWreathId;
-  const hasSingleLightSelection = selectedSingleLightIds && selectedSingleLightIds.length > 0;
+  const hasSingularLightSelection = selectedLightId;
   
-  if (!hasStringSelection && !hasWreathSelection && !hasSingleLightSelection) {
+  if (!hasStringSelection && !hasWreathSelection && !hasSingularLightSelection) {
     return null;
   }
 
   const handleDelete = () => {
-    if (hasSingleLightSelection && onDeleteSingleLights) {
-      onDeleteSingleLights();
-    } else if (hasWreathSelection && onDeleteWreath) {
+    if (hasWreathSelection && onDeleteWreath) {
       onDeleteWreath();
+    } else if (hasSingularLightSelection && onDeleteSingularLight) {
+      onDeleteSingularLight();
     } else if (hasStringSelection && onDeleteString) {
       onDeleteString(selectedStringId);
     }
   };
 
   const handleDeselect = () => {
-    if (hasSingleLightSelection && onDeselectSingleLights) {
-      onDeselectSingleLights();
-    } else if (hasWreathSelection && onDeselectWreath) {
+    if (hasWreathSelection && onDeselectWreath) {
       onDeselectWreath();
+    } else if (hasSingularLightSelection && onDeselectSingularLight) {
+      onDeselectSingularLight();
     } else if (hasStringSelection && onDeselectString) {
       onDeselectString();
     }
@@ -59,7 +59,7 @@ export function FloatingSelectionControls({
       zIndex: 1001,
       gap: isTablet ? 16 : 10,
     }}>
-      {/* Delete button - works for strings, wreaths, and single lights */}
+      {/* Delete button - works for strings and wreaths */}
       <TouchableOpacity 
         onPress={handleDelete}
         style={{
@@ -78,7 +78,7 @@ export function FloatingSelectionControls({
         <MaterialIcons name="delete" size={isTablet ? 32 : 24} color="white" />
       </TouchableOpacity>
 
-      {/* Deselect button - NEW for better UX */}
+      {/* Deselect button */}
       <TouchableOpacity 
         onPress={handleDeselect}
         style={{

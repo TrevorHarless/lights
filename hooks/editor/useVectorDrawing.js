@@ -12,10 +12,6 @@ export function useVectorDrawing({
   deselectLightString,
   isSettingReference = false,
   onReferenceComplete = null,
-  // NEW: Tap mode parameters
-  interactionMode = 'string',
-  onSingleLightPlace = null,
-  findSingleLightAtPoint = null,
 }) {
   const [currentVector, setCurrentVector] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -113,8 +109,8 @@ export function useVectorDrawing({
       
       // If we've moved more than a small threshold, this is a drag, not a tap
       if (Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5) {
-        // Only start dragging if NOT in tap mode (to prevent accidental strings)
-        if (interactionMode !== 'tap' && (selectedAsset || isSettingReference) && !isDragging) {
+        // Start dragging for string drawing or reference mode
+        if ((selectedAsset || isSettingReference) && !isDragging) {
           setIsDragging(true);
 
           // Initialize the vector for drawing
@@ -157,29 +153,14 @@ export function useVectorDrawing({
       }
 
       if (isTap) {
-        // This was a tap - handle according to priority system from solution design
+        // This was a tap - handle string selection
         const point = { x: locationX, y: locationY };
-        
-        // Priority 1: Tap Mode Placement (when tap mode active + asset selected)
-        if (interactionMode === 'tap' && selectedAsset && onSingleLightPlace) {
-          onSingleLightPlace(point, selectedAsset.id);
-          return;
-        }
-        
-        // Priority 2: Selection (existing behavior enhanced for single lights)
         const closestString = findClosestLightString(point);
-        const closestSingleLight = findSingleLightAtPoint?.(point);
         
-        if (closestSingleLight) {
-          // Select single light
-          onTapSelection('single', closestSingleLight.id);
-        } else if (closestString) {
-          // Select light string
+        if (closestString) {
           onTapSelection('string', closestString.id);
         } else {
-          // Tap on empty space - deselect all
           deselectLightString();
-          // Note: Single light deselection will be handled in ImageViewer
         }
       } else if (isDragging && currentVector) {
         // This was a drag - complete the vector
