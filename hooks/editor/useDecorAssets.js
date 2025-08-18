@@ -1,9 +1,9 @@
-// hooks/editor/useWreathAssets.js
+// hooks/editor/useDecorAssets.js
 import React from "react";
 
-export function useWreathAssets() {
-  // Wreath asset definitions
-  const wreathAssets = [
+export function useDecorAssets() {
+  // Decor asset definitions
+  const decorAssets = [
     // PNG-based Wreaths (professional quality)
     {
       id: "wreath-traditional-pine",
@@ -50,22 +50,22 @@ export function useWreathAssets() {
     */
   ];
 
-  const [selectedWreathAsset, setSelectedWreathAsset] = React.useState(null);
+  const [selectedDecorAsset, setSelectedDecorAsset] = React.useState(null);
 
-  // Find the wreath asset by ID
-  const getWreathAssetById = (id) =>
-    wreathAssets.find((asset) => asset.id === id);
+  // Find the decor asset by ID
+  const getDecorAssetById = (id) =>
+    decorAssets.find((asset) => asset.id === id);
 
-  // Get all wreath types
-  const getWreathTypes = () => [
-    ...new Set(wreathAssets.map((asset) => asset.type)),
+  // Get all decor types
+  const getDecorTypes = () => [
+    ...new Set(decorAssets.map((asset) => asset.type)),
   ];
 
   return {
-    wreathAssets,
-    selectedWreathAsset,
-    setSelectedWreathAsset,
-    getWreathAssetById,
-    getWreathTypes,
+    decorAssets,
+    selectedDecorAsset,
+    setSelectedDecorAsset,
+    getDecorAssetById,
+    getDecorTypes,
   };
 }

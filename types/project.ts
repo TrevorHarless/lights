@@ -31,11 +31,20 @@ export interface ReferenceScale {
   referenceLength?: number
 }
 
+export interface MeasurementLine {
+  id: string
+  start: { x: number; y: number }
+  end: { x: number; y: number }
+  lengthInFeet: number
+  label: string
+}
+
 export interface LightData {
   lightStrings: LightString[]
   singleLights: SingleLight[]
   wreaths: Wreath[]
   referenceScale?: ReferenceScale
+  measurementLines?: MeasurementLine[]
   lastSaved: string
   version: string
 }

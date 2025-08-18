@@ -114,8 +114,9 @@ export function BottomToolbar({
         >
           <MaterialIcons 
             name={
-              interactionMode === 'wreath' ? 'circle' : 
+              interactionMode === 'wreath' ? 'star' : 
               interactionMode === 'tap' ? 'touch-app' : 
+              interactionMode === 'measure' ? 'square-foot' : 
               'timeline'
             } 
             size={isTablet ? 40 : 28} 
@@ -123,12 +124,13 @@ export function BottomToolbar({
               interactionMode === 'wreath' ? '#FF9800' : 
               interactionMode === 'tap' ? '#00BCD4' : 
               interactionMode === 'string' ? '#E91E63' :
+              interactionMode === 'measure' ? '#4CAF50' :
               'white'
             } 
           />
         </TouchableOpacity>
         
-        {/* Light Bulb */}
+        {/* Asset Categories */}
         <TouchableOpacity 
           style={{ 
             padding: isTablet ? 16 : 8,
@@ -138,7 +140,7 @@ export function BottomToolbar({
           onPress={handleLightPress}
         >
           <MaterialIcons 
-            name="lightbulb-outline" 
+            name="category" 
             size={isTablet ? 40 : 28} 
             color={selectedAsset ? '#4CAF50' : 'white'} 
           />

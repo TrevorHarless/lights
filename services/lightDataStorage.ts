@@ -1,4 +1,4 @@
-import { LightData, LightString, SingleLight, Wreath, ReferenceScale } from '~/types/project';
+import { LightData, LightString, SingleLight, Wreath, ReferenceScale, MeasurementLine } from '~/types/project';
 import { localStorageService } from './localStorage';
 
 export const lightDataStorage = {
@@ -10,7 +10,8 @@ export const lightDataStorage = {
     lightStrings: LightString[],
     singleLights: SingleLight[],
     wreaths: Wreath[],
-    referenceScale?: ReferenceScale
+    referenceScale?: ReferenceScale,
+    measurementLines?: MeasurementLine[]
   ): Promise<void> {
     try {
       const project = await localStorageService.getProject(projectId);
@@ -23,6 +24,7 @@ export const lightDataStorage = {
         singleLights,
         wreaths,
         referenceScale,
+        measurementLines,
         lastSaved: new Date().toISOString(),
         version: '1.0'
       };
@@ -73,7 +75,8 @@ export const lightDataStorage = {
       return !!(project?.light_data && (
         project.light_data.lightStrings.length > 0 ||
         project.light_data.singleLights.length > 0 ||
-        project.light_data.wreaths.length > 0
+        project.light_data.wreaths.length > 0 ||
+        (project.light_data.measurementLines && project.light_data.measurementLines.length > 0)
       ));
     } catch (error) {
       console.error('Error checking light data:', error);
@@ -112,6 +115,7 @@ export const lightDataStorage = {
       lightStrings: [],
       singleLights: [],
       wreaths: [],
+      measurementLines: [],
       lastSaved: new Date().toISOString(),
       version: '1.0'
     };
@@ -124,19 +128,23 @@ export const lightDataStorage = {
     currentLightStrings: LightString[],
     currentSingleLights: SingleLight[],
     currentWreaths: Wreath[],
+    currentMeasurementLines: MeasurementLine[],
     savedLightData: LightData | null
   ): boolean {
     if (!savedLightData) {
       // No saved data - consider it unsaved if there's any current data
       return currentLightStrings.length > 0 || 
              currentSingleLights.length > 0 || 
-             currentWreaths.length > 0;
+             currentWreaths.length > 0 ||
+             currentMeasurementLines.length > 0;
     }
 
     // Simple comparison - check if counts differ
+    const savedMeasurementLines = savedLightData.measurementLines || [];
     if (currentLightStrings.length !== savedLightData.lightStrings.length ||
         currentSingleLights.length !== savedLightData.singleLights.length ||
-        currentWreaths.length !== savedLightData.wreaths.length) {
+        currentWreaths.length !== savedLightData.wreaths.length ||
+        currentMeasurementLines.length !== savedMeasurementLines.length) {
       return true;
     }
 

@@ -8,14 +8,18 @@ export function FloatingSelectionControls({
   selectedStringEndpoint,
   onDeleteString,
   onDeselectString,
-  // Wreath selection props
-  selectedWreathId,
-  onDeleteWreath,
-  onDeselectWreath,
+  // Decor selection props
+  selectedDecorId,
+  onDeleteDecor,
+  onDeselectDecor,
   // Singular light selection props
   selectedLightId,
   onDeleteSingularLight,
   onDeselectSingularLight,
+  // Measurement line selection props
+  selectedMeasurementId,
+  onDeleteMeasurementLine,
+  onDeselectMeasurementLine,
   // Mode
   interactionMode = 'string',
 }) {
@@ -24,28 +28,33 @@ export function FloatingSelectionControls({
   const isTablet = width >= 768;
 
   const hasStringSelection = selectedStringId && selectedStringEndpoint;
-  const hasWreathSelection = selectedWreathId;
+  const hasDecorSelection = selectedDecorId;
   const hasSingularLightSelection = selectedLightId;
+  const hasMeasurementSelection = selectedMeasurementId;
   
-  if (!hasStringSelection && !hasWreathSelection && !hasSingularLightSelection) {
+  if (!hasStringSelection && !hasDecorSelection && !hasSingularLightSelection && !hasMeasurementSelection) {
     return null;
   }
 
   const handleDelete = () => {
-    if (hasWreathSelection && onDeleteWreath) {
-      onDeleteWreath();
+    if (hasDecorSelection && onDeleteDecor) {
+      onDeleteDecor();
     } else if (hasSingularLightSelection && onDeleteSingularLight) {
       onDeleteSingularLight();
+    } else if (hasMeasurementSelection && onDeleteMeasurementLine) {
+      onDeleteMeasurementLine(selectedMeasurementId);
     } else if (hasStringSelection && onDeleteString) {
       onDeleteString(selectedStringId);
     }
   };
 
   const handleDeselect = () => {
-    if (hasWreathSelection && onDeselectWreath) {
-      onDeselectWreath();
+    if (hasDecorSelection && onDeselectDecor) {
+      onDeselectDecor();
     } else if (hasSingularLightSelection && onDeselectSingularLight) {
       onDeselectSingularLight();
+    } else if (hasMeasurementSelection && onDeselectMeasurementLine) {
+      onDeselectMeasurementLine();
     } else if (hasStringSelection && onDeselectString) {
       onDeselectString();
     }
@@ -59,7 +68,7 @@ export function FloatingSelectionControls({
       zIndex: 1001,
       gap: isTablet ? 16 : 10,
     }}>
-      {/* Delete button - works for strings and wreaths */}
+      {/* Delete button - works for strings and decor */}
       <TouchableOpacity 
         onPress={handleDelete}
         style={{

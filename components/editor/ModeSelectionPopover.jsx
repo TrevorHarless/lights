@@ -28,10 +28,17 @@ export function ModeSelectionPopover({
     },
     {
       id: 'wreath',
-      name: 'Wreath Mode',
-      description: 'Place and resize circular wreaths',
-      icon: 'circle',
+      name: 'Decor Mode',
+      description: 'Place and resize decorative elements',
+      icon: 'star',
       color: '#FF9800', // Orange (keeping the same)
+    },
+    {
+      id: 'measure',
+      name: 'Measure Mode',
+      description: 'Draw lines to measure house dimensions',
+      icon: 'square-foot',
+      color: '#4CAF50', // Green
     },
   ];
 
@@ -178,7 +185,7 @@ export function ModeSelectionPopover({
                 lineHeight: isTablet ? 22 : 20,
               }}
             >
-              Note: You can only select and interact with assets in the current mode (i.e. you cannot interact with Wreaths while being in the String Mode)
+              Note: You can only select and interact with assets in the current mode (i.e. you cannot interact with Decor items while being in the String Mode)
             </Text>
           </View>
 

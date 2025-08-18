@@ -39,7 +39,7 @@ export function LightSelectionPopover({
   const getCategoryDisplayName = (category) => {
     switch (category) {
       case 'string': return 'String Lights';
-      case 'wreath': return 'Wreaths';
+      case 'wreath': return 'Decor';
       case 'net': return 'Net Lights';
       case 'custom': return 'Custom';
       default: return category.charAt(0).toUpperCase() + category.slice(1);
