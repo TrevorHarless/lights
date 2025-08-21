@@ -95,17 +95,17 @@ export function useReferenceScale() {
   );
 
   // Calculate scaled light spacing based on real-world light spacing
-  // Use 6 inches (0.5 feet) for better visual density on mobile screens
+  // Use 12 inches (1 foot) for realistic holiday light spacing - typical range is 12-15 inches
   const getScaledLightSpacing = useCallback(
-    (lightSpacingInches = 6) => {
+    (lightSpacingInches = 12) => {
       const scaleFactor = getScaleFactor();
-      if (!scaleFactor) return 30; // fallback to default pixel spacing
+      if (!scaleFactor) return 36; // fallback to default pixel spacing (increased from 30 to match 12" spacing)
 
       const lightSpacingFeet = lightSpacingInches / 12; // convert inches to feet
       const spacing = lightSpacingFeet * scaleFactor; // convert to pixels
 
-      // Ensure minimum spacing for usability (at least 8 pixels apart)
-      const minSpacing = 8;
+      // Ensure minimum spacing for usability (at least 12 pixels apart for better light definition)
+      const minSpacing = 12;
       const finalSpacing = Math.max(spacing, minSpacing);
 
       // console.log("🔍 Light Spacing Debug:", {
