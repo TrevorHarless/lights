@@ -183,7 +183,7 @@ export function useLightAssets() {
       spacing: 15, // Default fallback spacing (pixels) - represents ~6" real-world spacing for mini lights
       baseSize: 8,
       renderType: "image",
-      image: require("~/assets/light-thumbnails/Mini-Warm-White.png"),
+      image: require("~/assets/light-thumbnails/Warm-White.png"),
       renderStyle: {
         backgroundColor: "#FFF8DC", // Match C9 warm white color
         shadowColor: "#FFD700", // Golden glow for realistic light emission
@@ -200,7 +200,7 @@ export function useLightAssets() {
       spacing: 15, // Default fallback spacing (pixels) - represents ~6" real-world spacing for mini lights
       baseSize: 8,
       renderType: "image",
-      image: require("~/assets/light-thumbnails/Mini-Multicolor.png"),
+      image: require("~/assets/light-thumbnails/Multicolor.png"),
       renderStyle: (lightIndex = 0) => {
         // Same realistic colors as C9 multicolor but scaled for mini lights
         const colorData = [
@@ -256,12 +256,12 @@ export function useLightAssets() {
       renderStyle: (lightIndex = 0) => {
         // Same pattern as C9 but for mini lights
         const colorData = [
-          { bg: "#FFD700", shadow: "#FFF8DC", name: "Yellow" },   // Rich gold yellow with warm glow
-          { bg: "#DC143C", shadow: "#FF6B6B", name: "Red" },      // Deep crimson red with warm glow
-          { bg: "#FFD700", shadow: "#FFF8DC", name: "Yellow" },   // Rich gold yellow with warm glow
-          { bg: "#228B22", shadow: "#90EE90", name: "Green" },    // Forest green with soft glow
+          { bg: "#FFD700", shadow: "#FFF8DC", name: "Yellow" }, // Rich gold yellow with warm glow
+          { bg: "#DC143C", shadow: "#FF6B6B", name: "Red" }, // Deep crimson red with warm glow
+          { bg: "#FFD700", shadow: "#FFF8DC", name: "Yellow" }, // Rich gold yellow with warm glow
+          { bg: "#228B22", shadow: "#90EE90", name: "Green" }, // Forest green with soft glow
         ];
-        
+
         const colorInfo = colorData[lightIndex % colorData.length];
         return {
           backgroundColor: colorInfo.bg,
