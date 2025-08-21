@@ -20,6 +20,7 @@ import ViewShot from 'react-native-view-shot';
 
 import { BottomToolbar } from './BottomToolbar';
 import { ClearAllConfirmModal } from './ClearAllConfirmModal';
+import { DecorRenderer } from './DecorRenderer';
 import { FloatingSelectionControls } from './FloatingSelectionControls';
 import { ImageWithNightOverlay } from './ImageWithNightOverlay';
 import { MeasureLineRenderer } from './MeasureLineRenderer';
@@ -27,8 +28,10 @@ import { ReferenceLineRenderer } from './ReferenceLineRenderer';
 import { ReferenceModal } from './ReferenceModal';
 import SimpleLightRenderer from './SimpleLightRenderer';
 import SingularLightRenderer from './SingularLightRenderer';
-import { DecorRenderer } from './DecorRenderer';
 
+import { useDecorAssets } from '~/hooks/editor/useDecorAssets';
+import { useDecorGestures } from '~/hooks/editor/useDecorGestures';
+import { useDecorShapes } from '~/hooks/editor/useDecorShapes';
 import { useLightAssets } from '~/hooks/editor/useLightAssets';
 import { useLightStrings } from '~/hooks/editor/useLightStrings';
 import { useMeasurementLines } from '~/hooks/editor/useMeasurementLines';
@@ -36,9 +39,6 @@ import { useReferenceScale } from '~/hooks/editor/useReferenceScale';
 import { useSingularLightGestures } from '~/hooks/editor/useSingularLightGestures';
 import { useSingularLights } from '~/hooks/editor/useSingularLights';
 import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
-import { useDecorAssets } from '~/hooks/editor/useDecorAssets';
-import { useDecorGestures } from '~/hooks/editor/useDecorGestures';
-import { useDecorShapes } from '~/hooks/editor/useDecorShapes';
 import { lightDataStorage } from '~/services/lightDataStorage';
 
 const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
@@ -69,12 +69,12 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   // Combined asset helpers
   const getAssetById = (id) => getLightAssetById(id) || getDecorAssetById(id);
   const getAssetsByCategory = (category) => {
-    if (category === 'wreath') {
+    if (category === 'decor') {
       return decorAssets;
     }
     return getLightAssetsByCategory(category);
   };
-  const getCategories = () => [...getLightCategories(), 'wreath'];
+  const getCategories = () => [...getLightCategories(), 'decor'];
 
   // Reference scale hook
   const {
@@ -163,19 +163,35 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
 
 
   // Interaction mode state
-  const [interactionMode, setInteractionMode] = React.useState('string'); // 'string', 'tap', 'wreath', or 'measure'
+  const [interactionMode, setInteractionMode] = React.useState('string'); // 'string', 'tap', 'decor', or 'measure'
+
+  // Enhanced mode handler that clears selections when manually switching modes
+  const handleModeChange = React.useCallback((newMode) => {
+    // Only clear selections for manual mode changes, not automatic ones from asset selection
+    if (newMode !== interactionMode) {
+      // Clear all selections
+      deselectLightString();
+      deselectSingularLight();
+      deselectMeasurementLine();
+      setSelectedDecorId(null);
+      setSelectedAsset(null);
+    }
+    setInteractionMode(newMode);
+  }, [interactionMode, deselectLightString, deselectSingularLight, deselectMeasurementLine, setSelectedDecorId, setSelectedAsset]);
 
   // Auto-switch mode based on selected asset
   React.useEffect(() => {
     if (selectedAsset) {
-      if (selectedAsset.category === 'wreath') {
-        setInteractionMode('wreath');
+      if (selectedAsset.category === 'decor') {
+        setInteractionMode('decor');
       } else {
-        // Default to tap mode for string assets unless already in string mode
-        setInteractionMode(interactionMode === 'string' ? 'string' : 'tap');
+        // For light assets, only auto-switch to string mode if not in tap mode
+        if (interactionMode !== 'tap') {
+          setInteractionMode('string');
+        }
       }
     }
-  }, [selectedAsset]);
+  }, [selectedAsset, interactionMode]);
 
   // Enhanced tap selection handler
   const handleTapSelection = (type, id) => {
@@ -190,7 +206,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       case 'string':
         selectLightString(id);
         break;
-      case 'wreath':
+      case 'decor':
         setSelectedDecorId(id);
         break;
       case 'light':
@@ -218,6 +234,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     deselectLightString,
     isSettingReference,
     onReferenceComplete: handleReferenceLineComplete,
+    interactionMode,
   });
 
   // Decor placement/manipulation gestures
@@ -235,7 +252,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     getResizeHandles,
     selectedDecorId,
     setSelectedDecorId,
-    isEnabled: interactionMode === 'wreath',
+    isEnabled: interactionMode === 'decor',
   });
 
   // Singular light tap/manipulation gestures
@@ -378,13 +395,13 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   // Use appropriate pan responder based on mode
   const activePanResponder = 
     isSettingReference ? stringPanResponder : // Use string pan responder for reference setting
-    interactionMode === 'wreath' ? decorPanResponder :
+    interactionMode === 'decor' ? decorPanResponder :
     interactionMode === 'tap' ? singularLightPanResponder :
     interactionMode === 'measure' ? measurePanResponder :
     stringPanResponder;
   const isDragging = 
     isSettingReference ? isDrawingString : // Use string dragging state for reference setting
-    interactionMode === 'wreath' ? isManipulatingDecor :
+    interactionMode === 'decor' ? isManipulatingDecor :
     interactionMode === 'tap' ? isManipulatingSingularLight :
     interactionMode === 'measure' ? (isMeasuring || !!draggedMeasureHandle) :
     isDrawingString;
@@ -448,7 +465,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           console.log('💡 ImageViewer: About to load data into hooks');
           console.log('💡 ImageViewer: Light strings to load:', loadedData.lightStrings?.length || 0);
           console.log('💡 ImageViewer: Singular lights to load:', loadedData.singleLights?.length || 0);
-          console.log('💡 ImageViewer: Decor to load:', loadedData.wreaths?.length || 0);
+          console.log('💡 ImageViewer: Decor to load:', loadedData.decor?.length || 0);
           
           // Apply loaded data to hooks
           if (loadedData.lightStrings?.length > 0) {
@@ -459,9 +476,9 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
             console.log('💡 ImageViewer: Calling loadSingularLights with:', loadedData.singleLights);
             loadSingularLights(loadedData.singleLights);
           }
-          if (loadedData.wreaths?.length > 0) {
-            console.log('💡 ImageViewer: Calling loadDecor with:', loadedData.wreaths);
-            loadDecor(loadedData.wreaths);
+          if (loadedData.decor?.length > 0) {
+            console.log('💡 ImageViewer: Calling loadDecor with:', loadedData.decor);
+            loadDecor(loadedData.decor);
           }
           
           // Load reference scale if it exists
@@ -998,7 +1015,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
                   color: '#EF4444', 
                   fontSize: isTablet ? 20 : 14 
                 }}>
-                  Clear All
+                  Clear All Lights & Decor
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1066,7 +1083,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
                       decor={decor}
                       selectedDecorId={selectedDecorId}
                       onDecorSelect={setSelectedDecorId}
-                      showResizeHandles={interactionMode === 'wreath'}
+                      showResizeHandles={interactionMode === 'decor'}
                       getResizeHandles={getResizeHandles}
                     />
                   </>
@@ -1130,7 +1147,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           canUndo={!!deletedString || !!deletedLight}
           onUndo={handleUndo}
           interactionMode={interactionMode}
-          onModeToggle={setInteractionMode}
+          onModeToggle={handleModeChange}
           onCreateCustomAsset={createCustomAsset}
           onRemoveCustomAsset={removeCustomAsset}
         />

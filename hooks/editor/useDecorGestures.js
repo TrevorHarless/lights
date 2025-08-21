@@ -1,5 +1,5 @@
 // hooks/editor/useDecorGestures.js
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { PanResponder } from 'react-native';
 
 export function useDecorGestures({
@@ -79,7 +79,7 @@ export function useDecorGestures({
       }
 
       // If we have a decor asset selected and didn't touch anything, place new decor item
-      if (selectedAsset && selectedAsset.category === 'wreath') {
+      if (selectedAsset && selectedAsset.category === 'decor') {
         const newDecorId = addDecor(touchPoint, null, selectedAsset.id, selectedAsset);
         setSelectedDecorId(newDecorId);
         // Clear the selected asset so user exits placement mode

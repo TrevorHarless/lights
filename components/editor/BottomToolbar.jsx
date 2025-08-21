@@ -114,14 +114,14 @@ export function BottomToolbar({
         >
           <MaterialIcons 
             name={
-              interactionMode === 'wreath' ? 'star' : 
+              interactionMode === 'decor' ? 'star' : 
               interactionMode === 'tap' ? 'touch-app' : 
               interactionMode === 'measure' ? 'square-foot' : 
               'timeline'
             } 
             size={isTablet ? 40 : 28} 
             color={
-              interactionMode === 'wreath' ? '#FF9800' : 
+              interactionMode === 'decor' ? '#FF9800' : 
               interactionMode === 'tap' ? '#00BCD4' : 
               interactionMode === 'string' ? '#E91E63' :
               interactionMode === 'measure' ? '#4CAF50' :

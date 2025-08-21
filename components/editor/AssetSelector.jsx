@@ -19,7 +19,7 @@ export const AssetSelector = ({
   const getCategoryDisplayName = (category) => {
     switch (category) {
       case 'string': return 'String Lights';
-      case 'wreath': return 'Wreaths';
+      case 'decor': return 'Decor';
       case 'net': return 'Net Lights';
       default: return category.charAt(0).toUpperCase() + category.slice(1);
     }

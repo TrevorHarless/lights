@@ -62,7 +62,7 @@ export function ClearAllConfirmModal({
               lineHeight: isTablet ? 26 : 22,
             }}
           >
-            This will permanently remove all light strings, individual lights, and wreaths from your design.
+            This will permanently remove all light strings, individual lights, and decor from your design.
           </Text>
 
           {/* Warning note */}

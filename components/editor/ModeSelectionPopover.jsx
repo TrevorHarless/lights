@@ -27,7 +27,7 @@ export function ModeSelectionPopover({
       color: '#00BCD4', // Cyan
     },
     {
-      id: 'wreath',
+      id: 'decor',
       name: 'Decor Mode',
       description: 'Place and resize decorative elements',
       icon: 'star',
@@ -59,7 +59,9 @@ export function ModeSelectionPopover({
         onPress={onClose}
         activeOpacity={1}
       >
-        <View
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
           style={{
             backgroundColor: 'white',
             borderRadius: isTablet ? 24 : 16,
@@ -73,7 +75,6 @@ export function ModeSelectionPopover({
             shadowRadius: 8,
             elevation: 8,
           }}
-          onStartShouldSetResponder={() => true}
         >
           <Text
             style={{
@@ -209,7 +210,7 @@ export function ModeSelectionPopover({
               Cancel
             </Text>
           </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
       </TouchableOpacity>
     </Modal>
   );

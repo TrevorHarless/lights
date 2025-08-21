@@ -1,7 +1,39 @@
-import { LightData, LightString, SingleLight, Wreath, ReferenceScale, MeasurementLine } from '~/types/project';
+import { LightData, LightString, SingleLight, Decor, ReferenceScale, MeasurementLine } from '~/types/project';
 import { localStorageService } from './localStorage';
 
 export const lightDataStorage = {
+  /**
+   * Helper method to find a project, with fallback for synced local projects
+   */
+  async findProject(projectId: string): Promise<any> {
+    let project = await localStorageService.getProject(projectId);
+    
+    // If project not found and this looks like a local ID, try to find synced version
+    if (!project && projectId.startsWith('local_')) {
+      console.log(`💡 LightData: Project ${projectId} not found, attempting to find synced version`);
+      const allProjects = await localStorageService.getProjects();
+      
+      const timestampMatch = projectId.match(/local_(\d+)/);
+      if (timestampMatch) {
+        const timestamp = parseInt(timestampMatch[1]);
+        const creationDate = new Date(timestamp);
+        const timeWindow = 5 * 60 * 1000; // 5 minutes
+        
+        project = allProjects.find(p => {
+          if (p.id.startsWith('local_')) return false;
+          const projectCreation = new Date(p.created_at);
+          const timeDiff = Math.abs(projectCreation.getTime() - creationDate.getTime());
+          return timeDiff < timeWindow;
+        });
+        
+        if (project) {
+          console.log(`💡 LightData: Found synced project ${project.id} (was ${projectId})`);
+        }
+      }
+    }
+    
+    return project;
+  },
   /**
    * Save light drawing data to a project
    */
@@ -9,12 +41,12 @@ export const lightDataStorage = {
     projectId: string,
     lightStrings: LightString[],
     singleLights: SingleLight[],
-    wreaths: Wreath[],
+    decor: Decor[],
     referenceScale?: ReferenceScale,
     measurementLines?: MeasurementLine[]
   ): Promise<void> {
     try {
-      const project = await localStorageService.getProject(projectId);
+      const project = await this.findProject(projectId);
       if (!project) {
         throw new Error(`Project ${projectId} not found`);
       }
@@ -22,7 +54,7 @@ export const lightDataStorage = {
       const lightData: LightData = {
         lightStrings,
         singleLights,
-        wreaths,
+        decor,
         referenceScale,
         measurementLines,
         lastSaved: new Date().toISOString(),
@@ -47,7 +79,7 @@ export const lightDataStorage = {
    */
   async loadProjectLightData(projectId: string): Promise<LightData | null> {
     try {
-      const project = await localStorageService.getProject(projectId);
+      const project = await this.findProject(projectId);
       if (!project) {
         console.warn(`Project ${projectId} not found`);
         return null;
@@ -71,11 +103,11 @@ export const lightDataStorage = {
    */
   async hasLightData(projectId: string): Promise<boolean> {
     try {
-      const project = await localStorageService.getProject(projectId);
+      const project = await this.findProject(projectId);
       return !!(project?.light_data && (
         project.light_data.lightStrings.length > 0 ||
         project.light_data.singleLights.length > 0 ||
-        project.light_data.wreaths.length > 0 ||
+        project.light_data.decor.length > 0 ||
         (project.light_data.measurementLines && project.light_data.measurementLines.length > 0)
       ));
     } catch (error) {
@@ -89,7 +121,7 @@ export const lightDataStorage = {
    */
   async clearProjectLightData(projectId: string): Promise<void> {
     try {
-      const project = await localStorageService.getProject(projectId);
+      const project = await this.findProject(projectId);
       if (!project) {
         throw new Error(`Project ${projectId} not found`);
       }
@@ -114,7 +146,7 @@ export const lightDataStorage = {
     return {
       lightStrings: [],
       singleLights: [],
-      wreaths: [],
+      decor: [],
       measurementLines: [],
       lastSaved: new Date().toISOString(),
       version: '1.0'
@@ -127,7 +159,7 @@ export const lightDataStorage = {
   hasUnsavedChanges(
     currentLightStrings: LightString[],
     currentSingleLights: SingleLight[],
-    currentWreaths: Wreath[],
+    currentDecor: Decor[],
     currentMeasurementLines: MeasurementLine[],
     savedLightData: LightData | null
   ): boolean {
@@ -135,7 +167,7 @@ export const lightDataStorage = {
       // No saved data - consider it unsaved if there's any current data
       return currentLightStrings.length > 0 || 
              currentSingleLights.length > 0 || 
-             currentWreaths.length > 0 ||
+             currentDecor.length > 0 ||
              currentMeasurementLines.length > 0;
     }
 
@@ -143,7 +175,7 @@ export const lightDataStorage = {
     const savedMeasurementLines = savedLightData.measurementLines || [];
     if (currentLightStrings.length !== savedLightData.lightStrings.length ||
         currentSingleLights.length !== savedLightData.singleLights.length ||
-        currentWreaths.length !== savedLightData.wreaths.length ||
+        currentDecor.length !== savedLightData.decor.length ||
         currentMeasurementLines.length !== savedMeasurementLines.length) {
       return true;
     }

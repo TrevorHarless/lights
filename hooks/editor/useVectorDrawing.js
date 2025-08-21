@@ -12,6 +12,7 @@ export function useVectorDrawing({
   deselectLightString,
   isSettingReference = false,
   onReferenceComplete = null,
+  interactionMode = 'string',
 }) {
   const [currentVector, setCurrentVector] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -57,17 +58,19 @@ export function useVectorDrawing({
       const touches = evt.nativeEvent.touches;
       if (touches.length !== 1) return false;
       
-      // Capture if we have an asset selected, in reference mode, or touching a handle
+      // Capture if we have an asset selected, in reference mode, touching a handle, or in string mode with existing strings
       const point = { x: evt.nativeEvent.locationX, y: evt.nativeEvent.locationY };
       const handle = findHandleAtPoint(point);
+      const canSelectStrings = interactionMode === 'string' && lightStrings.length > 0;
       
-      return selectedAsset || isSettingReference || handle;
+      return selectedAsset || isSettingReference || handle || canSelectStrings;
     },
     
     onMoveShouldSetPanResponder: (evt) => {
       // Don't capture moves if there are multiple touches (zoom/pan in progress)
       const touches = evt.nativeEvent.touches;
-      return touches.length === 1 && (selectedAsset || isSettingReference || dragHandle);
+      const canSelectStrings = interactionMode === 'string' && lightStrings.length > 0;
+      return touches.length === 1 && (selectedAsset || isSettingReference || dragHandle || canSelectStrings);
     },
 
     onPanResponderGrant: (evt, gestureState) => {
