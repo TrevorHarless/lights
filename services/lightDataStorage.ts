@@ -24,7 +24,7 @@ export const lightDataStorage = {
           const projectCreation = new Date(p.created_at);
           const timeDiff = Math.abs(projectCreation.getTime() - creationDate.getTime());
           return timeDiff < timeWindow;
-        });
+        }) || null;
         
         if (project) {
           console.log(`💡 LightData: Found synced project ${project.id} (was ${projectId})`);

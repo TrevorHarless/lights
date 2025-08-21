@@ -101,7 +101,6 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     addMeasurementLine,
     updateMeasurementLine,
     removeMeasurementLine,
-    clearAllMeasurementLines,
     selectMeasurementLine,
     deselectMeasurementLine,
     findMeasurementLineAtPoint,
@@ -133,7 +132,6 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     selectedLightId,
     deletedLight,
     addSingularLight,
-    updateSingularLight,
     moveSingularLight,
     deleteSingularLight,
     undoDelete: undoDeleteLight,
@@ -501,7 +499,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     };
 
     loadLightData();
-  }, [projectId, loadLightStrings, loadSingularLights, loadDecor, loadMeasurementLines]);
+  }, [projectId, loadLightStrings, loadSingularLights, loadDecor, loadMeasurementLines, loadReferenceScale]);
 
   // Recalculate measurement lines when reference scale changes
   useEffect(() => {
