@@ -1,14 +1,14 @@
-// hooks/editor/useWreathAssets.js
+// hooks/editor/useDecorAssets.js
 import React from "react";
 
-export function useWreathAssets() {
-  // Wreath asset definitions
-  const wreathAssets = [
-    // PNG-based Wreaths (professional quality)
+export function useDecorAssets() {
+  // Decor asset definitions
+  const decorAssets = [
+    // PNG-based Decor items (professional quality)
     {
       id: "wreath-traditional-pine",
       name: "Pine Wreath",
-      category: "wreath",
+      category: "decor",
       type: "traditional",
       renderType: "image",
       image: require("../../assets/wreaths/traditional-pine.png"),
@@ -18,7 +18,7 @@ export function useWreathAssets() {
     {
       id: "red-bow",
       name: "Bow",
-      category: "wreath",
+      category: "decor",
       type: "traditional",
       renderType: "image",
       image: require("../../assets/wreaths/red-bow.png"),
@@ -30,7 +30,7 @@ export function useWreathAssets() {
     {
       id: "wreath-holly-berries",
       name: "Holly & Berries",
-      category: "wreath",
+      category: "decor",
       type: "decorative", 
       renderType: "image",
       image: require("../../assets/wreaths/holly-berries.png"),
@@ -40,7 +40,7 @@ export function useWreathAssets() {
     {
       id: "wreath-red-bow",
       name: "Red Bow Wreath",
-      category: "wreath",
+      category: "decor",
       type: "bow",
       renderType: "image", 
       image: require("../../assets/wreaths/red-bow.png"),
@@ -50,22 +50,22 @@ export function useWreathAssets() {
     */
   ];
 
-  const [selectedWreathAsset, setSelectedWreathAsset] = React.useState(null);
+  const [selectedDecorAsset, setSelectedDecorAsset] = React.useState(null);
 
-  // Find the wreath asset by ID
-  const getWreathAssetById = (id) =>
-    wreathAssets.find((asset) => asset.id === id);
+  // Find the decor asset by ID
+  const getDecorAssetById = (id) =>
+    decorAssets.find((asset) => asset.id === id);
 
-  // Get all wreath types
-  const getWreathTypes = () => [
-    ...new Set(wreathAssets.map((asset) => asset.type)),
+  // Get all decor types
+  const getDecorTypes = () => [
+    ...new Set(decorAssets.map((asset) => asset.type)),
   ];
 
   return {
-    wreathAssets,
-    selectedWreathAsset,
-    setSelectedWreathAsset,
-    getWreathAssetById,
-    getWreathTypes,
+    decorAssets,
+    selectedDecorAsset,
+    setSelectedDecorAsset,
+    getDecorAssetById,
+    getDecorTypes,
   };
 }

@@ -39,9 +39,9 @@ export function LightSelectionPopover({
   const getCategoryDisplayName = (category) => {
     switch (category) {
       case 'string': return 'String Lights';
-      case 'wreath': return 'Wreaths';
+      case 'decor': return 'Decor';
       case 'net': return 'Net Lights';
-      case 'custom': return 'Custom';
+      case 'custom': return 'Custom Lights';
       default: return category.charAt(0).toUpperCase() + category.slice(1);
     }
   };
@@ -98,22 +98,26 @@ export function LightSelectionPopover({
         activeOpacity={1} 
         onPress={onClose}
       >
-        <View style={{
-          backgroundColor: 'white',
-          borderTopLeftRadius: isTablet ? 30 : 20,
-          borderTopRightRadius: isTablet ? 30 : 20,
-          paddingTop: isTablet ? 32 : 20,
-          paddingBottom: isTablet ? 32 : 40,
-          paddingHorizontal: isTablet ? 32 : 20,
-          maxHeight: isTablet ? '70%' : '50%',
-          width: '100%',
-          maxWidth: '100%',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.15,
-          shadowRadius: 12,
-          elevation: 8,
-        }}>
+        <TouchableOpacity 
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
+          style={{
+            backgroundColor: 'white',
+            borderTopLeftRadius: isTablet ? 30 : 20,
+            borderTopRightRadius: isTablet ? 30 : 20,
+            paddingTop: isTablet ? 32 : 20,
+            paddingBottom: isTablet ? 32 : 40,
+            paddingHorizontal: isTablet ? 32 : 20,
+            maxHeight: isTablet ? '70%' : '50%',
+            width: '100%',
+            maxWidth: '100%',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 12,
+            elevation: 8,
+          }}
+        >
           <View style={{
             flexDirection: 'row',
             justifyContent: 'space-between',
@@ -323,7 +327,7 @@ export function LightSelectionPopover({
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </View>
+        </TouchableOpacity>
       </TouchableOpacity>
 
       {/* Custom Light Creation Modal */}

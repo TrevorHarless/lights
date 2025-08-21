@@ -27,11 +27,18 @@ export function ModeSelectionPopover({
       color: '#00BCD4', // Cyan
     },
     {
-      id: 'wreath',
-      name: 'Wreath Mode',
-      description: 'Place and resize circular wreaths',
-      icon: 'circle',
+      id: 'decor',
+      name: 'Decor Mode',
+      description: 'Place and resize decorative elements',
+      icon: 'star',
       color: '#FF9800', // Orange (keeping the same)
+    },
+    {
+      id: 'measure',
+      name: 'Measure Mode',
+      description: 'Draw lines to measure house dimensions',
+      icon: 'square-foot',
+      color: '#4CAF50', // Green
     },
   ];
 
@@ -52,7 +59,9 @@ export function ModeSelectionPopover({
         onPress={onClose}
         activeOpacity={1}
       >
-        <View
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
           style={{
             backgroundColor: 'white',
             borderRadius: isTablet ? 24 : 16,
@@ -66,7 +75,6 @@ export function ModeSelectionPopover({
             shadowRadius: 8,
             elevation: 8,
           }}
-          onStartShouldSetResponder={() => true}
         >
           <Text
             style={{
@@ -178,7 +186,7 @@ export function ModeSelectionPopover({
                 lineHeight: isTablet ? 22 : 20,
               }}
             >
-              Note: You can only select and interact with assets in the current mode (i.e. you cannot interact with Wreaths while being in the String Mode)
+              Note: You can only select and interact with assets in the current mode (i.e. you cannot interact with Decor items while being in the String Mode)
             </Text>
           </View>
 
@@ -202,7 +210,7 @@ export function ModeSelectionPopover({
               Cancel
             </Text>
           </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
       </TouchableOpacity>
     </Modal>
   );

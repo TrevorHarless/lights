@@ -13,7 +13,7 @@ export interface SingleLight {
   timestamp: number
 }
 
-export interface Wreath {
+export interface Decor {
   id: string
   type: string
   center: { x: number; y: number }
@@ -31,11 +31,20 @@ export interface ReferenceScale {
   referenceLength?: number
 }
 
+export interface MeasurementLine {
+  id: string
+  start: { x: number; y: number }
+  end: { x: number; y: number }
+  lengthInFeet: number
+  label: string
+}
+
 export interface LightData {
   lightStrings: LightString[]
   singleLights: SingleLight[]
-  wreaths: Wreath[]
+  decor: Decor[]
   referenceScale?: ReferenceScale
+  measurementLines?: MeasurementLine[]
   lastSaved: string
   version: string
 }

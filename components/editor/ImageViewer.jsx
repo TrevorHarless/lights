@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  PanResponder,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -19,23 +20,25 @@ import ViewShot from 'react-native-view-shot';
 
 import { BottomToolbar } from './BottomToolbar';
 import { ClearAllConfirmModal } from './ClearAllConfirmModal';
+import { DecorRenderer } from './DecorRenderer';
 import { FloatingSelectionControls } from './FloatingSelectionControls';
 import { ImageWithNightOverlay } from './ImageWithNightOverlay';
+import { MeasureLineRenderer } from './MeasureLineRenderer';
 import { ReferenceLineRenderer } from './ReferenceLineRenderer';
 import { ReferenceModal } from './ReferenceModal';
 import SimpleLightRenderer from './SimpleLightRenderer';
 import SingularLightRenderer from './SingularLightRenderer';
-import { WreathRenderer } from './WreathRenderer';
 
+import { useDecorAssets } from '~/hooks/editor/useDecorAssets';
+import { useDecorGestures } from '~/hooks/editor/useDecorGestures';
+import { useDecorShapes } from '~/hooks/editor/useDecorShapes';
 import { useLightAssets } from '~/hooks/editor/useLightAssets';
 import { useLightStrings } from '~/hooks/editor/useLightStrings';
+import { useMeasurementLines } from '~/hooks/editor/useMeasurementLines';
 import { useReferenceScale } from '~/hooks/editor/useReferenceScale';
 import { useSingularLightGestures } from '~/hooks/editor/useSingularLightGestures';
 import { useSingularLights } from '~/hooks/editor/useSingularLights';
 import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
-import { useWreathAssets } from '~/hooks/editor/useWreathAssets';
-import { useWreathGestures } from '~/hooks/editor/useWreathGestures';
-import { useWreathShapes } from '~/hooks/editor/useWreathShapes';
 import { lightDataStorage } from '~/services/lightDataStorage';
 
 const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
@@ -55,23 +58,23 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   } = useLightAssets();
 
   const {
-    wreathAssets,
-    getWreathAssetById,
-  } = useWreathAssets();
+    decorAssets,
+    getDecorAssetById,
+  } = useDecorAssets();
 
   // Combined asset system
-  const allAssets = [...lightAssets, ...wreathAssets];
+  const allAssets = [...lightAssets, ...decorAssets];
   const [selectedAsset, setSelectedAsset] = React.useState(null);
 
   // Combined asset helpers
-  const getAssetById = (id) => getLightAssetById(id) || getWreathAssetById(id);
+  const getAssetById = (id) => getLightAssetById(id) || getDecorAssetById(id);
   const getAssetsByCategory = (category) => {
-    if (category === 'wreath') {
-      return wreathAssets;
+    if (category === 'decor') {
+      return decorAssets;
     }
     return getLightAssetsByCategory(category);
   };
-  const getCategories = () => [...getLightCategories(), 'wreath'];
+  const getCategories = () => [...getLightCategories(), 'decor'];
 
   // Reference scale hook
   const {
@@ -88,7 +91,24 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     getScaledLightSpacing,
     getLightSizeScale,
     hasReference,
+    getLineLengthInFeet,
   } = useReferenceScale();
+
+  // Measurement lines hook
+  const {
+    measurementLines,
+    selectedMeasurementId,
+    addMeasurementLine,
+    updateMeasurementLine,
+    removeMeasurementLine,
+    selectMeasurementLine,
+    deselectMeasurementLine,
+    findMeasurementLineAtPoint,
+    findMeasurementHandleAtPoint,
+    loadMeasurementLines,
+    recalculateAllMeasurements,
+    getMeasurementLineById,
+  } = useMeasurementLines(getLineLengthInFeet);
 
   const {
     lightStrings,
@@ -112,7 +132,6 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     selectedLightId,
     deletedLight,
     addSingularLight,
-    updateSingularLight,
     moveSingularLight,
     deleteSingularLight,
     undoDelete: undoDeleteLight,
@@ -124,55 +143,75 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     loadSingularLights,
   } = useSingularLights(lightAssets);
 
-  // Wreath management
+  // Decor management
   const {
-    wreaths,
-    selectedWreathId,
-    setSelectedWreathId,
-    addWreath,
-    removeWreath,
-    moveWreath,
-    resizeWreath,
-    getWreathById,
-    findWreathAtPoint,
+    decor,
+    selectedDecorId,
+    setSelectedDecorId,
+    addDecor,
+    removeDecor,
+    moveDecor,
+    resizeDecor,
+    getDecorById,
+    findDecorAtPoint,
     getResizeHandles,
-    clearWreaths,
-    loadWreaths,
-  } = useWreathShapes();
+    clearDecor,
+    loadDecor,
+  } = useDecorShapes();
 
 
   // Interaction mode state
-  const [interactionMode, setInteractionMode] = React.useState('string'); // 'string', 'tap', or 'wreath'
+  const [interactionMode, setInteractionMode] = React.useState('string'); // 'string', 'tap', 'decor', or 'measure'
+
+  // Enhanced mode handler that clears selections when manually switching modes
+  const handleModeChange = React.useCallback((newMode) => {
+    // Only clear selections for manual mode changes, not automatic ones from asset selection
+    if (newMode !== interactionMode) {
+      // Clear all selections
+      deselectLightString();
+      deselectSingularLight();
+      deselectMeasurementLine();
+      setSelectedDecorId(null);
+      setSelectedAsset(null);
+    }
+    setInteractionMode(newMode);
+  }, [interactionMode, deselectLightString, deselectSingularLight, deselectMeasurementLine, setSelectedDecorId, setSelectedAsset]);
 
   // Auto-switch mode based on selected asset
   React.useEffect(() => {
     if (selectedAsset) {
-      if (selectedAsset.category === 'wreath') {
-        setInteractionMode('wreath');
+      if (selectedAsset.category === 'decor') {
+        setInteractionMode('decor');
       } else {
-        // Default to tap mode for string assets unless already in string mode
-        setInteractionMode(interactionMode === 'string' ? 'string' : 'tap');
+        // For light assets, only auto-switch to string mode if not in tap mode
+        if (interactionMode !== 'tap') {
+          setInteractionMode('string');
+        }
       }
     }
-  }, [selectedAsset]);
+  }, [selectedAsset, interactionMode]);
 
   // Enhanced tap selection handler
   const handleTapSelection = (type, id) => {
     // Clear other selections first
     deselectLightString();
-    setSelectedWreathId(null);
+    setSelectedDecorId(null);
     deselectSingularLight();
+    deselectMeasurementLine();
     
     // Apply new selection
     switch (type) {
       case 'string':
         selectLightString(id);
         break;
-      case 'wreath':
-        setSelectedWreathId(id);
+      case 'decor':
+        setSelectedDecorId(id);
         break;
       case 'light':
         selectSingularLight(id);
+        break;
+      case 'measurement':
+        selectMeasurementLine(id);
         break;
     }
   };
@@ -193,24 +232,25 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     deselectLightString,
     isSettingReference,
     onReferenceComplete: handleReferenceLineComplete,
+    interactionMode,
   });
 
-  // Wreath placement/manipulation gestures
+  // Decor placement/manipulation gestures
   const { 
-    panResponder: wreathPanResponder, 
-    isDragging: isManipulatingWreath 
-  } = useWreathGestures({
+    panResponder: decorPanResponder, 
+    isDragging: isManipulatingDecor 
+  } = useDecorGestures({
     selectedAsset,
     setSelectedAsset,
-    addWreath,
-    moveWreath,
-    resizeWreath,
-    findWreathAtPoint,
-    getWreathById,
+    addDecor,
+    moveDecor,
+    resizeDecor,
+    findDecorAtPoint,
+    getDecorById,
     getResizeHandles,
-    selectedWreathId,
-    setSelectedWreathId,
-    isEnabled: interactionMode === 'wreath',
+    selectedDecorId,
+    setSelectedDecorId,
+    isEnabled: interactionMode === 'decor',
   });
 
   // Singular light tap/manipulation gestures
@@ -231,14 +271,137 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     isEnabled: interactionMode === 'tap',
   });
 
+  // Measure mode gesture state
+  const [currentMeasureLine, setCurrentMeasureLine] = useState(null);
+  const [isMeasuring, setIsMeasuring] = useState(false);
+  const [draggedMeasureHandle, setDraggedMeasureHandle] = useState(null); // { lineId, handleType: 'start'|'end' }
+
+  // Simple measure mode pan responder
+  const measurePanResponder = PanResponder.create({
+    onStartShouldSetPanResponder: (evt) => {
+      const touches = evt.nativeEvent.touches;
+      return touches.length === 1 && interactionMode === 'measure';
+    },
+    
+    onMoveShouldSetPanResponder: (evt) => {
+      const touches = evt.nativeEvent.touches;
+      return touches.length === 1 && interactionMode === 'measure';
+    },
+
+    onPanResponderGrant: (evt) => {
+      const { locationX, locationY } = evt.nativeEvent;
+      const point = { x: locationX, y: locationY };
+      
+      // Check if touching a handle first (highest priority)
+      if (!isMeasuring) {
+        const handle = findMeasurementHandleAtPoint(point.x, point.y);
+        if (handle) {
+          setDraggedMeasureHandle(handle);
+          return;
+        }
+        
+        // Check if tapping on an existing measurement line to select it
+        const hitLine = findMeasurementLineAtPoint(point.x, point.y);
+        if (hitLine) {
+          handleTapSelection('measurement', hitLine.id);
+          return;
+        }
+        
+        // Clear selections if not hitting anything
+        deselectMeasurementLine();
+      }
+      
+      // Start drawing a new measurement line if reference is set
+      if (hasReference && !isMeasuring && !draggedMeasureHandle) {
+        setCurrentMeasureLine({
+          start: point,
+          end: point,
+        });
+        setIsMeasuring(true);
+      } else if (!hasReference && !isMeasuring && !draggedMeasureHandle) {
+        // Show alert with option to set reference
+        Alert.alert(
+          'Reference Required',
+          'You need to set a reference measurement first to establish scale. Would you like to set one now?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Set Reference', 
+              onPress: () => {
+                startReferenceMode();
+              }
+            }
+          ]
+        );
+      }
+    },
+
+    onPanResponderMove: (evt) => {
+      if (evt.nativeEvent.touches.length > 1) {
+        setCurrentMeasureLine(null);
+        setIsMeasuring(false);
+        setDraggedMeasureHandle(null);
+        return false;
+      }
+
+      const { locationX, locationY } = evt.nativeEvent;
+      const newPosition = { x: locationX, y: locationY };
+
+      // Handle measurement line handle dragging
+      if (draggedMeasureHandle) {
+        const selectedLine = getMeasurementLineById(draggedMeasureHandle.lineId);
+        if (selectedLine) {
+          const newStart = draggedMeasureHandle.handleType === 'start' ? newPosition : selectedLine.start;
+          const newEnd = draggedMeasureHandle.handleType === 'end' ? newPosition : selectedLine.end;
+          
+          updateMeasurementLine(draggedMeasureHandle.lineId, newStart, newEnd);
+        }
+        return;
+      }
+
+      // Handle drawing new measurement line
+      if (isMeasuring && currentMeasureLine) {
+        setCurrentMeasureLine(prev => ({
+          ...prev,
+          end: newPosition
+        }));
+      }
+    },
+
+    onPanResponderRelease: () => {
+      // Handle measurement line creation
+      if (isMeasuring && currentMeasureLine && hasReference) {
+        // Calculate line length and add the measurement
+        const lengthInFeet = getLineLengthInFeet(currentMeasureLine.start, currentMeasureLine.end);
+        if (lengthInFeet !== null && lengthInFeet > 0.1) { // Minimum line length
+          const measurementLine = {
+            ...currentMeasureLine,
+            lengthInFeet: lengthInFeet,
+            label: `${lengthInFeet.toFixed(1)} ft`
+          };
+          addMeasurementLine(measurementLine);
+        }
+      }
+      
+      // Reset all dragging states
+      setCurrentMeasureLine(null);
+      setIsMeasuring(false);
+      setDraggedMeasureHandle(null);
+    },
+  });
+
   // Use appropriate pan responder based on mode
   const activePanResponder = 
-    interactionMode === 'wreath' ? wreathPanResponder :
+    isSettingReference ? stringPanResponder : // Use string pan responder for reference setting
+    interactionMode === 'decor' ? decorPanResponder :
     interactionMode === 'tap' ? singularLightPanResponder :
+    interactionMode === 'measure' ? measurePanResponder :
     stringPanResponder;
   const isDragging = 
-    interactionMode === 'wreath' ? isManipulatingWreath :
+    isSettingReference ? isDrawingString : // Use string dragging state for reference setting
+    interactionMode === 'decor' ? isManipulatingDecor :
     interactionMode === 'tap' ? isManipulatingSingularLight :
+    interactionMode === 'measure' ? (isMeasuring || !!draggedMeasureHandle) :
     isDrawingString;
 
   // State for selected string's endpoint position for delete button
@@ -300,7 +463,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           console.log('💡 ImageViewer: About to load data into hooks');
           console.log('💡 ImageViewer: Light strings to load:', loadedData.lightStrings?.length || 0);
           console.log('💡 ImageViewer: Singular lights to load:', loadedData.singleLights?.length || 0);
-          console.log('💡 ImageViewer: Wreaths to load:', loadedData.wreaths?.length || 0);
+          console.log('💡 ImageViewer: Decor to load:', loadedData.decor?.length || 0);
           
           // Apply loaded data to hooks
           if (loadedData.lightStrings?.length > 0) {
@@ -311,15 +474,21 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
             console.log('💡 ImageViewer: Calling loadSingularLights with:', loadedData.singleLights);
             loadSingularLights(loadedData.singleLights);
           }
-          if (loadedData.wreaths?.length > 0) {
-            console.log('💡 ImageViewer: Calling loadWreaths with:', loadedData.wreaths);
-            loadWreaths(loadedData.wreaths);
+          if (loadedData.decor?.length > 0) {
+            console.log('💡 ImageViewer: Calling loadDecor with:', loadedData.decor);
+            loadDecor(loadedData.decor);
           }
           
           // Load reference scale if it exists
           if (loadedData.referenceScale) {
             console.log('💡 ImageViewer: Loading reference scale:', loadedData.referenceScale);
             loadReferenceScale(loadedData.referenceScale);
+          }
+          
+          // Load measurement lines if they exist
+          if (loadedData.measurementLines?.length > 0) {
+            console.log('💡 ImageViewer: Loading measurement lines:', loadedData.measurementLines);
+            loadMeasurementLines(loadedData.measurementLines);
           }
           
           console.log('💡 ImageViewer: Finished loading data into hooks');
@@ -330,7 +499,15 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     };
 
     loadLightData();
-  }, [projectId, loadLightStrings, loadSingularLights, loadWreaths]);
+  }, [projectId, loadLightStrings, loadSingularLights, loadDecor, loadMeasurementLines, loadReferenceScale]);
+
+  // Recalculate measurement lines when reference scale changes
+  useEffect(() => {
+    if (hasReference && measurementLines.length > 0) {
+      console.log('📏 ImageViewer: Reference scale changed, recalculating measurement lines');
+      recalculateAllMeasurements();
+    }
+  }, [hasReference, referenceLine, referenceLength, measurementLines.length, recalculateAllMeasurements]);
 
   // Clear auto-save timer on unmount
   useEffect(() => {
@@ -356,8 +533,9 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
         projectId,
         lightStrings,
         singularLights,
-        wreaths,
-        referenceScale
+        decor,
+        referenceScale,
+        measurementLines
       );
 
       const now = new Date().toISOString();
@@ -367,8 +545,9 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       setSavedLightData({
         lightStrings,
         singleLights: singularLights,
-        wreaths,
+        decor,
         referenceScale,
+        measurementLines,
         lastSaved: now,
         version: '1.0'
       });
@@ -380,14 +559,15 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     } finally {
       setIsSaving(false);
     }
-  }, [projectId, isSaving, lightStrings, singularLights, wreaths, referenceLine, referenceLength]);
+  }, [projectId, isSaving, lightStrings, singularLights, decor, referenceLine, referenceLength, measurementLines]);
 
   // Check for unsaved changes
   useEffect(() => {
     const hasChanges = lightDataStorage.hasUnsavedChanges(
       lightStrings,
       singularLights,
-      wreaths,
+      decor,
+      measurementLines,
       savedLightData
     );
     setHasUnsavedChanges(hasChanges);
@@ -400,9 +580,9 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       
       autoSaveTimerRef.current = setTimeout(() => {
         handleSaveProject();
-      }, 30000); // 30 seconds
+      }, 60000); // 30 seconds
     }
-  }, [lightStrings, singularLights, wreaths, savedLightData, isSaving, handleSaveProject]);
+  }, [lightStrings, singularLights, decor, measurementLines, savedLightData, isSaving, handleSaveProject]);
 
   // Pure pinch gesture for zoom only
   const pinchGesture = Gesture.Pinch()
@@ -488,11 +668,11 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     deleteLightString(stringId);
   };
 
-  // Direct delete handler for wreaths
-  const handleDeleteWreath = () => {
-    if (selectedWreathId) {
-      removeWreath(selectedWreathId);
-      setSelectedWreathId(null);
+  // Direct delete handler for decor
+  const handleDeleteDecor = () => {
+    if (selectedDecorId) {
+      removeDecor(selectedDecorId);
+      setSelectedDecorId(null);
     }
   };
 
@@ -516,7 +696,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   const handleClearAllConfirm = () => {
     clearAllLightStrings();
     clearAllSingularLights();
-    clearWreaths();
+    clearDecor();
     setShowClearAllModal(false);
   };
 
@@ -833,7 +1013,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
                   color: '#EF4444', 
                   fontSize: isTablet ? 20 : 14 
                 }}>
-                  Clear All
+                  Clear All Lights & Decor
                 </Text>
               </TouchableOpacity>
             </View>
@@ -872,29 +1052,42 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
                 style={[StyleSheet.absoluteFill, styles.imageContainer]}
               />
 
-              {/* Light strings - rendered ON TOP of the night mode overlay */}
+              {/* Light strings and assets - hidden in measure mode */}
               <View style={[StyleSheet.absoluteFill, styles.lightsLayer]} {...activePanResponder.panHandlers}>
-                <SimpleLightRenderer
-                  lightStrings={lightStrings}
-                  currentVector={currentVector}
-                  isDragging={isDragging}
-                  selectedStringId={selectedStringId}
-                  getAssetById={getAssetById}
-                  calculateLightPositions={calculateLightPositions}
-                  getLightSizeScale={getLightSizeScale}
-                  getLightRenderStyle={getLightRenderStyle}
-                />
+                {interactionMode !== 'measure' && (
+                  <>
+                    <SimpleLightRenderer
+                      lightStrings={lightStrings}
+                      currentVector={currentVector}
+                      isDragging={isDragging}
+                      selectedStringId={selectedStringId}
+                      getAssetById={getAssetById}
+                      calculateLightPositions={calculateLightPositions}
+                      getLightSizeScale={getLightSizeScale}
+                      getLightRenderStyle={getLightRenderStyle}
+                    />
 
-                {/* Singular lights */}
-                <SingularLightRenderer
-                  singularLights={singularLights}
-                  selectedLightId={selectedLightId}
-                  getLightSizeScale={getLightSizeScale}
-                  getLightRenderStyle={getLightRenderStyle}
-                  showTouchableAreas={showTouchableAreas}
-                />
+                    {/* Singular lights */}
+                    <SingularLightRenderer
+                      singularLights={singularLights}
+                      selectedLightId={selectedLightId}
+                      getLightSizeScale={getLightSizeScale}
+                      getLightRenderStyle={getLightRenderStyle}
+                      showTouchableAreas={showTouchableAreas}
+                    />
 
-                {/* Reference line renderer */}
+                    {/* Decor */}
+                    <DecorRenderer
+                      decor={decor}
+                      selectedDecorId={selectedDecorId}
+                      onDecorSelect={setSelectedDecorId}
+                      showResizeHandles={interactionMode === 'decor'}
+                      getResizeHandles={getResizeHandles}
+                    />
+                  </>
+                )}
+
+                {/* Reference line renderer - always visible */}
                 <ReferenceLineRenderer
                   referenceLine={referenceLine}
                   referenceLength={referenceLength}
@@ -902,14 +1095,17 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
                   pendingLine={currentVector?.isReference ? currentVector : null}
                 />
 
-                {/* Wreaths */}
-                <WreathRenderer
-                  wreaths={wreaths}
-                  selectedWreathId={selectedWreathId}
-                  onWreathSelect={setSelectedWreathId}
-                  showResizeHandles={interactionMode === 'wreath'}
-                  getResizeHandles={getResizeHandles}
-                />
+                {/* Measurement lines - only visible in measure mode */}
+                {interactionMode === 'measure' && (
+                  <MeasureLineRenderer
+                    measurementLines={measurementLines}
+                    selectedMeasurementId={selectedMeasurementId}
+                    currentMeasureLine={currentMeasureLine}
+                    isDrawing={isMeasuring}
+                  />
+                )}
+                
+                {/* Measure mode helper message when no reference is set */}
               </View>
             </ViewShot>
           </Animated.View>
@@ -921,12 +1117,15 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           selectedStringEndpoint={selectedStringEndpoint}
           onDeleteString={handleDeleteString}
           onDeselectString={deselectLightString}
-          selectedWreathId={selectedWreathId}
-          onDeleteWreath={handleDeleteWreath}
-          onDeselectWreath={() => setSelectedWreathId(null)}
+          selectedDecorId={selectedDecorId}
+          onDeleteDecor={handleDeleteDecor}
+          onDeselectDecor={() => setSelectedDecorId(null)}
           selectedLightId={selectedLightId}
           onDeleteSingularLight={handleDeleteSingularLight}
           onDeselectSingularLight={deselectSingularLight}
+          selectedMeasurementId={selectedMeasurementId}
+          onDeleteMeasurementLine={removeMeasurementLine}
+          onDeselectMeasurementLine={deselectMeasurementLine}
           interactionMode={interactionMode}
         />
 
@@ -946,7 +1145,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           canUndo={!!deletedString || !!deletedLight}
           onUndo={handleUndo}
           interactionMode={interactionMode}
-          onModeToggle={setInteractionMode}
+          onModeToggle={handleModeChange}
           onCreateCustomAsset={createCustomAsset}
           onRemoveCustomAsset={removeCustomAsset}
         />
