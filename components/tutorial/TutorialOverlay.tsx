@@ -26,7 +26,6 @@ export default function TutorialOverlay({
   if (!visible || !step) return null;
   
   const buttonText = step.buttonText || 'Next';
-  const isWaitingForAction = !!step.waitForAction;
   
   return (
     <View style={[StyleSheet.absoluteFill, { zIndex: 9999 }]}>
@@ -51,7 +50,7 @@ export default function TutorialOverlay({
                   elevation: ['zoom-out-map', 'nightlight-round', 'file-download'].includes(step.icon) ? 4 : 0,
                 }}>
                   <MaterialIcons 
-                    name={step.icon} 
+                    name={step.icon as any} 
                     size={40} 
                     color={['zoom-out-map', 'nightlight-round', 'file-download'].includes(step.icon) ? '#333' : 'white'} 
                   />
