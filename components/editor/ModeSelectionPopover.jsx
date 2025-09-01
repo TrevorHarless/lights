@@ -7,6 +7,8 @@ export function ModeSelectionPopover({
   onClose,
   currentMode,
   onSelectMode,
+  tutorialMessage,
+  tutorialRestrictToMode, // Which mode to restrict to during tutorial
 }) {
   const { width } = Dimensions.get('window');
   const isTablet = width >= 768;
@@ -81,22 +83,48 @@ export function ModeSelectionPopover({
               fontSize: isTablet ? 24 : 20,
               fontWeight: 'bold',
               textAlign: 'center',
-              marginBottom: isTablet ? 24 : 16,
+              marginBottom: tutorialMessage ? isTablet ? 16 : 12 : isTablet ? 24 : 16,
               color: '#333',
             }}
           >
             Select Interaction Mode
           </Text>
+          
+          {tutorialMessage && (
+            <View style={{
+              backgroundColor: '#E3F2FD',
+              borderRadius: isTablet ? 16 : 12,
+              padding: isTablet ? 20 : 16,
+              marginBottom: isTablet ? 24 : 16,
+              borderLeftWidth: 4,
+              borderLeftColor: '#2196F3',
+            }}>
+              <Text style={{
+                fontSize: isTablet ? 18 : 16,
+                color: '#1976D2',
+                textAlign: 'center',
+                fontWeight: '500',
+                lineHeight: isTablet ? 24 : 20,
+              }}>
+                💡 {tutorialMessage}
+              </Text>
+            </View>
+          )}
 
           {modes.map((mode) => {
             const isSelected = currentMode === mode.id;
+            const isTutorialRestricted = tutorialRestrictToMode && mode.id !== tutorialRestrictToMode;
+            const isDisabled = isTutorialRestricted;
             
             return (
               <TouchableOpacity
                 key={mode.id}
+                disabled={isDisabled}
                 onPress={() => {
-                  onSelectMode(mode.id);
-                  onClose();
+                  if (!isDisabled) {
+                    onSelectMode(mode.id);
+                    onClose();
+                  }
                 }}
                 style={{
                   flexDirection: 'row',
@@ -108,6 +136,7 @@ export function ModeSelectionPopover({
                   borderWidth: isSelected ? 2 : 1,
                   borderColor: isSelected ? mode.color : '#E0E0E0',
                   minHeight: isTablet ? 80 : 70,
+                  opacity: isDisabled ? 0.4 : 1.0,
                 }}
               >
                 <View
@@ -115,7 +144,7 @@ export function ModeSelectionPopover({
                     width: isTablet ? 56 : 44,
                     height: isTablet ? 56 : 44,
                     borderRadius: isTablet ? 28 : 22,
-                    backgroundColor: isSelected ? mode.color : '#F5F5F5',
+                    backgroundColor: isDisabled ? '#E0E0E0' : (isSelected ? mode.color : '#F5F5F5'),
                     justifyContent: 'center',
                     alignItems: 'center',
                     marginRight: isTablet ? 20 : 16,
@@ -124,7 +153,7 @@ export function ModeSelectionPopover({
                   <MaterialIcons
                     name={mode.icon}
                     size={isTablet ? 32 : 24}
-                    color={isSelected ? 'white' : '#666'}
+                    color={isDisabled ? '#999' : (isSelected ? 'white' : '#666')}
                   />
                 </View>
 
@@ -133,7 +162,7 @@ export function ModeSelectionPopover({
                     style={{
                       fontSize: isTablet ? 20 : 16,
                       fontWeight: '600',
-                      color: isSelected ? mode.color : '#333',
+                      color: isDisabled ? '#999' : (isSelected ? mode.color : '#333'),
                       marginBottom: isTablet ? 8 : 6,
                     }}
                   >
@@ -142,7 +171,7 @@ export function ModeSelectionPopover({
                   <Text
                     style={{
                       fontSize: isTablet ? 16 : 14,
-                      color: '#666',
+                      color: isDisabled ? '#BBB' : '#666',
                       lineHeight: isTablet ? 22 : 20,
                       flexWrap: 'wrap',
                     }}

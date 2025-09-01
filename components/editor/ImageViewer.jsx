@@ -41,7 +41,12 @@ import { useSingularLights } from '~/hooks/editor/useSingularLights';
 import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
 import { lightDataStorage } from '~/services/lightDataStorage';
 
+import TutorialOverlay from '~/components/tutorial/TutorialOverlay';
+import { useTutorial } from '~/hooks/tutorial/useTutorial';
+
 const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
+  console.log('🎯 ImageViewer: Component mounted/rendered');
+  
   // Device detection for responsive design
   const { width } = Dimensions.get('window');
   const isTablet = width >= 768;
@@ -65,6 +70,11 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   // Combined asset system
   const allAssets = [...lightAssets, ...decorAssets];
   const [selectedAsset, setSelectedAsset] = React.useState(null);
+  
+  // Asset selection handler  
+  const handleAssetSelection = React.useCallback((asset) => {
+    setSelectedAsset(asset);
+  }, []);
 
   // Combined asset helpers
   const getAssetById = (id) => getLightAssetById(id) || getDecorAssetById(id);
@@ -159,11 +169,47 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     loadDecor,
   } = useDecorShapes();
 
+  // Tutorial-aware wrapper for addLightString
+  const addLightStringWithTutorial = useCallback((vector) => {
+    console.log('🎯 Tutorial: addLightStringWithTutorial called, current lightStrings.length:', lightStrings.length);
+    console.log('🎯 Tutorial: tutorial state:', { isActive: tutorial?.isActive, currentStep: tutorial?.currentStep?.id });
+    
+    // Check if this is the first string light drawn for tutorial (before adding)
+    const isFirstString = lightStrings.length === 0;
+    
+    // Call the original addLightString function
+    addLightString(vector);
+    
+    // Trigger tutorial action if this was the first string
+    if (isFirstString && tutorial?.handleAction) {
+      console.log('🎯 Tutorial: First string light drawn, triggering tutorial action');
+      setTimeout(() => {
+        tutorial.handleAction('first_string_light_drawn');
+      }, 1000); // Small delay to let the string render
+    }
+  }, [addLightString, lightStrings.length, tutorial]);
+
+  // Tutorial-aware wrapper for addMeasurementLine
+  const addMeasurementLineWithTutorial = useCallback((line) => {
+    console.log('🎯 Tutorial: addMeasurementLineWithTutorial called');
+    console.log('🎯 Tutorial: tutorial state:', { isActive: tutorial?.isActive, currentStep: tutorial?.currentStep?.id });
+    
+    // Call the original addMeasurementLine function
+    addMeasurementLine(line);
+    
+    // Trigger tutorial action for measure mode tutorial
+    if (tutorial?.handleAction && tutorial?.currentStep?.id === 'try_measuring') {
+      console.log('🎯 Tutorial: Measurement line drawn during tutorial, triggering tutorial action');
+      setTimeout(() => {
+        tutorial.handleAction('measurement_line_drawn');
+      }, 500); // Small delay to let the line render
+    }
+  }, [addMeasurementLine, tutorial]);
 
   // Interaction mode state
-  const [interactionMode, setInteractionMode] = React.useState('string'); // 'string', 'tap', 'decor', or 'measure'
+  const [interactionMode, setInteractionMode] = React.useState(null); // null, 'string', 'tap', 'decor', or 'measure'
 
-  // Enhanced mode handler that clears selections when manually switching modes
+  // Mode handler that clears selections when manually switching modes
   const handleModeChange = React.useCallback((newMode) => {
     // Only clear selections for manual mode changes, not automatic ones from asset selection
     if (newMode !== interactionMode) {
@@ -225,7 +271,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     selectedAsset,
     lightStrings,
     selectedStringId,
-    onVectorComplete: addLightString,
+    onVectorComplete: addLightStringWithTutorial,
     onUpdateLightString: updateLightString,
     onTapSelection: handleTapSelection,
     findClosestLightString,
@@ -379,7 +425,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
             lengthInFeet: lengthInFeet,
             label: `${lengthInFeet.toFixed(1)} ft`
           };
-          addMeasurementLine(measurementLine);
+          addMeasurementLineWithTutorial(measurementLine);
         }
       }
       
@@ -396,13 +442,15 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     interactionMode === 'decor' ? decorPanResponder :
     interactionMode === 'tap' ? singularLightPanResponder :
     interactionMode === 'measure' ? measurePanResponder :
-    stringPanResponder;
+    interactionMode === 'string' ? stringPanResponder :
+    null; // No interaction when no mode selected
   const isDragging = 
     isSettingReference ? isDrawingString : // Use string dragging state for reference setting
     interactionMode === 'decor' ? isManipulatingDecor :
     interactionMode === 'tap' ? isManipulatingSingularLight :
     interactionMode === 'measure' ? (isMeasuring || !!draggedMeasureHandle) :
-    isDrawingString;
+    interactionMode === 'string' ? isDrawingString :
+    false; // No dragging when no mode selected
 
   // State for selected string's endpoint position for delete button
   const [selectedStringEndpoint, setSelectedStringEndpoint] = useState(null);
@@ -441,6 +489,58 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [savedLightData, setSavedLightData] = useState(null);
   const autoSaveTimerRef = useRef(null);
+
+  // Tutorial system
+  console.log('🎯 ImageViewer: Creating tutorial hook');
+  const tutorial = useTutorial();
+  console.log('🎯 ImageViewer: Tutorial hook created, isActive:', tutorial.isActive);
+  const tutorialStarted = useRef(false);
+  const startTutorialRef = useRef(tutorial.startTutorial);
+  const zoomPanDetected = useRef(false);
+  const gestureHappened = useSharedValue(0);
+  
+  // Update the ref when tutorial changes
+  useEffect(() => {
+    startTutorialRef.current = tutorial.startTutorial;
+  }, [tutorial.startTutorial]);
+
+  // Watch for gesture events to trigger tutorial
+  useEffect(() => {
+    const checkGesture = () => {
+      if (gestureHappened.value > 0 && !zoomPanDetected.current) {
+        console.log('🎯 Tutorial: Zoom/pan detected, triggering tutorial action');
+        zoomPanDetected.current = true;
+        if (tutorial?.handleAction) {
+          // Add slight delay before triggering
+          setTimeout(() => {
+            console.log('🎯 Tutorial: Calling zoom_or_pan_detected action');
+            tutorial.handleAction('zoom_or_pan_detected');
+          }, 1500);
+        }
+      }
+    };
+
+    // Check periodically for gesture changes
+    const interval = setInterval(checkGesture, 100);
+    return () => clearInterval(interval);
+  }, [tutorial, gestureHappened]);
+  
+  // Start tutorial when component mounts (if not completed)
+  useEffect(() => {
+    console.log('🎯 Tutorial: useEffect triggered, tutorialStarted:', tutorialStarted.current);
+    if (!tutorialStarted.current) {
+      console.log('🎯 Tutorial: Starting tutorial...');
+      tutorialStarted.current = true;
+      // Start tutorial after a short delay to let the component fully load
+      const timer = setTimeout(() => {
+        console.log('🎯 Tutorial: Calling startTutorial');
+        startTutorialRef.current('editor_intro');
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
 
   // Check for media library permissions
   useEffect(() => {
@@ -600,6 +700,9 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       } else {
         savedScale.value = scale.value;
       }
+      
+      // Trigger tutorial detection
+      gestureHappened.value = gestureHappened.value + 1;
     });
 
   // Two-finger pan gesture for moving the image when zoomed
@@ -617,6 +720,9 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       if (scale.value > 1.1) {
         savedTranslateX.value = translateX.value;
         savedTranslateY.value = translateY.value;
+        
+        // Trigger tutorial detection
+        gestureHappened.value = gestureHappened.value + 1;
       }
     });
 
@@ -640,6 +746,13 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     translateY.value = withSpring(0);
     savedTranslateX.value = 0;
     savedTranslateY.value = 0;
+    
+    // Handle tutorial action when reset zoom is clicked (with delay)
+    if (tutorial?.handleAction) {
+      setTimeout(() => {
+        tutorial.handleAction('reset_zoom_clicked');
+      }, 500); // 0.5 second delay
+    }
   };
 
   // Update the endpoint position when selection changes
@@ -693,6 +806,14 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     setShowClearAllModal(false);
   };
 
+  const handleRestartTutorial = async () => {
+    console.log('🎯 Tutorial: User requested tutorial restart');
+    // Reset tutorial completion status
+    await tutorial.resetTutorialStatus();
+    // Start the tutorial again
+    tutorial.startTutorial('editor_intro');
+  };
+
   const handleClearAllConfirm = () => {
     clearAllLightStrings();
     clearAllSingularLights();
@@ -704,6 +825,13 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   // Toggle night mode
   const toggleNightMode = () => {
     setNightModeEnabled(!nightModeEnabled);
+    
+    // Handle tutorial action when dark mode is toggled (with delay)
+    if (tutorial?.handleAction) {
+      setTimeout(() => {
+        tutorial.handleAction('dark_mode_toggled');
+      }, 1000); // 1 second delay before showing Export tutorial
+    }
   };
 
   // Handle night mode intensity change
@@ -713,6 +841,11 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
 
   // Handle export
   const handleExport = async () => {
+    // Handle tutorial action when export button is clicked
+    if (tutorial?.handleAction) {
+      tutorial.handleAction('export_button_clicked');
+    }
+    
     if (!hasMediaPermission) {
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== 'granted') {
@@ -884,7 +1017,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
               }}
               onPress={toggleNightMode}>
               <MaterialIcons
-                name={nightModeEnabled ? 'nightlight-round' : 'wb-sunny'}
+                name={nightModeEnabled ? 'wb-sunny' : 'nightlight-round'}
                 size={isTablet ? 32 : 22}
                 color={nightModeEnabled ? '#FFD700' : '#333'}
               />
@@ -1016,6 +1149,37 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
                   Clear All Lights & Decor
                 </Text>
               </TouchableOpacity>
+
+              {/* Restart Tutorial Button */}
+              <TouchableOpacity
+                onPress={() => {
+                  setIsMenuExpanded(false);
+                  handleRestartTutorial();
+                }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  paddingHorizontal: isTablet ? 28 : 12,
+                  paddingVertical: isTablet ? 24 : 10,
+                  borderRadius: isTablet ? 24 : 12,
+                  marginTop: isTablet ? 16 : 8,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 4,
+                  elevation: 4,
+                }}>
+                <MaterialIcons name="school" size={isTablet ? 32 : 18} color="#2196F3" />
+                <Text style={{ 
+                  marginLeft: isTablet ? 20 : 8, 
+                  fontWeight: '600', 
+                  color: '#2196F3', 
+                  fontSize: isTablet ? 20 : 14 
+                }}>
+                  Restart Tutorial
+                </Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -1053,7 +1217,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
               />
 
               {/* Light strings and assets - hidden in measure mode */}
-              <View style={[StyleSheet.absoluteFill, styles.lightsLayer]} {...activePanResponder.panHandlers}>
+              <View style={[StyleSheet.absoluteFill, styles.lightsLayer]} {...(activePanResponder?.panHandlers || {})}>
                 {interactionMode !== 'measure' && (
                   <>
                     <SimpleLightRenderer
@@ -1138,7 +1302,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           onCancelReference={cancelReferenceMode}
           lightAssets={allAssets}
           selectedAsset={selectedAsset}
-          onSelectAsset={setSelectedAsset}
+          onSelectAsset={handleAssetSelection}
           getAssetsByCategory={getAssetsByCategory}
           getCategories={getCategories}
           getLightRenderStyle={getLightRenderStyle}
@@ -1148,13 +1312,20 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           onModeToggle={handleModeChange}
           onCreateCustomAsset={createCustomAsset}
           onRemoveCustomAsset={removeCustomAsset}
+          tutorial={tutorial}
         />
 
         {/* Reference modal */}
         <ReferenceModal
           visible={showReferenceModal}
           onClose={cancelReferenceMode}
-          onConfirm={confirmReferenceLength}
+          onConfirm={(lengthInFeet) => {
+            confirmReferenceLength(lengthInFeet);
+            // Handle tutorial action when reference is taken
+            if (tutorial?.handleAction) {
+              tutorial.handleAction('reference_measurement_taken');
+            }
+          }}
           onCancel={cancelReferenceMode}
         />
 
@@ -1163,6 +1334,14 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           visible={showClearAllModal}
           onCancel={handleClearAllCancel}
           onConfirm={handleClearAllConfirm}
+        />
+
+        {/* Tutorial Overlay */}
+        <TutorialOverlay
+          visible={tutorial.isActive}
+          step={tutorial.currentStep}
+          onNext={tutorial.nextStep}
+          onEnd={tutorial.endTutorial}
         />
       </View>
     </SafeAreaView>

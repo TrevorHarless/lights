@@ -29,6 +29,8 @@ export function BottomToolbar({
   // Custom asset functionality
   onCreateCustomAsset,
   onRemoveCustomAsset,
+  // Tutorial system
+  tutorial,
 }) {
   const [showLightPopover, setShowLightPopover] = useState(false);
   const [showModePopover, setShowModePopover] = useState(false);
@@ -39,6 +41,11 @@ export function BottomToolbar({
   const isTablet = width >= 768;
 
   const handleRulerPress = () => {
+    // Handle tutorial action when ruler is clicked
+    if (tutorial?.handleAction) {
+      tutorial.handleAction('ruler_icon_clicked');
+    }
+    
     if (isSettingReference) {
       // Cancel the reference setting process
       onCancelReference();
@@ -67,6 +74,10 @@ export function BottomToolbar({
 
   const handleModePress = () => {
     setShowModePopover(true);
+    // Handle tutorial action when mode menu opens
+    if (tutorial?.handleAction) {
+      tutorial.handleAction('mode_menu_opened');
+    }
   };
 
   return (
@@ -167,20 +178,64 @@ export function BottomToolbar({
       {/* Mode Selection Popover */}
       <ModeSelectionPopover
         visible={showModePopover}
-        onClose={() => setShowModePopover(false)}
+        onClose={() => {
+          setShowModePopover(false);
+          // Handle tutorial action when mode menu closes
+          if (tutorial?.handleAction) {
+            tutorial.handleAction('mode_selection_closed');
+          }
+        }}
         currentMode={interactionMode}
-        onSelectMode={onModeToggle}
+        onSelectMode={(mode) => {
+          onModeToggle(mode);
+          // Handle tutorial actions for mode selection
+          if (tutorial?.handleAction) {
+            if (mode === 'measure') {
+              tutorial.handleAction('measure_mode_selected');
+            } else if (mode === 'string') {
+              tutorial.handleAction('string_mode_selected');
+            }
+          }
+        }}
+        tutorialMessage={
+          tutorial?.currentStep?.id === 'select_measure_mode' 
+            ? "Select 'Measure Mode' to start setting up your reference measurement."
+            : tutorial?.currentStep?.id === 'switch_to_string_mode'
+            ? "Choose 'String Mode' to start placing lights."
+            : tutorial?.currentStep?.id === 'open_measure_mode'
+            ? "Select 'Measure Mode' to start measuring distances."
+            : null
+        }
+        tutorialRestrictToMode={
+          tutorial?.currentStep?.id === 'select_measure_mode' 
+            ? 'measure'
+            : tutorial?.currentStep?.id === 'switch_to_string_mode'
+            ? 'string'
+            : tutorial?.currentStep?.id === 'open_measure_mode'
+            ? 'measure'
+            : null
+        }
       />
 
       {/* Light Selection Popover */}
       <LightSelectionPopover
         visible={showLightPopover}
-        onClose={() => setShowLightPopover(false)}
+        onClose={() => {
+          setShowLightPopover(false);
+          // Handle tutorial action when light selection menu closes
+          if (tutorial?.handleAction) {
+            tutorial.handleAction('category_selection_closed');
+          }
+        }}
         lightAssets={lightAssets}
         selectedAsset={selectedAsset}
         onSelectAsset={(asset) => {
           onSelectAsset(asset);
           setShowLightPopover(false);
+          // Also handle tutorial action when light is selected (another way to close)
+          if (tutorial?.handleAction) {
+            tutorial.handleAction('category_selection_closed');
+          }
         }}
         getAssetsByCategory={getAssetsByCategory}
         getCategories={getCategories}
