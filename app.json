@@ -13,6 +13,7 @@
       "buildNumber": "1.0.2",
       "scheme": "lightsapp",
       "userInterfaceStyle": "light",
+      "orientation": "portrait",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to your camera to take photos for your projects",
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select images for your projects",

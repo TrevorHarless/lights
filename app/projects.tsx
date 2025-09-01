@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useRouter } from "expo-router";
-import React from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback } from "react";
 import {
   Dimensions,
   FlatList,
@@ -53,7 +53,18 @@ export default function ProjectsScreen() {
     handleDeleteProject,
     handleProjectCreated,
     handleProjectUpdated,
+    refreshProjects,
   } = useProjects(user);
+
+  // Refresh projects when screen comes into focus
+  // This ensures projects are updated after returning from profile screen
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        refreshProjects();
+      }
+    }, [user, refreshProjects])
+  );
 
   const renderProject = ({ item }: { item: any }) => (
     <ProjectCard

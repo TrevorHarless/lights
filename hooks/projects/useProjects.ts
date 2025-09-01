@@ -57,24 +57,8 @@ export function useProjects(user: any) {
     }
   };
 
-  const backgroundSyncProjects = async () => {
-    try {
-      setSyncing(true);
-      const result = await syncService.backgroundSync(user.id);
-      
-      // Refresh UI if sync made changes
-      if (result && (result.syncedCount || 0) > 0) {
-        const refreshedProjects = await localStorageService.getProjects();
-        setProjects(refreshedProjects);
-        console.log('🔄 UI refreshed after background sync');
-      }
-    } catch (error) {
-      console.error('Background sync failed:', error);
-      // Don't show error to user for background sync
-    } finally {
-      setSyncing(false);
-    }
-  };
+  // Note: backgroundSyncProjects function removed for true local-first behavior
+  // All syncing now happens through the SyncContext manualSync function
 
   const fallbackToServerProjects = async () => {
     setLoading(true);
@@ -164,10 +148,8 @@ export function useProjects(user: any) {
       // Update UI immediately
       setProjects((prev) => [newProject, ...prev]);
       
-      // Handle background upload to server
-      if (user?.id) {
-        backgroundUploadProject(newProject, imageUri);
-      }
+      // Note: No automatic background upload - sync only happens when user explicitly triggers it
+      console.log('📝 Project created locally:', newProject.name, '- waiting for manual sync');
     } catch (error) {
       console.error("Error saving new project locally:", error);
       Alert.alert("Error", "Failed to save project");
@@ -190,147 +172,19 @@ export function useProjects(user: any) {
       
       setEditModalVisible(false);
       
-      // Handle background upload to server
-      if (user?.id) {
-        backgroundUpdateProject(updatedProject, imageUri);
-      }
+      // Note: No automatic background upload - sync only happens when user explicitly triggers it
+      console.log('✏️ Project updated locally:', updatedProject.name, '- waiting for manual sync');
     } catch (error) {
       console.error("Error updating project locally:", error);
       Alert.alert("Error", "Failed to update project");
     }
   };
 
-  const backgroundUploadProject = async (localProject: Project, imageUri?: string | null) => {
-    try {
-      let imageUrl: string | undefined;
-      let imagePath: string | undefined;
+  // Note: backgroundUploadProject function removed for true local-first behavior
+  // Project uploads now handled through the syncService when user manually syncs
 
-      // Upload image if provided
-      if (imageUri) {
-        console.log("Starting background image upload for:", imageUri);
-        const { imageUploadService } = await import("~/services/imageUpload");
-        const uploadResult = await imageUploadService.uploadImage(imageUri, user.id);
-
-        if (uploadResult.success) {
-          imageUrl = uploadResult.imageUrl;
-          imagePath = uploadResult.imagePath;
-          console.log("Background image upload successful:", { imageUrl, imagePath });
-        } else {
-          console.error("Background image upload failed:", uploadResult.error);
-        }
-      }
-
-      // Create final project data for server
-      const projectData = {
-        name: localProject.name,
-        description: localProject.description,
-        address: localProject.address,
-        phone_number: localProject.phone_number,
-        image_url: imageUrl,
-        image_path: imagePath,
-      };
-
-      // Upload to server
-      const { data, error } = await projectsService.createProject(projectData);
-
-      if (error) {
-        console.error("Background server upload failed:", error);
-        // Mark project as having sync error
-        await localStorageService.markProjectSyncError(localProject.id);
-        return;
-      }
-
-      if (data) {
-        console.log("Project uploaded to server successfully:", data);
-        
-        // Update local project with server data and mark as synced
-        await localStorageService.deleteProject(localProject.id); // Remove temp project
-        await localStorageService.upsertProject({
-          ...data,
-          is_dirty: false,
-          sync_status: 'synced',
-          image_url_expires_at: imageUrl ? new Date(Date.now() + 50 * 60 * 1000).toISOString() : undefined,
-          image_url_cached_at: imageUrl ? new Date().toISOString() : undefined,
-        });
-        
-        // Update UI state to match localStorage (prevents race conditions)
-        const refreshedProjects = await localStorageService.getProjects();
-        setProjects(refreshedProjects);
-      }
-
-    } catch (error) {
-      console.error("Background upload failed:", error);
-      await localStorageService.markProjectSyncError(localProject.id);
-    }
-  };
-
-  const backgroundUpdateProject = async (localProject: Project, imageUri?: string | null) => {
-    try {
-      let imageUrl: string | undefined;
-      let imagePath: string | undefined;
-
-      // Upload new image if provided and different from current
-      if (imageUri && imageUri !== localProject.image_url) {
-        console.log("Starting background image upload for updated project:", imageUri);
-        const { imageUploadService } = await import("~/services/imageUpload");
-        const uploadResult = await imageUploadService.uploadImage(imageUri, user.id);
-
-        if (uploadResult.success) {
-          imageUrl = uploadResult.imageUrl;
-          imagePath = uploadResult.imagePath;
-          console.log("Background image upload successful:", { imageUrl, imagePath });
-        } else {
-          console.error("Background image upload failed:", uploadResult.error);
-          // Use existing image URL if upload fails
-          imageUrl = localProject.image_url;
-          imagePath = localProject.image_path;
-        }
-      } else {
-        // Keep existing image data
-        imageUrl = localProject.image_url;
-        imagePath = localProject.image_path;
-      }
-
-      // Update project on server
-      const projectData = {
-        name: localProject.name,
-        description: localProject.description,
-        address: localProject.address,
-        phone_number: localProject.phone_number,
-        image_url: imageUrl,
-        image_path: imagePath,
-      };
-
-      const { data, error } = await projectsService.updateProject(localProject.id, projectData);
-
-      if (error) {
-        console.error("Background server update failed:", error);
-        await localStorageService.markProjectSyncError(localProject.id);
-        return;
-      }
-
-      if (data) {
-        console.log("Project updated on server successfully:", data);
-        
-        // Update local project with server data and mark as synced
-        await localStorageService.upsertProject({
-          ...data,
-          is_dirty: false,
-          sync_status: 'synced',
-          image_url_expires_at: imageUrl ? new Date(Date.now() + 50 * 60 * 1000).toISOString() : undefined,
-          image_url_cached_at: imageUrl ? new Date().toISOString() : undefined,
-        });
-        
-        // Update UI state to match localStorage
-        const refreshedProjects = await localStorageService.getProjects();
-        setProjects(refreshedProjects);
-      }
-
-    } catch (error) {
-      console.error("Background update failed:", error);
-      await localStorageService.markProjectSyncError(localProject.id);
-    }
-  };
+  // Note: backgroundUpdateProject function removed for true local-first behavior
+  // Project updates now handled through the syncService when user manually syncs
 
   // Filter projects based on search query
   const filteredProjects = projects.filter(project =>

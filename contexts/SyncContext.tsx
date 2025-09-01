@@ -108,19 +108,8 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user?.id, updatePendingChanges]);
 
-  const backgroundSync = useCallback(async () => {
-    if (!user?.id || syncStatus === 'syncing') return;
-    
-    try {
-      const result = await syncService.backgroundSync(user.id);
-      if (result.success) {
-        await updatePendingChanges();
-        await updateLastSyncTime();
-      }
-    } catch (error) {
-      console.error('Background sync error:', error);
-    }
-  }, [user?.id, syncStatus, updatePendingChanges, updateLastSyncTime]);
+  // Note: backgroundSync function removed for true local-first behavior
+  // All syncing now happens through manualSync or initialSync only
 
   const initialSync = useCallback(async () => {
     if (!user?.id) return;
@@ -167,28 +156,16 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user) return;
 
-    // Don't run immediate background sync since initialSync handles initial state
-    // Only set up scheduled and app state syncing
+    // Note: Removed automatic background sync for true local-first behavior
+    // Sync only happens on manual trigger or app launch/login
+    console.log('🔄 Sync context initialized - automatic syncing disabled for local-first behavior');
 
-    const handleAppStateChange = (nextAppState: string) => {
-      if (nextAppState === 'active') {
-        backgroundSync();
-      }
-    };
+    // No background syncing, no periodic syncing, no app state syncing
+    // The only sync triggers are:
+    // 1. initialSync (on app launch/login)
+    // 2. manualSync (when user clicks sync button)
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-
-    const interval = setInterval(() => {
-      if (AppState.currentState === 'active') {
-        backgroundSync();
-      }
-    }, 15 * 60 * 1000); // Increased to 15 minutes
-
-    return () => {
-      subscription?.remove();
-      clearInterval(interval);
-    };
-  }, [user, backgroundSync]);
+  }, [user]);
 
   useEffect(() => {
     if (!user && prevUserRef.current) {
