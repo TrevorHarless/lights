@@ -28,13 +28,34 @@ class SyncService {
 
         try {
           if (localProject.id.startsWith('local_')) {
+            // Handle image upload for local projects
+            let imageUrl: string | undefined = localProject.image_url;
+            let imagePath: string | undefined = localProject.image_path;
+            
+            // If we have a local file image URL, upload it to cloud storage first
+            if (localProject.image_url && localProject.image_url.startsWith('file://')) {
+              console.log('🖼️ Uploading local image to cloud storage:', localProject.name);
+              const uploadResult = await imageUploadService.uploadImage(localProject.image_url, userId);
+              
+              if (uploadResult.success) {
+                imageUrl = uploadResult.imageUrl;
+                imagePath = uploadResult.imagePath;
+                console.log('✅ Image upload successful for:', localProject.name);
+              } else {
+                console.error('❌ Image upload failed for:', localProject.name, uploadResult.error);
+                // Continue without image rather than failing the entire sync
+                imageUrl = undefined;
+                imagePath = undefined;
+              }
+            }
+
             const createData: CreateProjectData = {
               name: localProject.name,
               description: localProject.description,
               address: localProject.address,
               phone_number: localProject.phone_number,
-              image_url: localProject.image_url,
-              image_path: localProject.image_path,
+              image_url: imageUrl,
+              image_path: imagePath,
             };
 
             const { data, error } = await supabase
@@ -51,12 +72,45 @@ class SyncService {
               id: projectData.id,
               created_at: projectData.created_at,
               updated_at: projectData.updated_at,
+              image_url: imageUrl, // Use the cloud image URL
+              image_path: imagePath, // Use the cloud image path
+              // Add cache timestamps for the image
+              image_url_expires_at: imageUrl ? new Date(Date.now() + 50 * 60 * 1000).toISOString() : undefined,
+              image_url_cached_at: imageUrl ? new Date().toISOString() : undefined,
             };
 
             await localStorageService.deleteProject(localProject.id);
             await localStorageService.upsertProject(updatedProject);
             await localStorageService.markProjectSynced(projectData.id);
           } else {
+            // Handle image upload for updated projects
+            let imageUrl: string | undefined = localProject.image_url;
+            let imagePath: string | undefined = localProject.image_path;
+            
+            // If we have a local file image URL, upload it to cloud storage first
+            if (localProject.image_url && localProject.image_url.startsWith('file://')) {
+              console.log('🖼️ Uploading updated local image to cloud storage:', localProject.name);
+              const uploadResult = await imageUploadService.uploadImage(localProject.image_url, userId);
+              
+              if (uploadResult.success) {
+                imageUrl = uploadResult.imageUrl;
+                imagePath = uploadResult.imagePath;
+                console.log('✅ Image upload successful for updated:', localProject.name);
+                
+                // Update local project with new cloud URL
+                await localStorageService.upsertProject({
+                  ...localProject,
+                  image_url: imageUrl,
+                  image_path: imagePath,
+                  image_url_expires_at: new Date(Date.now() + 50 * 60 * 1000).toISOString(),
+                  image_url_cached_at: new Date().toISOString(),
+                });
+              } else {
+                console.error('❌ Image upload failed for updated:', localProject.name, uploadResult.error);
+                // Keep existing image data if upload fails
+              }
+            }
+
             const { error: updateError } = await supabase
               .from('projects')
               .update({
@@ -64,8 +118,8 @@ class SyncService {
                 description: localProject.description,
                 address: localProject.address,
                 phone_number: localProject.phone_number,
-                image_url: localProject.image_url,
-                image_path: localProject.image_path,
+                image_url: imageUrl,
+                image_path: imagePath,
               })
               .eq('id', localProject.id);
 
@@ -112,11 +166,16 @@ class SyncService {
       const projectsWithUrls = await Promise.all(
         (cloudProjects as unknown as Project[]).map(async (project) => {
           if (project.image_path) {
+            console.log('📥 Getting fresh signed URL for project:', project.name);
             const { url } = await imageUploadService.getSignedUrl(project.image_path);
-            return {
-              ...project,
-              image_url: url || project.image_url
-            };
+            if (url) {
+              return {
+                ...project,
+                image_url: url,
+                image_url_expires_at: new Date(Date.now() + 50 * 60 * 1000).toISOString(),
+                image_url_cached_at: new Date().toISOString()
+              };
+            }
           }
           return project;
         })
@@ -163,11 +222,16 @@ class SyncService {
       const projectsWithUrls = await Promise.all(
         missingProjects.map(async (project) => {
           if (project.image_path) {
+            console.log('📥 Getting fresh signed URL for missing project:', project.name);
             const { url } = await imageUploadService.getSignedUrl(project.image_path);
-            return {
-              ...project,
-              image_url: url || project.image_url
-            };
+            if (url) {
+              return {
+                ...project,
+                image_url: url,
+                image_url_expires_at: new Date(Date.now() + 50 * 60 * 1000).toISOString(),
+                image_url_cached_at: new Date().toISOString()
+              };
+            }
           }
           return project;
         })

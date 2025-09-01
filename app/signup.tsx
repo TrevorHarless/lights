@@ -1,3 +1,4 @@
+import * as AppleAuthentication from "expo-apple-authentication";
 import { Link, router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
@@ -11,9 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useAuth } from "~/contexts/AuthContext";
 import AppleSignInButton from "~/components/AppleSignInButton";
-import * as AppleAuthentication from 'expo-apple-authentication';
+import { useAuth } from "~/contexts/AuthContext";
 import "../global.css";
 
 export default function SignUpScreen() {
@@ -24,7 +24,6 @@ export default function SignUpScreen() {
   const { signUp } = useAuth();
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
-
 
   const { width } = Dimensions.get("window");
   const isTablet = width >= 768;
@@ -96,7 +95,7 @@ export default function SignUpScreen() {
               <Text className="text-gray-700 font-medium mb-2 ml-1">Email</Text>
               <TextInput
                 className={`bg-white border border-gray-200 rounded-xl ${isTablet ? "p-5" : "p-4"} text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md`}
-                style={{ fontSize: isTablet ? 18 : 16, fontWeight: '500' }}
+                style={{ fontSize: isTablet ? 18 : 16, fontWeight: "500" }}
                 placeholder="Enter your email"
                 placeholderTextColor="#9ca3af"
                 value={email}
@@ -122,7 +121,7 @@ export default function SignUpScreen() {
               <TextInput
                 ref={passwordRef}
                 className={`bg-white border border-gray-200 rounded-xl ${isTablet ? "px-5 py-5" : "px-4 py-4"} text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md`}
-                style={{ fontSize: isTablet ? 18 : 16, fontWeight: '500' }}
+                style={{ fontSize: isTablet ? 18 : 16, fontWeight: "500" }}
                 placeholder="Enter your password"
                 placeholderTextColor="#9ca3af"
                 value={password}
@@ -147,7 +146,7 @@ export default function SignUpScreen() {
               <TextInput
                 ref={confirmPasswordRef}
                 className={`bg-white border border-gray-200 rounded-xl ${isTablet ? "px-5 py-5" : "px-4 py-4"} text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md`}
-                style={{ fontSize: isTablet ? 18 : 16, fontWeight: '500' }}
+                style={{ fontSize: isTablet ? 18 : 16, fontWeight: "500" }}
                 placeholder="Confirm your password"
                 placeholderTextColor="#9ca3af"
                 value={confirmPassword}
@@ -171,24 +170,26 @@ export default function SignUpScreen() {
               disabled={loading}
             >
               <Text
-                className={`text-white ${isTablet ? "text-lg" : "text-base"} font-semibold`}
+                className={`text-white ${isTablet ? "text-xl" : "text-xl"} font-semibold`}
               >
                 {loading ? "Creating Account..." : "Create Account"}
               </Text>
             </TouchableOpacity>
-            
-            {Platform.OS === 'ios' && (
+
+            {Platform.OS === "ios" && (
               <>
                 <View className="flex-row items-center my-6">
                   <View className="flex-1 h-px bg-gray-300" />
                   <Text className="mx-4 text-gray-500 text-sm">or</Text>
                   <View className="flex-1 h-px bg-gray-300" />
                 </View>
-                
+
                 <AppleSignInButton
-                  buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
+                  buttonType={
+                    AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP
+                  }
                   style={{
-                    width: '100%',
+                    width: "100%",
                     height: isTablet ? 56 : 48,
                   }}
                   cornerRadius={12}
