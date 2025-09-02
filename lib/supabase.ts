@@ -193,6 +193,16 @@ class LoggedSupabaseClient {
       },
       onAuthStateChange: (callback: any) => {
         return originalAuth.onAuthStateChange(callback)
+      },
+      resetPasswordForEmail: async (email: string, options?: any) => {
+        console.log('🔐 AUTH: Sending password reset email to:', email)
+        const result = await originalAuth.resetPasswordForEmail(email, options)
+        if (result.error) {
+          console.error('🔐 AUTH: Password reset failed:', result.error.message)
+        } else {
+          console.log('🔐 AUTH: Password reset email sent successfully')
+        }
+        return result
       }
     }
   }
