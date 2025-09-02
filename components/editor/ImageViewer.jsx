@@ -1,14 +1,15 @@
 // components/projects/ImageViewer.jsx
 import { MaterialIcons } from '@expo/vector-icons';
+import Slider from '@react-native-community/slider';
 import * as MediaLibrary from 'expo-media-library';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Slider from '@react-native-community/slider';
 import {
   ActivityIndicator,
   Alert,
   Dimensions,
   PanResponder,
   SafeAreaView,
+  Share,
   StatusBar,
   StyleSheet,
   Text,
@@ -849,17 +850,6 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       tutorial.handleAction('export_button_clicked');
     }
     
-    if (!hasMediaPermission) {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Please grant media library access to save images.', [
-          { text: 'OK' },
-        ]);
-        return;
-      }
-      setHasMediaPermission(true);
-    }
-
     setIsExporting(true);
 
     try {
@@ -873,22 +863,44 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       // Capture the view
       const uri = await viewShotRef.current.capture(captureOptions);
 
-      // Save to media library
-      const asset = await MediaLibrary.createAssetAsync(uri);
+      // Show native share sheet with multiple options
+      const shareOptions = {
+        url: uri,
+        type: 'image/jpeg',
+        title: 'Light Design',
+      };
 
-      // Create an album and add the asset to it
-      const album = await MediaLibrary.getAlbumAsync('Light Designer');
-      if (album === null) {
-        await MediaLibrary.createAlbumAsync('Light Designer', asset, false);
-      } else {
-        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+      try {
+        await Share.share(shareOptions);
+        // Share completed successfully - no need to auto-save to photo library
+      } catch (shareError) {
+        console.log('Share cancelled or error:', shareError);
+        // If share was cancelled, still offer to save to photo library
+        if (!hasMediaPermission) {
+          const { status } = await MediaLibrary.requestPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permission Required', 'Please grant media library access to save images.', [
+              { text: 'OK' },
+            ]);
+            return;
+          }
+          setHasMediaPermission(true);
+        }
+
+        // Save to media library as fallback
+        const asset = await MediaLibrary.createAssetAsync(uri);
+        const album = await MediaLibrary.getAlbumAsync('Light Designer');
+        if (album === null) {
+          await MediaLibrary.createAlbumAsync('Light Designer', asset, false);
+        } else {
+          await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+        }
+
+        Alert.alert('Saved', 'Your design has been saved to your photo library!', [{ text: 'OK' }]);
       }
-
-      // Notify user of success
-      Alert.alert('Success', 'Your design has been saved to your media library!', [{ text: 'OK' }]);
     } catch (error) {
       console.error('Export error:', error);
-      Alert.alert('Export Failed', 'There was a problem saving your design.');
+      Alert.alert('Export Failed', 'There was a problem exporting your design.');
     } finally {
       setIsExporting(false);
     }
