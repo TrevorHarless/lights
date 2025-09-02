@@ -35,8 +35,9 @@ export default function CreateProjectModal({
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
-  const { width } = Dimensions.get("window");
+  const { width, height } = Dimensions.get("window");
   const isTablet = width >= 768;
+  const isLandscape = width > height;
 
   // Refs for keyboard navigation
   const nameInputRef = useRef<TextInput>(null);
@@ -147,126 +148,270 @@ export default function CreateProjectModal({
                 </View>
               </View>
 
-              <View className="p-8">
-                <TextInput
-                  ref={nameInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
-                  style={{ fontSize: 18, fontWeight: '500' }}
-                  placeholder="Enter project name"
-                  value={newProjectName}
-                  onChangeText={setNewProjectName}
-                  maxLength={50}
-                  placeholderTextColor="#9ca3af"
-                  returnKeyType="next"
-                  onSubmitEditing={() => phoneInputRef.current?.focus()}
-                />
+              <ScrollView>
+                <View
+                  className={`p-8 ${isTablet && isLandscape ? "flex-row space-x-6" : ""}`}
+                >
+                  {isTablet && isLandscape ? (
+                    <>
+                      {/* Left Column */}
+                      <View className="flex-1 pr-8">
+                        <TextInput
+                          ref={nameInputRef}
+                          className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-4 text-gray-800 mb-5"
+                          style={{ fontSize: 16, fontWeight: "500" }}
+                          placeholder="Enter project name"
+                          value={newProjectName}
+                          onChangeText={setNewProjectName}
+                          maxLength={50}
+                          placeholderTextColor="#9ca3af"
+                          returnKeyType="next"
+                          onSubmitEditing={() => phoneInputRef.current?.focus()}
+                        />
 
-                <TextInput
-                  ref={phoneInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
-                  style={{ fontSize: 18, fontWeight: '500' }}
-                  placeholder="Contact number (optional)"
-                  value={newProjectPhone}
-                  onChangeText={setNewProjectPhone}
-                  keyboardType="phone-pad"
-                  maxLength={20}
-                  placeholderTextColor="#9ca3af"
-                  returnKeyType="next"
-                  onSubmitEditing={() => addressInputRef.current?.focus()}
-                />
+                        <TextInput
+                          ref={phoneInputRef}
+                          className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-4 text-gray-800 mb-5"
+                          style={{ fontSize: 16, fontWeight: "500" }}
+                          placeholder="Contact number (optional)"
+                          value={newProjectPhone}
+                          onChangeText={setNewProjectPhone}
+                          keyboardType="phone-pad"
+                          maxLength={20}
+                          placeholderTextColor="#9ca3af"
+                          returnKeyType="next"
+                          onSubmitEditing={() =>
+                            addressInputRef.current?.focus()
+                          }
+                        />
 
-                <TextInput
-                  ref={addressInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
-                  style={{ fontSize: 18, fontWeight: '500' }}
-                  placeholder="Project address (optional)"
-                  value={newProjectAddress}
-                  onChangeText={setNewProjectAddress}
-                  maxLength={200}
-                  placeholderTextColor="#9ca3af"
-                  returnKeyType="next"
-                  autoCapitalize="words"
-                  onSubmitEditing={() => descriptionInputRef.current?.focus()}
-                />
+                        <TextInput
+                          ref={addressInputRef}
+                          className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-4 text-gray-800 mb-5"
+                          style={{ fontSize: 16, fontWeight: "500" }}
+                          placeholder="Project address (optional)"
+                          value={newProjectAddress}
+                          onChangeText={setNewProjectAddress}
+                          maxLength={200}
+                          placeholderTextColor="#9ca3af"
+                          returnKeyType="next"
+                          autoCapitalize="words"
+                          onSubmitEditing={() =>
+                            descriptionInputRef.current?.focus()
+                          }
+                        />
 
-                <TextInput
-                  ref={descriptionInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6 h-32"
-                  style={{ fontSize: 18, fontWeight: '500' }}
-                  placeholder="Add a description (optional)"
-                  value={newProjectDescription}
-                  onChangeText={setNewProjectDescription}
-                  multiline
-                  numberOfLines={4}
-                  maxLength={500}
-                  textAlignVertical="top"
-                  placeholderTextColor="#9ca3af"
-                />
-
-                <View>
-                  <Text className="text-gray-800 font-semibold mb-4 text-lg">
-                    Project Image
-                  </Text>
-
-                  {selectedImage ? (
-                    <TouchableOpacity
-                      className="border-2 border-gray-300 bg-gray-50 rounded-2xl p-6 items-center flex-row"
-                      onPress={handlePickImage}
-                    >
-                      <Image
-                        source={{ uri: selectedImage }}
-                        style={{
-                          width: 80,
-                          height: 80,
-                          borderRadius: 16,
-                          marginRight: 20,
-                          backgroundColor: "#f3f4f6",
-                        }}
-                        contentFit="cover"
-                        onError={(error) => {
-                          console.log("Image error in modal:", error);
-                        }}
-                      />
-                      <View className="flex-1">
-                        <Text className="text-gray-700 font-semibold text-lg mb-1">
-                          Project Photo Added
-                        </Text>
-                        <Text className="text-gray-500 text-base">
-                          Tap to change photo
-                        </Text>
+                        <TextInput
+                          ref={descriptionInputRef}
+                          className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-4 text-gray-800"
+                          style={{
+                            fontSize: 16,
+                            fontWeight: "500",
+                            height: 80,
+                            textAlignVertical: "top",
+                          }}
+                          placeholder="Add a description (optional)"
+                          value={newProjectDescription}
+                          onChangeText={setNewProjectDescription}
+                          multiline
+                          numberOfLines={3}
+                          maxLength={500}
+                          placeholderTextColor="#9ca3af"
+                        />
                       </View>
-                    </TouchableOpacity>
+
+                      {/* Right Column */}
+                      <View className="flex-1">
+                        <View className="mb-6">
+                          <Text className="text-gray-800 font-semibold mb-4 text-lg">
+                            Project Image
+                          </Text>
+
+                          {selectedImage ? (
+                            <TouchableOpacity
+                              className="border-2 border-gray-300 bg-gray-50 rounded-2xl p-6 items-center"
+                              onPress={handlePickImage}
+                            >
+                              <Image
+                                source={{ uri: selectedImage }}
+                                style={{
+                                  width: 120,
+                                  height: 120,
+                                  borderRadius: 16,
+                                  marginBottom: 12,
+                                  backgroundColor: "#f3f4f6",
+                                }}
+                                contentFit="cover"
+                                onError={(error) => {
+                                  console.log("Image error in modal:", error);
+                                }}
+                              />
+                              <Text className="text-gray-700 font-semibold text-lg mb-1">
+                                Project Photo Added
+                              </Text>
+                              <Text className="text-gray-500 text-base text-center">
+                                Tap to change photo
+                              </Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity
+                              className="border-2 border-dashed border-gray-300 bg-gray-50/50 rounded-2xl p-8 items-center"
+                              onPress={handlePickImage}
+                            >
+                              <Text className="text-4xl mb-4">📸</Text>
+                              <Text className="text-gray-700 font-semibold text-lg mb-1">
+                                Add Project Photo
+                              </Text>
+                              <Text className="text-gray-500 text-base text-center">
+                                Choose from your photo library
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+
+                        <TouchableOpacity
+                          className={`rounded-2xl py-4 px-8 items-center shadow-lg ${
+                            creating || !newProjectName.trim()
+                              ? "bg-gray-300"
+                              : "bg-primary-600 active:bg-primary-700"
+                          }`}
+                          onPress={handleCreateProject}
+                          disabled={creating || !newProjectName.trim()}
+                        >
+                          <Text className="text-white text-lg font-semibold">
+                            {creating
+                              ? "Creating Project..."
+                              : "Create Project"}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
                   ) : (
-                    <TouchableOpacity
-                      className="border-2 border-dashed border-gray-300 bg-gray-50/50 rounded-2xl p-10 items-center"
-                      onPress={handlePickImage}
-                    >
-                      <Text className="text-5xl mb-4">📸</Text>
-                      <Text className="text-gray-700 font-semibold text-lg mb-1">
-                        Add Project Photo
-                      </Text>
-                      <Text className="text-gray-500 text-base text-center">
-                        Choose from your photo library
-                      </Text>
-                    </TouchableOpacity>
+                    <>
+                      <TextInput
+                        ref={nameInputRef}
+                        className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
+                        style={{ fontSize: 18, fontWeight: "500" }}
+                        placeholder="Enter project name"
+                        value={newProjectName}
+                        onChangeText={setNewProjectName}
+                        maxLength={50}
+                        placeholderTextColor="#9ca3af"
+                        returnKeyType="next"
+                        onSubmitEditing={() => phoneInputRef.current?.focus()}
+                      />
+
+                      <TextInput
+                        ref={phoneInputRef}
+                        className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
+                        style={{ fontSize: 18, fontWeight: "500" }}
+                        placeholder="Contact number (optional)"
+                        value={newProjectPhone}
+                        onChangeText={setNewProjectPhone}
+                        keyboardType="phone-pad"
+                        maxLength={20}
+                        placeholderTextColor="#9ca3af"
+                        returnKeyType="next"
+                        onSubmitEditing={() => addressInputRef.current?.focus()}
+                      />
+
+                      <TextInput
+                        ref={addressInputRef}
+                        className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
+                        style={{ fontSize: 18, fontWeight: "500" }}
+                        placeholder="Project address (optional)"
+                        value={newProjectAddress}
+                        onChangeText={setNewProjectAddress}
+                        maxLength={200}
+                        placeholderTextColor="#9ca3af"
+                        returnKeyType="next"
+                        autoCapitalize="words"
+                        onSubmitEditing={() =>
+                          descriptionInputRef.current?.focus()
+                        }
+                      />
+
+                      <TextInput
+                        ref={descriptionInputRef}
+                        className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6 h-32"
+                        style={{ fontSize: 18, fontWeight: "500" }}
+                        placeholder="Add a description (optional)"
+                        value={newProjectDescription}
+                        onChangeText={setNewProjectDescription}
+                        multiline
+                        numberOfLines={4}
+                        maxLength={500}
+                        textAlignVertical="top"
+                        placeholderTextColor="#9ca3af"
+                      />
+
+                      <View>
+                        <Text className="text-gray-800 font-semibold mb-4 text-lg">
+                          Project Image
+                        </Text>
+
+                        {selectedImage ? (
+                          <TouchableOpacity
+                            className="border-2 border-gray-300 bg-gray-50 rounded-2xl p-6 items-center flex-row"
+                            onPress={handlePickImage}
+                          >
+                            <Image
+                              source={{ uri: selectedImage }}
+                              style={{
+                                width: 80,
+                                height: 80,
+                                borderRadius: 16,
+                                marginRight: 20,
+                                backgroundColor: "#f3f4f6",
+                              }}
+                              contentFit="cover"
+                              onError={(error) => {
+                                console.log("Image error in modal:", error);
+                              }}
+                            />
+                            <View className="flex-1">
+                              <Text className="text-gray-700 font-semibold text-lg mb-1">
+                                Project Photo Added
+                              </Text>
+                              <Text className="text-gray-500 text-base">
+                                Tap to change photo
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        ) : (
+                          <TouchableOpacity
+                            className="border-2 border-dashed border-gray-300 bg-gray-50/50 rounded-2xl p-10 items-center"
+                            onPress={handlePickImage}
+                          >
+                            <Text className="text-5xl mb-4">📸</Text>
+                            <Text className="text-gray-700 font-semibold text-lg mb-1">
+                              Add Project Photo
+                            </Text>
+                            <Text className="text-gray-500 text-base text-center">
+                              Choose from your photo library
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+
+                      {/* Large Create Button */}
+                      <TouchableOpacity
+                        className={`mt-8 rounded-2xl py-4 px-8 items-center shadow-lg ${
+                          creating || !newProjectName.trim()
+                            ? "bg-gray-300"
+                            : "bg-primary-600 active:bg-primary-700"
+                        }`}
+                        onPress={handleCreateProject}
+                        disabled={creating || !newProjectName.trim()}
+                      >
+                        <Text className="text-white text-lg font-semibold">
+                          {creating ? "Creating Project..." : "Create Project"}
+                        </Text>
+                      </TouchableOpacity>
+                    </>
                   )}
                 </View>
-
-                {/* Large Create Button */}
-                <TouchableOpacity
-                  className={`mt-8 rounded-2xl py-4 px-8 items-center shadow-lg ${
-                    creating || !newProjectName.trim()
-                      ? "bg-gray-300"
-                      : "bg-primary-600 active:bg-primary-700"
-                  }`}
-                  onPress={handleCreateProject}
-                  disabled={creating || !newProjectName.trim()}
-                >
-                  <Text className="text-white text-lg font-semibold">
-                    {creating ? "Creating Project..." : "Create Project"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              </ScrollView>
             </View>
           </View>
         ) : (
@@ -300,7 +445,7 @@ export default function CreateProjectModal({
                 <TextInput
                   ref={nameInputRef}
                   className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 mb-5"
-                  style={{ fontSize: 16, fontWeight: '500' }}
+                  style={{ fontSize: 16, fontWeight: "500" }}
                   placeholder="Enter project name"
                   value={newProjectName}
                   onChangeText={setNewProjectName}
@@ -313,7 +458,7 @@ export default function CreateProjectModal({
                 <TextInput
                   ref={phoneInputRef}
                   className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 mb-5"
-                  style={{ fontSize: 16, fontWeight: '500' }}
+                  style={{ fontSize: 16, fontWeight: "500" }}
                   placeholder="Contact number (optional)"
                   value={newProjectPhone}
                   onChangeText={setNewProjectPhone}
@@ -327,7 +472,7 @@ export default function CreateProjectModal({
                 <TextInput
                   ref={addressInputRef}
                   className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 mb-5"
-                  style={{ fontSize: 16, fontWeight: '500' }}
+                  style={{ fontSize: 16, fontWeight: "500" }}
                   placeholder="Project address (optional)"
                   value={newProjectAddress}
                   onChangeText={setNewProjectAddress}
@@ -341,7 +486,7 @@ export default function CreateProjectModal({
                 <TextInput
                   ref={descriptionInputRef}
                   className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 mb-5 h-28"
-                  style={{ fontSize: 16, fontWeight: '500' }}
+                  style={{ fontSize: 16, fontWeight: "500" }}
                   placeholder="Add a description (optional)"
                   value={newProjectDescription}
                   onChangeText={setNewProjectDescription}

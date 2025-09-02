@@ -31,6 +31,8 @@ export function BottomToolbar({
   onRemoveCustomAsset,
   // Tutorial system
   tutorial,
+  // Layout props
+  isLandscape,
 }) {
   const [showLightPopover, setShowLightPopover] = useState(false);
   const [showModePopover, setShowModePopover] = useState(false);
@@ -84,10 +86,10 @@ export function BottomToolbar({
     <>
       <View style={{ 
         backgroundColor: '#333',
-        marginHorizontal: isTablet ? 120 : 60,
-        marginBottom: isTablet ? 60 : 40,
+        marginHorizontal: isTablet && isLandscape ? 60 : isTablet ? 120 : 60,
+        marginBottom: isTablet && isLandscape ? 20 : isTablet ? 60 : 40,
         borderRadius: isTablet ? 30 : 20,
-        paddingVertical: isTablet ? 24 : 16,
+        paddingVertical: isTablet && isLandscape ? 16 : isTablet ? 24 : 16,
         paddingHorizontal: isTablet ? 32 : 20,
         flexDirection: 'row',
         justifyContent: 'space-around',

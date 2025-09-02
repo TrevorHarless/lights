@@ -48,8 +48,9 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   console.log('🎯 ImageViewer: Component mounted/rendered');
   
   // Device detection for responsive design
-  const { width } = Dimensions.get('window');
+  const { width, height } = Dimensions.get('window');
   const isTablet = width >= 768;
+  const isLandscape = width > height;
 
   // Asset management hooks
   const { 
@@ -712,8 +713,9 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     .onUpdate((e) => {
       // Only allow panning when zoomed in
       if (scale.value > 1.1) {
-        translateX.value = savedTranslateX.value + e.translationX;
-        translateY.value = savedTranslateY.value + e.translationY;
+        // Apply 2x multiplier for faster panning
+        translateX.value = savedTranslateX.value + e.translationX * 1.2;
+        translateY.value = savedTranslateY.value + e.translationY * 1.2;
       }
     })
     .onEnd(() => {
@@ -894,9 +896,11 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" />
+        <StatusBar barStyle="dark-content"/>
 
-        <View style={styles.container}>
+        <View style={[
+          styles.container,
+        ]}>
         {/* Night Mode Controls - Only shown when night mode is enabled */}
         {nightModeEnabled && (
           <View style={{ 
@@ -1206,7 +1210,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
         )} */}
 
         <GestureDetector gesture={imageGestures}>
-          <Animated.View style={[styles.zoomContainer, animatedStyle]}>
+          <Animated.View style={[styles.zoomContainer, animatedStyle]} className={isLandscape ? "mt-24 mb-16" : ""}>
             <ViewShot ref={viewShotRef} style={styles.canvasContainer}>
               {/* Main image with precise night mode overlay */}
               <ImageWithNightOverlay
@@ -1313,6 +1317,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           onCreateCustomAsset={createCustomAsset}
           onRemoveCustomAsset={removeCustomAsset}
           tutorial={tutorial}
+          isLandscape={isLandscape}
         />
 
         {/* Reference modal */}
