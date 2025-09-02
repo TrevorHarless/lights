@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
   const [lightStrings, setLightStrings] = useState([]);
@@ -87,7 +87,6 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
 
   // Clear all light strings
   const clearAllLightStrings = useCallback(() => {
-    console.log('💡 useLightStrings: CLEARING ALL LIGHT STRINGS');
     // Clear any existing undo state
     clearUndoTimer();
     setDeletedString(null);
@@ -108,11 +107,9 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
 
   // Update a light string's start or end position
   const updateLightString = useCallback((stringId, updates) => {
-    setLightStrings(prev => 
-      prev.map(string => 
-        string.id === stringId 
-          ? { ...string, ...updates }
-          : string
+    setLightStrings((prev) =>
+      prev.map((string) =>
+        string.id === stringId ? { ...string, ...updates } : string
       )
     );
   }, []);
@@ -261,22 +258,10 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
     );
   };
 
-  // Debug: Log when lightStrings state changes
-  useEffect(() => {
-    console.log('💡 useLightStrings: State changed - current lightStrings:', lightStrings.length, 'strings');
-    if (lightStrings.length > 0) {
-      console.log('💡 useLightStrings: First string:', JSON.stringify(lightStrings[0], null, 2));
-    }
-  }, [lightStrings]);
-
   // Load light strings from saved data
   const loadLightStrings = useCallback((lightStringsData) => {
     if (lightStringsData && Array.isArray(lightStringsData)) {
-      console.log('💡 useLightStrings: Loading light strings data:', JSON.stringify(lightStringsData, null, 2));
       setLightStrings(lightStringsData);
-      console.log('💡 useLightStrings: State updated with', lightStringsData.length, 'light strings');
-    } else {
-      console.log('💡 useLightStrings: No valid light strings data to load');
     }
   }, []);
 

@@ -1,5 +1,4 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
 import { TouchableOpacity } from 'react-native';
 
 /**
@@ -21,7 +20,6 @@ export const DirectDeleteButton = ({ position, stringId, onDelete }) => {
       hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
       activeOpacity={0.7}
       onPress={() => {
-        console.log(`Direct delete button pressed for string ID: ${stringId}`);
         onDelete(stringId);
       }}>
       <MaterialIcons name="delete" size={24} color="#fff" />

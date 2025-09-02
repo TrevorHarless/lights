@@ -143,12 +143,8 @@ export function useDecorShapes() {
 
   // Load decor from saved data
   const loadDecor = useCallback((decorData) => {
-    console.log('💡 useDecorShapes: loadDecor called with:', decorData);
     if (decorData && Array.isArray(decorData)) {
       setDecor(decorData);
-      console.log('💡 useDecorShapes: Loaded', decorData.length, 'decor items');
-    } else {
-      console.log('💡 useDecorShapes: No valid decor data to load');
     }
   }, []);
 

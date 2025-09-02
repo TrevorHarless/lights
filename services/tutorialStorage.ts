@@ -29,7 +29,6 @@ export const tutorialStorage = {
         completedAt: new Date().toISOString(),
       };
       await AsyncStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(status));
-      console.log('🎯 Tutorial: Marked as completed');
     } catch (error) {
       console.error('Error saving tutorial completion status:', error);
       throw error;
@@ -43,7 +42,6 @@ export const tutorialStorage = {
         skippedAt: new Date().toISOString(),
       };
       await AsyncStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(status));
-      console.log('🎯 Tutorial: Marked as skipped');
     } catch (error) {
       console.error('Error saving tutorial skip status:', error);
       throw error;
@@ -53,7 +51,6 @@ export const tutorialStorage = {
   async resetTutorialStatus(): Promise<void> {
     try {
       await AsyncStorage.removeItem(TUTORIAL_STORAGE_KEY);
-      console.log('🎯 Tutorial: Status reset');
     } catch (error) {
       console.error('Error resetting tutorial status:', error);
       throw error;

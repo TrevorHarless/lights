@@ -93,7 +93,6 @@ export default function CreateProjectModal({
       };
 
       // Pass to useProjects to handle all persistence and UI updates
-      console.log("Creating project locally:", localProject);
       onProjectCreated(localProject, selectedImage); // Pass image for background upload
       clearForm();
       onClose();
@@ -184,9 +183,7 @@ export default function CreateProjectModal({
                           maxLength={20}
                           placeholderTextColor="#9ca3af"
                           returnKeyType="next"
-                          onSubmitEditing={() =>
-                            emailInputRef.current?.focus()
-                          }
+                          onSubmitEditing={() => emailInputRef.current?.focus()}
                         />
 
                         <TextInput
@@ -348,9 +345,7 @@ export default function CreateProjectModal({
                         placeholderTextColor="#9ca3af"
                         returnKeyType="next"
                         autoCapitalize="words"
-                        onSubmitEditing={() =>
-                          emailInputRef.current?.focus()
-                        }
+                        onSubmitEditing={() => emailInputRef.current?.focus()}
                       />
 
                       <TextInput

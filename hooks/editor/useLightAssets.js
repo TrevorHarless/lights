@@ -350,11 +350,6 @@ export function useLightAssets() {
       try {
         const savedCustomAssets = await customLightStorage.getCustomLights();
         setCustomAssets(savedCustomAssets);
-        console.log(
-          "💡 useLightAssets: Loaded",
-          savedCustomAssets.length,
-          "custom light assets"
-        );
       } catch (error) {
         console.error("💡 useLightAssets: Error loading custom assets:", error);
       } finally {
@@ -405,16 +400,6 @@ export function useLightAssets() {
     let baseStyle;
     if (typeof asset.renderStyle === "function") {
       baseStyle = asset.renderStyle(lightIndex);
-      if (asset.category === "custom" && asset.isPattern) {
-        console.log(
-          "💡 getLightRenderStyle: Pattern asset",
-          asset.name,
-          "lightIndex:",
-          lightIndex,
-          "color:",
-          baseStyle.backgroundColor
-        );
-      }
     } else {
       baseStyle = asset.renderStyle || {};
     }
@@ -482,10 +467,6 @@ export function useLightAssets() {
       // Update local state
       setCustomAssets((prev) => [...prev, savedAsset]);
 
-      console.log(
-        "💡 useLightAssets: Created and saved custom asset:",
-        savedAsset.name
-      );
       return savedAsset;
     } catch (error) {
       console.error("💡 useLightAssets: Error creating custom asset:", error);
@@ -500,8 +481,6 @@ export function useLightAssets() {
 
       // Update local state
       setCustomAssets((prev) => prev.filter((asset) => asset.id !== id));
-
-      console.log("💡 useLightAssets: Removed custom asset:", id);
     } catch (error) {
       console.error("💡 useLightAssets: Error removing custom asset:", error);
       throw error;
