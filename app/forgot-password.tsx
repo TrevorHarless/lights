@@ -69,7 +69,7 @@ export default function ForgotPasswordScreen() {
               <Text
                 className={`text-center text-gray-600 ${isTablet ? "text-lg" : "text-base"} leading-relaxed`}
               >
-                We've sent a password reset link to {email}
+                We&apos;ve sent a password reset link to {email}
               </Text>
             </View>
 
@@ -94,7 +94,7 @@ export default function ForgotPasswordScreen() {
               <Text
                 className={`text-gray-500 ${isTablet ? "text-lg" : "text-base"}`}
               >
-                Didn't receive the email?{" "}
+                Didn&apos;t receive the email?{" "}
               </Text>
               <TouchableOpacity onPress={() => setEmailSent(false)}>
                 <Text
@@ -129,7 +129,7 @@ export default function ForgotPasswordScreen() {
             <Text
               className={`text-center text-gray-600 ${isTablet ? "text-lg" : "text-base"} leading-relaxed`}
             >
-              Enter your email address and we'll send you a link to reset your password
+              Enter your email address and we&apos;ll send you a link to reset your password
             </Text>
           </View>
 
