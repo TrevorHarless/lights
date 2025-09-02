@@ -32,6 +32,7 @@ export default function CreateProjectModal({
   const [newProjectDescription, setNewProjectDescription] = useState("");
   const [newProjectAddress, setNewProjectAddress] = useState("");
   const [newProjectPhone, setNewProjectPhone] = useState("");
+  const [newProjectEmail, setNewProjectEmail] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
@@ -44,12 +45,14 @@ export default function CreateProjectModal({
   const descriptionInputRef = useRef<TextInput>(null);
   const addressInputRef = useRef<TextInput>(null);
   const phoneInputRef = useRef<TextInput>(null);
+  const emailInputRef = useRef<TextInput>(null);
 
   const clearForm = () => {
     setNewProjectName("");
     setNewProjectDescription("");
     setNewProjectAddress("");
     setNewProjectPhone("");
+    setNewProjectEmail("");
     setSelectedImage(null);
   };
 
@@ -82,6 +85,7 @@ export default function CreateProjectModal({
         description: newProjectDescription.trim() || undefined,
         address: newProjectAddress.trim() || undefined,
         phone_number: newProjectPhone.trim() || undefined,
+        email: newProjectEmail.trim() || undefined,
         image_url: selectedImage || undefined, // Use local image initially
         image_path: undefined, // Will be set after server upload
         created_at: new Date().toISOString(),
@@ -178,6 +182,24 @@ export default function CreateProjectModal({
                           onChangeText={setNewProjectPhone}
                           keyboardType="phone-pad"
                           maxLength={20}
+                          placeholderTextColor="#9ca3af"
+                          returnKeyType="next"
+                          onSubmitEditing={() =>
+                            emailInputRef.current?.focus()
+                          }
+                        />
+
+                        <TextInput
+                          ref={emailInputRef}
+                          className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-4 text-gray-800 mb-5"
+                          style={{ fontSize: 16, fontWeight: "500" }}
+                          placeholder="Email address (optional)"
+                          value={newProjectEmail}
+                          onChangeText={setNewProjectEmail}
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          maxLength={100}
                           placeholderTextColor="#9ca3af"
                           returnKeyType="next"
                           onSubmitEditing={() =>
@@ -327,6 +349,24 @@ export default function CreateProjectModal({
                         returnKeyType="next"
                         autoCapitalize="words"
                         onSubmitEditing={() =>
+                          emailInputRef.current?.focus()
+                        }
+                      />
+
+                      <TextInput
+                        ref={emailInputRef}
+                        className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
+                        style={{ fontSize: 18, fontWeight: "500" }}
+                        placeholder="Email address (optional)"
+                        value={newProjectEmail}
+                        onChangeText={setNewProjectEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        maxLength={100}
+                        placeholderTextColor="#9ca3af"
+                        returnKeyType="next"
+                        onSubmitEditing={() =>
                           descriptionInputRef.current?.focus()
                         }
                       />
@@ -464,6 +504,22 @@ export default function CreateProjectModal({
                   onChangeText={setNewProjectPhone}
                   keyboardType="phone-pad"
                   maxLength={20}
+                  placeholderTextColor="#9ca3af"
+                  returnKeyType="next"
+                  onSubmitEditing={() => emailInputRef.current?.focus()}
+                />
+
+                <TextInput
+                  ref={emailInputRef}
+                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 mb-5"
+                  style={{ fontSize: 16, fontWeight: "500" }}
+                  placeholder="Email address (optional)"
+                  value={newProjectEmail}
+                  onChangeText={setNewProjectEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  maxLength={100}
                   placeholderTextColor="#9ca3af"
                   returnKeyType="next"
                   onSubmitEditing={() => addressInputRef.current?.focus()}

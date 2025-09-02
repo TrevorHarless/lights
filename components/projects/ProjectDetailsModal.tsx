@@ -60,6 +60,17 @@ export default function ProjectDetailsModal({
     );
   };
 
+  const handleEmailPress = async (email: string) => {
+    const url = `mailto:${email}`;
+    const supported = await Linking.canOpenURL(url);
+    
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert("Error", "Email is not supported on this device");
+    }
+  };
+
   return (
     <Modal
       animationType="slide"
@@ -163,6 +174,23 @@ export default function ProjectDetailsModal({
                   <FontAwesome name="phone" size={isTablet ? 20 : 16} color="#3b82f6" />
                   <Text className={`text-blue-600 ml-2 underline ${isTablet ? 'text-base' : ''}`}>
                     {project.phone_number}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {project.email && (
+              <View className={isTablet ? "mb-6" : "mb-4"}>
+                <Text className={`${isTablet ? 'text-base' : 'text-sm'} font-semibold text-gray-700 ${isTablet ? 'mb-3' : 'mb-2'}`}>
+                  Email Address
+                </Text>
+                <TouchableOpacity
+                  onPress={() => handleEmailPress(project.email!)}
+                  className="flex-row items-center"
+                >
+                  <FontAwesome name="envelope" size={isTablet ? 20 : 16} color="#3b82f6" />
+                  <Text className={`text-blue-600 ml-2 underline ${isTablet ? 'text-base' : ''}`}>
+                    {project.email}
                   </Text>
                 </TouchableOpacity>
               </View>

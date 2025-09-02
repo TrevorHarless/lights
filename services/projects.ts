@@ -107,6 +107,7 @@ export const projectsService = {
           description: projectData.description || null,
           address: projectData.address || null,
           phone_number: projectData.phone_number || null,
+          email: projectData.email || null,
           image_url: projectData.image_url || null,
           image_path: projectData.image_path || null,
         }

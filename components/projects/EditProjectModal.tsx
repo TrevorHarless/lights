@@ -31,6 +31,7 @@ export default function EditProjectModal({
   const [projectDescription, setProjectDescription] = useState("");
   const [projectAddress, setProjectAddress] = useState("");
   const [projectPhone, setProjectPhone] = useState("");
+  const [projectEmail, setProjectEmail] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
 
@@ -39,6 +40,7 @@ export default function EditProjectModal({
   const descriptionInputRef = useRef<TextInput>(null);
   const addressInputRef = useRef<TextInput>(null);
   const phoneInputRef = useRef<TextInput>(null);
+  const emailInputRef = useRef<TextInput>(null);
 
   // Pre-populate form when project changes
   useEffect(() => {
@@ -47,6 +49,7 @@ export default function EditProjectModal({
       setProjectDescription(project.description || "");
       setProjectAddress(project.address || "");
       setProjectPhone(project.phone_number || "");
+      setProjectEmail(project.email || "");
       setSelectedImage(project.image_url || null);
     }
   }, [project, visible]);
@@ -85,6 +88,7 @@ export default function EditProjectModal({
         description: projectDescription.trim() || undefined,
         address: projectAddress.trim() || undefined,
         phone_number: projectPhone.trim() || undefined,
+        email: projectEmail.trim() || undefined,
         image_url: selectedImage || undefined,
         updated_at: new Date().toISOString(),
       };
@@ -111,6 +115,7 @@ export default function EditProjectModal({
     projectDescription !== (project.description || "") ||
     projectAddress !== (project.address || "") ||
     projectPhone !== (project.phone_number || "") ||
+    projectEmail !== (project.email || "") ||
     selectedImage !== (project.image_url || null)
   );
 
@@ -176,6 +181,21 @@ export default function EditProjectModal({
               onChangeText={setProjectPhone}
               keyboardType="phone-pad"
               maxLength={20}
+              placeholderTextColor="#9ca3af"
+              returnKeyType="next"
+              onSubmitEditing={() => emailInputRef.current?.focus()}
+            />
+
+            <TextInput
+              ref={emailInputRef}
+              className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 font-medium mb-5"
+              placeholder="Email address (optional)"
+              value={projectEmail}
+              onChangeText={setProjectEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              maxLength={100}
               placeholderTextColor="#9ca3af"
               returnKeyType="next"
               onSubmitEditing={() => addressInputRef.current?.focus()}
