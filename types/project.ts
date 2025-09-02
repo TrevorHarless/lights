@@ -56,6 +56,7 @@ export interface Project {
   description?: string
   address?: string
   phone_number?: string
+  email?: string
   image_url?: string
   image_path?: string
   image_url_expires_at?: string  // When current URL expires
@@ -70,6 +71,7 @@ export interface CreateProjectData {
   description?: string
   address?: string
   phone_number?: string
+  email?: string
   image_url?: string
   image_path?: string
 }
@@ -79,6 +81,7 @@ export interface UpdateProjectData {
   description?: string
   address?: string
   phone_number?: string
+  email?: string
   image_url?: string
   image_path?: string
 }

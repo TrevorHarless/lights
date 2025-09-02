@@ -115,6 +115,14 @@ export default function LoginScreen() {
               />
             </View>
 
+            <View className="flex-row justify-end mt-2">
+              <Link href="/forgot-password">
+                <Text className="text-primary-600 font-medium text-sm">
+                  Forgot your password?
+                </Text>
+              </Link>
+            </View>
+
             <TouchableOpacity
               className={`${buttonMargin} rounded-xl ${isTablet ? "py-5" : "py-4"} items-center shadow-medium ${
                 loading ? "bg-gray-300" : "bg-primary-600 active:bg-primary-700"

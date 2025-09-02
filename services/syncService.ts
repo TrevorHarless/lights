@@ -54,6 +54,7 @@ class SyncService {
               description: localProject.description,
               address: localProject.address,
               phone_number: localProject.phone_number,
+              email: localProject.email,
               image_url: imageUrl,
               image_path: imagePath,
             };
@@ -118,6 +119,7 @@ class SyncService {
                 description: localProject.description,
                 address: localProject.address,
                 phone_number: localProject.phone_number,
+                email: localProject.email,
                 image_url: imageUrl,
                 image_path: imagePath,
               })

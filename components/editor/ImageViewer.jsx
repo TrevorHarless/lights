@@ -1,5 +1,6 @@
 // components/projects/ImageViewer.jsx
 import { MaterialIcons } from '@expo/vector-icons';
+import Slider from '@react-native-community/slider';
 import * as MediaLibrary from 'expo-media-library';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -8,6 +9,7 @@ import {
   Dimensions,
   PanResponder,
   SafeAreaView,
+  Share,
   StatusBar,
   StyleSheet,
   Text,
@@ -48,8 +50,9 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   console.log('🎯 ImageViewer: Component mounted/rendered');
   
   // Device detection for responsive design
-  const { width } = Dimensions.get('window');
+  const { width, height } = Dimensions.get('window');
   const isTablet = width >= 768;
+  const isLandscape = width > height;
 
   // Asset management hooks
   const { 
@@ -712,8 +715,9 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     .onUpdate((e) => {
       // Only allow panning when zoomed in
       if (scale.value > 1.1) {
-        translateX.value = savedTranslateX.value + e.translationX;
-        translateY.value = savedTranslateY.value + e.translationY;
+        // Apply 2x multiplier for faster panning
+        translateX.value = savedTranslateX.value + e.translationX * 1.2;
+        translateY.value = savedTranslateY.value + e.translationY * 1.2;
       }
     })
     .onEnd(() => {
@@ -846,17 +850,6 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       tutorial.handleAction('export_button_clicked');
     }
     
-    if (!hasMediaPermission) {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Please grant media library access to save images.', [
-          { text: 'OK' },
-        ]);
-        return;
-      }
-      setHasMediaPermission(true);
-    }
-
     setIsExporting(true);
 
     try {
@@ -870,22 +863,44 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       // Capture the view
       const uri = await viewShotRef.current.capture(captureOptions);
 
-      // Save to media library
-      const asset = await MediaLibrary.createAssetAsync(uri);
+      // Show native share sheet with multiple options
+      const shareOptions = {
+        url: uri,
+        type: 'image/jpeg',
+        title: 'Light Design',
+      };
 
-      // Create an album and add the asset to it
-      const album = await MediaLibrary.getAlbumAsync('Light Designer');
-      if (album === null) {
-        await MediaLibrary.createAlbumAsync('Light Designer', asset, false);
-      } else {
-        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+      try {
+        await Share.share(shareOptions);
+        // Share completed successfully - no need to auto-save to photo library
+      } catch (shareError) {
+        console.log('Share cancelled or error:', shareError);
+        // If share was cancelled, still offer to save to photo library
+        if (!hasMediaPermission) {
+          const { status } = await MediaLibrary.requestPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permission Required', 'Please grant media library access to save images.', [
+              { text: 'OK' },
+            ]);
+            return;
+          }
+          setHasMediaPermission(true);
+        }
+
+        // Save to media library as fallback
+        const asset = await MediaLibrary.createAssetAsync(uri);
+        const album = await MediaLibrary.getAlbumAsync('Light Designer');
+        if (album === null) {
+          await MediaLibrary.createAlbumAsync('Light Designer', asset, false);
+        } else {
+          await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+        }
+
+        Alert.alert('Saved', 'Your design has been saved to your photo library!', [{ text: 'OK' }]);
       }
-
-      // Notify user of success
-      Alert.alert('Success', 'Your design has been saved to your media library!', [{ text: 'OK' }]);
     } catch (error) {
       console.error('Export error:', error);
-      Alert.alert('Export Failed', 'There was a problem saving your design.');
+      Alert.alert('Export Failed', 'There was a problem exporting your design.');
     } finally {
       setIsExporting(false);
     }
@@ -894,9 +909,11 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" />
+        <StatusBar barStyle="dark-content"/>
 
-        <View style={styles.container}>
+        <View style={[
+          styles.container,
+        ]}>
         {/* Night Mode Controls - Only shown when night mode is enabled */}
         {nightModeEnabled && (
           <View style={{ 
@@ -917,56 +934,35 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
               shadowOpacity: 0.15,
               shadowRadius: 4,
               elevation: 4,
-              gap: isTablet ? 18 : 10,
+              gap: isTablet ? 12 : 8,
             }}>
               <Text style={{
-                fontSize: isTablet ? 18 : 13,
+                fontSize: isTablet ? 16 : 12,
                 fontWeight: '600',
                 color: '#333',
-                minWidth: isTablet ? 50 : 35,
+                minWidth: isTablet ? 40 : 30,
               }}>
                 {Math.round(nightModeIntensity * 100)}%
               </Text>
               
-              <TouchableOpacity
+              <Slider
                 style={{
-                  width: isTablet ? 44 : 28,
-                  height: isTablet ? 44 : 28,
-                  borderRadius: isTablet ? 22 : 14,
-                  backgroundColor: nightModeIntensity <= 0.1 ? '#f5f5f5' : '#333',
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                  width: isTablet ? 120 : 80,
+                  height: isTablet ? 40 : 30,
                 }}
-                onPress={() =>
-                  handleNightModeIntensityChange(Math.max(nightModeIntensity - 0.1, 0.1))
-                }
-                disabled={nightModeIntensity <= 0.1}>
-                <MaterialIcons 
-                  name="remove" 
-                  size={isTablet ? 24 : 16} 
-                  color={nightModeIntensity <= 0.1 ? '#ccc' : 'white'} 
-                />
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={{
-                  width: isTablet ? 44 : 28,
-                  height: isTablet ? 44 : 28,
-                  borderRadius: isTablet ? 22 : 14,
-                  backgroundColor: nightModeIntensity >= 0.9 ? '#f5f5f5' : '#333',
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                minimumValue={0.1}
+                maximumValue={0.9}
+                value={nightModeIntensity}
+                step={0.05}
+                onValueChange={handleNightModeIntensityChange}
+                minimumTrackTintColor="#333"
+                maximumTrackTintColor="#ddd"
+                thumbStyle={{
+                  backgroundColor: '#333',
+                  width: isTablet ? 20 : 16,
+                  height: isTablet ? 20 : 16,
                 }}
-                onPress={() =>
-                  handleNightModeIntensityChange(Math.min(nightModeIntensity + 0.1, 0.9))
-                }
-                disabled={nightModeIntensity >= 0.9}>
-                <MaterialIcons 
-                  name="add" 
-                  size={isTablet ? 24 : 16} 
-                  color={nightModeIntensity >= 0.9 ? '#ccc' : 'white'} 
-                />
-              </TouchableOpacity>
+              />
             </View>
           </View>
         )}
@@ -1206,7 +1202,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
         )} */}
 
         <GestureDetector gesture={imageGestures}>
-          <Animated.View style={[styles.zoomContainer, animatedStyle]}>
+          <Animated.View style={[styles.zoomContainer, animatedStyle]} className={isLandscape ? "mt-24 mb-16" : ""}>
             <ViewShot ref={viewShotRef} style={styles.canvasContainer}>
               {/* Main image with precise night mode overlay */}
               <ImageWithNightOverlay
@@ -1313,6 +1309,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           onCreateCustomAsset={createCustomAsset}
           onRemoveCustomAsset={removeCustomAsset}
           tutorial={tutorial}
+          isLandscape={isLandscape}
         />
 
         {/* Reference modal */}
