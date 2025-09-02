@@ -2,6 +2,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Slider from '@react-native-community/slider';
 import {
   ActivityIndicator,
   Alert,
@@ -921,56 +922,35 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
               shadowOpacity: 0.15,
               shadowRadius: 4,
               elevation: 4,
-              gap: isTablet ? 18 : 10,
+              gap: isTablet ? 12 : 8,
             }}>
               <Text style={{
-                fontSize: isTablet ? 18 : 13,
+                fontSize: isTablet ? 16 : 12,
                 fontWeight: '600',
                 color: '#333',
-                minWidth: isTablet ? 50 : 35,
+                minWidth: isTablet ? 40 : 30,
               }}>
                 {Math.round(nightModeIntensity * 100)}%
               </Text>
               
-              <TouchableOpacity
+              <Slider
                 style={{
-                  width: isTablet ? 44 : 28,
-                  height: isTablet ? 44 : 28,
-                  borderRadius: isTablet ? 22 : 14,
-                  backgroundColor: nightModeIntensity <= 0.1 ? '#f5f5f5' : '#333',
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                  width: isTablet ? 120 : 80,
+                  height: isTablet ? 40 : 30,
                 }}
-                onPress={() =>
-                  handleNightModeIntensityChange(Math.max(nightModeIntensity - 0.1, 0.1))
-                }
-                disabled={nightModeIntensity <= 0.1}>
-                <MaterialIcons 
-                  name="remove" 
-                  size={isTablet ? 24 : 16} 
-                  color={nightModeIntensity <= 0.1 ? '#ccc' : 'white'} 
-                />
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={{
-                  width: isTablet ? 44 : 28,
-                  height: isTablet ? 44 : 28,
-                  borderRadius: isTablet ? 22 : 14,
-                  backgroundColor: nightModeIntensity >= 0.9 ? '#f5f5f5' : '#333',
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                minimumValue={0.1}
+                maximumValue={0.9}
+                value={nightModeIntensity}
+                step={0.05}
+                onValueChange={handleNightModeIntensityChange}
+                minimumTrackTintColor="#333"
+                maximumTrackTintColor="#ddd"
+                thumbStyle={{
+                  backgroundColor: '#333',
+                  width: isTablet ? 20 : 16,
+                  height: isTablet ? 20 : 16,
                 }}
-                onPress={() =>
-                  handleNightModeIntensityChange(Math.min(nightModeIntensity + 0.1, 0.9))
-                }
-                disabled={nightModeIntensity >= 0.9}>
-                <MaterialIcons 
-                  name="add" 
-                  size={isTablet ? 24 : 16} 
-                  color={nightModeIntensity >= 0.9 ? '#ccc' : 'white'} 
-                />
-              </TouchableOpacity>
+              />
             </View>
           </View>
         )}
