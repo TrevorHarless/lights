@@ -1,4 +1,4 @@
-import { LightData, LightString, SingleLight, Decor, ReferenceScale, MeasurementLine } from '~/types/project';
+import { Decor, LightData, LightString, MeasurementLine, ReferenceScale, SingleLight } from '~/types/project';
 import { localStorageService } from './localStorage';
 
 export const lightDataStorage = {
@@ -10,7 +10,6 @@ export const lightDataStorage = {
     
     // If project not found and this looks like a local ID, try to find synced version
     if (!project && projectId.startsWith('local_')) {
-      console.log(`💡 LightData: Project ${projectId} not found, attempting to find synced version`);
       const allProjects = await localStorageService.getProjects();
       
       const timestampMatch = projectId.match(/local_(\d+)/);
@@ -26,9 +25,6 @@ export const lightDataStorage = {
           return timeDiff < timeWindow;
         }) || null;
         
-        if (project) {
-          console.log(`💡 LightData: Found synced project ${project.id} (was ${projectId})`);
-        }
       }
     }
     
@@ -67,7 +63,6 @@ export const lightDataStorage = {
         updated_at: new Date().toISOString()
       });
 
-      console.log('💡 LightData: Saved light data for project', project.name);
     } catch (error) {
       console.error('Error saving light data:', error);
       throw error;
@@ -86,11 +81,9 @@ export const lightDataStorage = {
       }
 
       if (!project.light_data) {
-        console.log('💡 LightData: No light data found for project', project.name);
         return null;
       }
 
-      console.log('💡 LightData: Loaded light data for project', project.name);
       return project.light_data;
     } catch (error) {
       console.error('Error loading light data:', error);
@@ -132,7 +125,6 @@ export const lightDataStorage = {
         updated_at: new Date().toISOString()
       });
 
-      console.log('💡 LightData: Cleared light data for project', project.name);
     } catch (error) {
       console.error('Error clearing light data:', error);
       throw error;

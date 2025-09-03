@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export function useSingularLights(lightAssets = []) {
   const [singularLights, setSingularLights] = useState([]);
@@ -95,7 +95,6 @@ export function useSingularLights(lightAssets = []) {
 
   // Clear all singular lights
   const clearAllSingularLights = useCallback(() => {
-    console.log("💡 useSingularLights: CLEARING ALL SINGULAR LIGHTS");
     // Clear any existing undo state
     clearUndoTimer();
     setDeletedLight(null);
@@ -209,38 +208,10 @@ export function useSingularLights(lightAssets = []) {
     [singularLights]
   );
 
-  // Debug: Log when singularLights state changes
-  useEffect(() => {
-    console.log(
-      "💡 useSingularLights: State changed - current singularLights:",
-      singularLights.length,
-      "lights"
-    );
-    if (singularLights.length > 0) {
-      console.log(
-        "💡 useSingularLights: First light:",
-        JSON.stringify(singularLights[0], null, 2)
-      );
-    }
-  }, [singularLights]);
-
   // Load singular lights from saved data
   const loadSingularLights = useCallback((singularLightsData) => {
     if (singularLightsData && Array.isArray(singularLightsData)) {
-      console.log(
-        "💡 useSingularLights: Loading singular lights data:",
-        JSON.stringify(singularLightsData, null, 2)
-      );
       setSingularLights(singularLightsData);
-      console.log(
-        "💡 useSingularLights: State updated with",
-        singularLightsData.length,
-        "singular lights"
-      );
-    } else {
-      console.log(
-        "💡 useSingularLights: No valid singular lights data to load"
-      );
     }
   }, []);
 

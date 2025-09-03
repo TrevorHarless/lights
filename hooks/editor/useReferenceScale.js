@@ -47,10 +47,13 @@ export function useReferenceScale() {
 
   // Load reference scale from saved data
   const loadReferenceScale = useCallback((referenceScale) => {
-    if (referenceScale && referenceScale.referenceLine && referenceScale.referenceLength) {
+    if (
+      referenceScale &&
+      referenceScale.referenceLine &&
+      referenceScale.referenceLength
+    ) {
       setReferenceLine(referenceScale.referenceLine);
       setReferenceLength(referenceScale.referenceLength);
-      console.log('📏 Reference Scale: Loaded saved reference measurement');
     }
   }, []);
 

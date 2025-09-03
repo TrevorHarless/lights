@@ -47,7 +47,6 @@ import TutorialOverlay from '~/components/tutorial/TutorialOverlay';
 import { useTutorial } from '~/hooks/tutorial/useTutorial';
 
 const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
-  console.log('🎯 ImageViewer: Component mounted/rendered');
   
   // Device detection for responsive design
   const { width, height } = Dimensions.get('window');
@@ -174,8 +173,6 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
 
   // Tutorial-aware wrapper for addLightString
   const addLightStringWithTutorial = useCallback((vector) => {
-    console.log('🎯 Tutorial: addLightStringWithTutorial called, current lightStrings.length:', lightStrings.length);
-    console.log('🎯 Tutorial: tutorial state:', { isActive: tutorial?.isActive, currentStep: tutorial?.currentStep?.id });
     
     // Check if this is the first string light drawn for tutorial (before adding)
     const isFirstString = lightStrings.length === 0;
@@ -185,7 +182,6 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     
     // Trigger tutorial action if this was the first string
     if (isFirstString && tutorial?.handleAction) {
-      console.log('🎯 Tutorial: First string light drawn, triggering tutorial action');
       setTimeout(() => {
         tutorial.handleAction('first_string_light_drawn');
       }, 1000); // Small delay to let the string render
@@ -194,15 +190,12 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
 
   // Tutorial-aware wrapper for addMeasurementLine
   const addMeasurementLineWithTutorial = useCallback((line) => {
-    console.log('🎯 Tutorial: addMeasurementLineWithTutorial called');
-    console.log('🎯 Tutorial: tutorial state:', { isActive: tutorial?.isActive, currentStep: tutorial?.currentStep?.id });
     
     // Call the original addMeasurementLine function
     addMeasurementLine(line);
     
     // Trigger tutorial action for measure mode tutorial
     if (tutorial?.handleAction && tutorial?.currentStep?.id === 'try_measuring') {
-      console.log('🎯 Tutorial: Measurement line drawn during tutorial, triggering tutorial action');
       setTimeout(() => {
         tutorial.handleAction('measurement_line_drawn');
       }, 500); // Small delay to let the line render
@@ -494,9 +487,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   const autoSaveTimerRef = useRef(null);
 
   // Tutorial system
-  console.log('🎯 ImageViewer: Creating tutorial hook');
   const tutorial = useTutorial();
-  console.log('🎯 ImageViewer: Tutorial hook created, isActive:', tutorial.isActive);
   const tutorialStarted = useRef(false);
   const startTutorialRef = useRef(tutorial.startTutorial);
   const zoomPanDetected = useRef(false);
@@ -511,12 +502,10 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   useEffect(() => {
     const checkGesture = () => {
       if (gestureHappened.value > 0 && !zoomPanDetected.current) {
-        console.log('🎯 Tutorial: Zoom/pan detected, triggering tutorial action');
         zoomPanDetected.current = true;
         if (tutorial?.handleAction) {
           // Add slight delay before triggering
           setTimeout(() => {
-            console.log('🎯 Tutorial: Calling zoom_or_pan_detected action');
             tutorial.handleAction('zoom_or_pan_detected');
           }, 1500);
         }
@@ -530,13 +519,10 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   
   // Start tutorial when component mounts (if not completed)
   useEffect(() => {
-    console.log('🎯 Tutorial: useEffect triggered, tutorialStarted:', tutorialStarted.current);
     if (!tutorialStarted.current) {
-      console.log('🎯 Tutorial: Starting tutorial...');
       tutorialStarted.current = true;
       // Start tutorial after a short delay to let the component fully load
       const timer = setTimeout(() => {
-        console.log('🎯 Tutorial: Calling startTutorial');
         startTutorialRef.current('editor_intro');
       }, 1000);
       
@@ -563,38 +549,28 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
         if (loadedData) {
           setSavedLightData(loadedData);
           
-          console.log('💡 ImageViewer: About to load data into hooks');
-          console.log('💡 ImageViewer: Light strings to load:', loadedData.lightStrings?.length || 0);
-          console.log('💡 ImageViewer: Singular lights to load:', loadedData.singleLights?.length || 0);
-          console.log('💡 ImageViewer: Decor to load:', loadedData.decor?.length || 0);
           
           // Apply loaded data to hooks
           if (loadedData.lightStrings?.length > 0) {
-            console.log('💡 ImageViewer: Calling loadLightStrings with:', loadedData.lightStrings);
             loadLightStrings(loadedData.lightStrings);
           }
           if (loadedData.singleLights?.length > 0) {
-            console.log('💡 ImageViewer: Calling loadSingularLights with:', loadedData.singleLights);
             loadSingularLights(loadedData.singleLights);
           }
           if (loadedData.decor?.length > 0) {
-            console.log('💡 ImageViewer: Calling loadDecor with:', loadedData.decor);
             loadDecor(loadedData.decor);
           }
           
           // Load reference scale if it exists
           if (loadedData.referenceScale) {
-            console.log('💡 ImageViewer: Loading reference scale:', loadedData.referenceScale);
             loadReferenceScale(loadedData.referenceScale);
           }
           
           // Load measurement lines if they exist
           if (loadedData.measurementLines?.length > 0) {
-            console.log('💡 ImageViewer: Loading measurement lines:', loadedData.measurementLines);
             loadMeasurementLines(loadedData.measurementLines);
           }
           
-          console.log('💡 ImageViewer: Finished loading data into hooks');
         }
       } catch (error) {
         console.error('Error loading light data:', error);
@@ -607,7 +583,6 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   // Recalculate measurement lines when reference scale changes
   useEffect(() => {
     if (hasReference && measurementLines.length > 0) {
-      console.log('📏 ImageViewer: Reference scale changed, recalculating measurement lines');
       recalculateAllMeasurements();
     }
   }, [hasReference, referenceLine, referenceLength, measurementLines.length, recalculateAllMeasurements]);
@@ -655,7 +630,6 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
         version: '1.0'
       });
 
-      console.log('💡 ImageViewer: Successfully saved project');
     } catch (error) {
       console.error('Error saving project:', error);
       Alert.alert('Save Error', 'Failed to save your project. Please try again.');
@@ -811,7 +785,6 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   };
 
   const handleRestartTutorial = async () => {
-    console.log('🎯 Tutorial: User requested tutorial restart');
     // Reset tutorial completion status
     await tutorial.resetTutorialStatus();
     // Start the tutorial again

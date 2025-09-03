@@ -1,7 +1,7 @@
 import { supabase } from '~/lib/supabase';
-import { Project, CreateProjectData } from '~/types/project';
-import { localStorageService, StoredProject } from './localStorage';
+import { CreateProjectData, Project } from '~/types/project';
 import { imageUploadService } from './imageUpload';
+import { localStorageService } from './localStorage';
 
 export type SyncStatus = 'idle' | 'syncing' | 'error' | 'success';
 
@@ -19,7 +19,6 @@ class SyncService {
   async syncToCloud(userId: string): Promise<SyncResult> {
     try {
       const dirtyProjects = await localStorageService.getDirtyProjects();
-      console.log(`📤 Sync: Found ${dirtyProjects.length} dirty projects to upload`);
       let syncedCount = 0;
       let conflictCount = 0;
 
@@ -34,13 +33,11 @@ class SyncService {
             
             // If we have a local file image URL, upload it to cloud storage first
             if (localProject.image_url && localProject.image_url.startsWith('file://')) {
-              console.log('🖼️ Uploading local image to cloud storage:', localProject.name);
               const uploadResult = await imageUploadService.uploadImage(localProject.image_url, userId);
               
               if (uploadResult.success) {
                 imageUrl = uploadResult.imageUrl;
                 imagePath = uploadResult.imagePath;
-                console.log('✅ Image upload successful for:', localProject.name);
               } else {
                 console.error('❌ Image upload failed for:', localProject.name, uploadResult.error);
                 // Continue without image rather than failing the entire sync
@@ -90,13 +87,11 @@ class SyncService {
             
             // If we have a local file image URL, upload it to cloud storage first
             if (localProject.image_url && localProject.image_url.startsWith('file://')) {
-              console.log('🖼️ Uploading updated local image to cloud storage:', localProject.name);
               const uploadResult = await imageUploadService.uploadImage(localProject.image_url, userId);
               
               if (uploadResult.success) {
                 imageUrl = uploadResult.imageUrl;
                 imagePath = uploadResult.imagePath;
-                console.log('✅ Image upload successful for updated:', localProject.name);
                 
                 // Update local project with new cloud URL
                 await localStorageService.upsertProject({
@@ -168,7 +163,6 @@ class SyncService {
       const projectsWithUrls = await Promise.all(
         (cloudProjects as unknown as Project[]).map(async (project) => {
           if (project.image_path) {
-            console.log('📥 Getting fresh signed URL for project:', project.name);
             const { url } = await imageUploadService.getSignedUrl(project.image_path);
             if (url) {
               return {
@@ -214,17 +208,14 @@ class SyncService {
       const missingProjects = (cloudProjects as unknown as Project[]).filter(project => !localProjectIds.has(project.id));
       
       if (missingProjects.length === 0) {
-        console.log('📥 No missing projects to sync from cloud');
         return { success: true, syncedCount: 0 };
       }
 
-      console.log(`📥 Sync: Found ${missingProjects.length} missing projects to download`);
 
       // Only get signed URLs for missing projects
       const projectsWithUrls = await Promise.all(
         missingProjects.map(async (project) => {
           if (project.image_path) {
-            console.log('📥 Getting fresh signed URL for missing project:', project.name);
             const { url } = await imageUploadService.getSignedUrl(project.image_path);
             if (url) {
               return {
@@ -281,7 +272,6 @@ class SyncService {
   async manualSync(userId: string): Promise<SyncResult> {
     try {
       // Manual sync bypasses rate limiting - always sync when user requests it
-      console.log('🔄 Manual sync requested, bypassing rate limit');
       return await this.performFullSync(userId);
     } catch (error) {
       console.error('Manual sync failed:', error);

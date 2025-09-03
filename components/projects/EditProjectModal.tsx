@@ -9,7 +9,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { imageUploadService } from "~/services/imageUpload";
 import { Project } from "~/types/project";
@@ -54,7 +54,6 @@ export default function EditProjectModal({
     }
   }, [project, visible]);
 
-
   const handlePickImage = async () => {
     try {
       const result = await imageUploadService.pickImage();
@@ -94,10 +93,8 @@ export default function EditProjectModal({
       };
 
       // Pass to parent to handle persistence and UI updates
-      console.log("Updating project:", updatedProject);
       onProjectUpdated(updatedProject, selectedImage);
       onClose();
-      
     } catch (error) {
       Alert.alert("Error", "Failed to update project");
       console.error("Error updating project:", error);
@@ -110,14 +107,14 @@ export default function EditProjectModal({
     onClose();
   };
 
-  const hasChanges = project && (
-    projectName !== (project.name || "") ||
-    projectDescription !== (project.description || "") ||
-    projectAddress !== (project.address || "") ||
-    projectPhone !== (project.phone_number || "") ||
-    projectEmail !== (project.email || "") ||
-    selectedImage !== (project.image_url || null)
-  );
+  const hasChanges =
+    project &&
+    (projectName !== (project.name || "") ||
+      projectDescription !== (project.description || "") ||
+      projectAddress !== (project.address || "") ||
+      projectPhone !== (project.phone_number || "") ||
+      projectEmail !== (project.email || "") ||
+      selectedImage !== (project.image_url || null));
 
   return (
     <Modal
@@ -130,29 +127,29 @@ export default function EditProjectModal({
         {/* Header */}
         <View className="bg-white/95 px-5 py-4 shadow-lg border-b border-gray-100">
           <View className="flex-row items-center justify-between">
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handleClose}
               className="w-10 h-10 items-center justify-center"
               disabled={updating}
             >
               <MaterialIcons name="close" size={24} color="#374151" />
             </TouchableOpacity>
-            
+
             <Text className="text-xl font-bold text-gray-800">
               Edit Project
             </Text>
-            
+
             <TouchableOpacity
               className={`px-4 py-2 rounded-2xl ${
                 updating || !projectName.trim() || !hasChanges
-                  ? 'bg-gray-300' 
-                  : 'bg-gray-700'
+                  ? "bg-gray-300"
+                  : "bg-gray-700"
               }`}
               onPress={handleUpdateProject}
               disabled={updating || !projectName.trim() || !hasChanges}
             >
               <Text className="text-white font-semibold text-sm">
-                {updating ? 'Saving...' : 'Save'}
+                {updating ? "Saving..." : "Save"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -160,7 +157,6 @@ export default function EditProjectModal({
 
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           <View className="p-6 space-y-6">
-
             <TextInput
               ref={nameInputRef}
               className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 font-medium mb-5"
@@ -239,12 +235,12 @@ export default function EditProjectModal({
                 >
                   <Image
                     source={{ uri: selectedImage }}
-                    style={{ 
-                      width: 64, 
-                      height: 64, 
-                      borderRadius: 12, 
+                    style={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: 12,
                       marginRight: 16,
-                      backgroundColor: '#f3f4f6'
+                      backgroundColor: "#f3f4f6",
                     }}
                     contentFit="cover"
                     onError={(error) => {
@@ -275,7 +271,6 @@ export default function EditProjectModal({
                 </TouchableOpacity>
               )}
             </View>
-
           </View>
         </ScrollView>
       </SafeAreaView>

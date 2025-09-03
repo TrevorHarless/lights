@@ -27,7 +27,6 @@ export const localStorageService = {
     if (currentUserId && currentUserId !== userId) {
       projectsCache = null;
       cacheTimestamp = 0;
-      console.log('💾 LocalStorage: Cleared cache for user change');
     }
     currentUserId = userId;
   },
@@ -37,7 +36,6 @@ export const localStorageService = {
       // Check cache first
       const now = Date.now();
       if (projectsCache && (now - cacheTimestamp) < CACHE_DURATION) {
-        console.log('💾 LocalStorage: Retrieved', projectsCache.length, 'projects from cache');
         return projectsCache;
       }
 
@@ -51,7 +49,6 @@ export const localStorageService = {
       const projects = JSON.parse(data);
       projectsCache = projects;
       cacheTimestamp = now;
-      console.log('💾 LocalStorage: Retrieved', projects.length, 'projects from local storage');
       return projects;
     } catch (error) {
       console.error('Error reading projects from local storage:', error);
@@ -61,7 +58,6 @@ export const localStorageService = {
 
   async saveProjects(projects: StoredProject[]): Promise<void> {
     try {
-      console.log('💾 LocalStorage: Saving', projects.length, 'projects to local storage');
       await AsyncStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
       
       // Update cache
@@ -90,10 +86,8 @@ export const localStorageService = {
     };
 
     if (index >= 0) {
-      console.log('💾 LocalStorage: Updating project -', project.name);
       projects[index] = updatedProject;
     } else {
-      console.log('💾 LocalStorage: Creating new project -', project.name);
       projects.unshift(updatedProject);
     }
 
@@ -101,7 +95,6 @@ export const localStorageService = {
   },
 
   async deleteProject(projectId: string): Promise<void> {
-    console.log('💾 LocalStorage: Deleting project -', projectId);
     const projects = await this.getProjects();
     const filteredProjects = projects.filter(p => p.id !== projectId);
     await this.saveProjects(filteredProjects);
@@ -215,7 +208,6 @@ export const localStorageService = {
         image_url_expires_at: new Date(Date.now() + 50 * 60 * 1000).toISOString()
       };
       await this.saveProjects(projects);
-      console.log('💾 LocalStorage: Cached image URL for project', projectId);
     }
   },
 

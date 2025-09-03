@@ -1,6 +1,6 @@
-import { Session, User, AuthChangeEvent } from "@supabase/supabase-js";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 import * as AppleAuthentication from "expo-apple-authentication";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "~/lib/supabase";
 
 interface AuthContextType {
@@ -24,11 +24,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        console.log('🔐 AUTH: Error retrieving session:', error.message);
+        console.log("🔐 AUTH: Error retrieving session:", error.message);
         // Clear any stale auth data
         supabase.auth.signOut();
       }
-      console.log('🔐 AUTH: Retrieved session on app start:', session ? `User: ${session.user?.email}` : 'No session found');
+      console.log(
+        "🔐 AUTH: Retrieved session on app start:",
+        session ? `User: ${session.user?.email}` : "No session found"
+      );
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -36,17 +39,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        console.log('🔐 AUTH: User signed in');
-      } else if (event === 'SIGNED_OUT') {
-        console.log('🔐 AUTH: User signed out');
+    } = supabase.auth.onAuthStateChange(
+      (event: AuthChangeEvent, session: Session | null) => {
+        if (event === "SIGNED_IN" && session?.user) {
+          console.log("🔐 AUTH: User signed in");
+        } else if (event === "SIGNED_OUT") {
+          console.log("🔐 AUTH: User signed out");
+        }
+
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
       }
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    );
 
     return () => subscription.unsubscribe();
   }, []);
@@ -81,26 +86,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           error,
           data: { user },
         } = await supabase.auth.signInWithIdToken({
-          provider: 'apple',
+          provider: "apple",
           token: credential.identityToken,
         });
-        
+
         if (error) {
-          console.error('🍎 APPLE AUTH: Sign-in failed:', error.message);
+          console.error("🍎 APPLE AUTH: Sign-in failed:", error.message);
         } else {
-          console.log('🍎 APPLE AUTH: Successfully signed in');
+          console.log("🍎 APPLE AUTH: Successfully signed in");
         }
-        
+
         return { error };
       } else {
-        console.error('🍎 APPLE AUTH: No identity token received');
-        return { error: { message: 'No identity token received' } };
+        console.error("🍎 APPLE AUTH: No identity token received");
+        return { error: { message: "No identity token received" } };
       }
     } catch (e: any) {
-      if (e.code === 'ERR_REQUEST_CANCELED') {
-        return { error: { message: 'User canceled Apple sign-in' } };
+      if (e.code === "ERR_REQUEST_CANCELED") {
+        return { error: { message: "User canceled Apple sign-in" } };
       } else {
-        console.error('🍎 APPLE AUTH: Error:', e.message);
+        console.error("🍎 APPLE AUTH: Error:", e.message);
         return { error: e };
       }
     }
@@ -110,16 +115,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.log('🔐 AUTH: Sign-out failed:', error.message);
+        console.log("🔐 AUTH: Sign-out failed:", error.message);
         // Even if signOut fails, we should clear local state
         // since the user explicitly wants to sign out
         setSession(null);
         setUser(null);
-      } else {
-        console.log('🔐 AUTH: Successfully signed out');
       }
     } catch (error) {
-      console.log('🔐 AUTH: Sign-out failed:', (error as Error).message);
+      console.log("🔐 AUTH: Sign-out failed:", (error as Error).message);
       // Force clear local auth state even if signOut throws
       setSession(null);
       setUser(null);

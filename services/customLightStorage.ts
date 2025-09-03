@@ -34,7 +34,6 @@ export const customLightStorage = {
       // Check cache first
       const now = Date.now();
       if (customLightsCache && (now - cacheTimestamp) < CACHE_DURATION) {
-        console.log('💡 CustomLights: Retrieved', customLightsCache.length, 'custom lights from cache');
         return customLightsCache;
       }
 
@@ -50,7 +49,6 @@ export const customLightStorage = {
       // Restore function-based render styles for patterns
       const restoredLights = customLights.map(light => {
         if (light.isPattern && light.patternColors) {
-          console.log('💡 CustomLights: Restoring pattern light:', light.name, 'with colors:', light.patternColors);
           return {
             ...light,
             renderStyle: (lightIndex = 0) => {
@@ -70,7 +68,6 @@ export const customLightStorage = {
       customLightsCache = restoredLights;
       cacheTimestamp = now;
       
-      console.log('💡 CustomLights: Retrieved', restoredLights.length, 'custom lights from storage');
       return restoredLights;
     } catch (error) {
       console.error('💡 CustomLights: Error retrieving custom lights:', error);
@@ -117,7 +114,6 @@ export const customLightStorage = {
       customLightsCache = updatedLights;
       cacheTimestamp = Date.now();
 
-      console.log('💡 CustomLights: Saved new custom light:', newLight.name, 'isPattern:', newLight.isPattern);
       return newLight;
     } catch (error) {
       console.error('💡 CustomLights: Error saving custom light:', error);
@@ -145,7 +141,6 @@ export const customLightStorage = {
       customLightsCache = filteredLights;
       cacheTimestamp = Date.now();
 
-      console.log('💡 CustomLights: Deleted custom light:', lightId);
     } catch (error) {
       console.error('💡 CustomLights: Error deleting custom light:', error);
       throw error;
@@ -195,7 +190,6 @@ export const customLightStorage = {
       customLightsCache = updatedLights;
       cacheTimestamp = Date.now();
 
-      console.log('💡 CustomLights: Updated custom light:', updatedLight.name);
       return updatedLight;
     } catch (error) {
       console.error('💡 CustomLights: Error updating custom light:', error);
@@ -211,7 +205,6 @@ export const customLightStorage = {
       await AsyncStorage.removeItem(CUSTOM_LIGHTS_KEY);
       customLightsCache = [];
       cacheTimestamp = Date.now();
-      console.log('💡 CustomLights: Cleared all custom lights');
     } catch (error) {
       console.error('💡 CustomLights: Error clearing custom lights:', error);
       throw error;
@@ -232,6 +225,5 @@ export const customLightStorage = {
   clearCache(): void {
     customLightsCache = null;
     cacheTimestamp = 0;
-    console.log('💡 CustomLights: Cache cleared');
   }
 };

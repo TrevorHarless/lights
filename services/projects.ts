@@ -8,7 +8,6 @@ export const projectsService = {
     // This method should only be called during sync operations
     // Regular app usage should use localStorageService.getProjects()
     
-    console.log('🌐 Supabase: Fetching projects from server');
     const { data, error } = await supabase
       .from('projects')
       .select('*')
@@ -97,7 +96,6 @@ export const projectsService = {
       return { data: null, error: { message: 'User not authenticated' } }
     }
 
-    console.log('🌐 Supabase: Creating project on server -', projectData.name);
     const { data, error } = await supabase
       .from('projects')
       .insert([
@@ -119,7 +117,6 @@ export const projectsService = {
   },
 
   async deleteProject(projectId: string): Promise<{ error: any }> {
-    console.log('🌐 Supabase: Deleting project from server -', projectId);
     
     // First, get the project to retrieve the image_path
     const { data: project, error: fetchError } = await supabase

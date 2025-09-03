@@ -1,5 +1,5 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import 'react-native-url-polyfill/auto'
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!
@@ -28,7 +28,6 @@ class LoggedSupabaseClient {
 
   // Database operations logging
   from(table: string) {
-    console.log(`🗄️  SUPABASE DB: Accessing table '${table}'`)
     
     const originalQuery = this.client.from(table)
     

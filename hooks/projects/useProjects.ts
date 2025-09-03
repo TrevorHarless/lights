@@ -1,10 +1,9 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { projectsService } from "~/services/projects";
-import { localStorageService } from "~/services/localStorage";
-import { syncService } from "~/services/syncService";
 import { useSync } from "~/contexts/SyncContext";
+import { localStorageService } from "~/services/localStorage";
+import { projectsService } from "~/services/projects";
 import { Project } from "~/types/project";
 
 export function useProjects(user: any) {
@@ -33,7 +32,6 @@ export function useProjects(user: any) {
   useEffect(() => {
     const refreshAfterSync = async () => {
       if (syncStatus === 'success' && user) {
-        console.log('🔄 Refreshing projects after sync completion');
         const refreshedProjects = await localStorageService.getProjects();
         setProjects(refreshedProjects);
       }
@@ -149,7 +147,6 @@ export function useProjects(user: any) {
       setProjects((prev) => [newProject, ...prev]);
       
       // Note: No automatic background upload - sync only happens when user explicitly triggers it
-      console.log('📝 Project created locally:', newProject.name, '- waiting for manual sync');
     } catch (error) {
       console.error("Error saving new project locally:", error);
       Alert.alert("Error", "Failed to save project");
@@ -173,7 +170,6 @@ export function useProjects(user: any) {
       setEditModalVisible(false);
       
       // Note: No automatic background upload - sync only happens when user explicitly triggers it
-      console.log('✏️ Project updated locally:', updatedProject.name, '- waiting for manual sync');
     } catch (error) {
       console.error("Error updating project locally:", error);
       Alert.alert("Error", "Failed to update project");
