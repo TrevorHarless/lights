@@ -1,7 +1,6 @@
 import { Link, router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
-  Alert,
   Dimensions,
   Platform,
   SafeAreaView,
@@ -12,6 +11,7 @@ import {
   View,
 } from "react-native";
 import AppleSignInButton from "~/components/AppleSignInButton";
+import ErrorMessage from "~/components/ui/ErrorMessage";
 import { useAuth } from "~/contexts/AuthContext";
 import "../global.css";
 
@@ -19,6 +19,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const { signIn } = useAuth();
   const passwordRef = useRef<TextInput>(null);
 
@@ -32,8 +33,10 @@ export default function LoginScreen() {
   const footerMargin = isTablet ? "mt-12" : "mt-8";
 
   const handleLogin = async () => {
+    setErrorMessage("");
+    
     if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+      setErrorMessage("Please fill in all fields");
       return;
     }
 
@@ -41,7 +44,7 @@ export default function LoginScreen() {
     const { error } = await signIn(email, password);
 
     if (error) {
-      Alert.alert("Error", error.message);
+      setErrorMessage(error.message);
     } else {
       router.replace("/");
     }
@@ -73,6 +76,12 @@ export default function LoginScreen() {
 
           {/* Form */}
           <View className={verticalSpacing}>
+            {/* Error Message */}
+            <ErrorMessage 
+              message={errorMessage} 
+              visible={!!errorMessage} 
+              type="error" 
+            />
             <View>
               <Text className="text-gray-700 font-medium mb-2 ml-1">Email</Text>
               <TextInput
