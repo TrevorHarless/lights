@@ -10,6 +10,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signInWithApple: () => Promise<{ error: any }>;
+  signInWithOTP: (email: string) => Promise<{ error: any }>;
+  verifyOTP: (email: string, token: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
 }
@@ -129,6 +131,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithOTP = async (email: string) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true,
+      },
+    });
+    return { error };
+  };
+
+  const verifyOTP = async (email: string, token: string) => {
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email',
+    });
+    return { error };
+  };
+
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email);
     return { error };
@@ -141,6 +162,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signUp,
     signInWithApple,
+    signInWithOTP,
+    verifyOTP,
     signOut,
     resetPassword,
   };

@@ -48,6 +48,10 @@ export default function LoginScreen() {
     setLoading(false);
   };
 
+  const handleNavigateToOTP = () => {
+    router.push("/otp-login");
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-gradient-to-b from-primary-50 to-white">
       <ScrollView
@@ -116,11 +120,11 @@ export default function LoginScreen() {
             </View>
 
             <View className="flex-row justify-end mt-2">
-              <Link href="/forgot-password">
+              <TouchableOpacity onPress={handleNavigateToOTP}>
                 <Text className="text-primary-600 font-medium text-sm">
-                  Forgot your password?
+                  Sign in with OTP
                 </Text>
-              </Link>
+              </TouchableOpacity>
             </View>
 
             <TouchableOpacity
