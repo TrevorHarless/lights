@@ -2,7 +2,6 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import { Link, router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
-  Alert,
   Dimensions,
   Platform,
   SafeAreaView,
@@ -13,6 +12,8 @@ import {
   View,
 } from "react-native";
 import AppleSignInButton from "~/components/AppleSignInButton";
+import ErrorMessage from "~/components/ui/ErrorMessage";
+import PasswordRequirements from "~/components/ui/PasswordRequirements";
 import { useAuth } from "~/contexts/AuthContext";
 import "../global.css";
 
@@ -21,6 +22,10 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showPasswordRequirements, setShowPasswordRequirements] =
+    useState(false);
   const { signUp } = useAuth();
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
@@ -35,18 +40,22 @@ export default function SignUpScreen() {
   const footerMargin = isTablet ? "mt-12" : "mt-8";
 
   const handleSignUp = async () => {
+    // Clear previous messages
+    setErrorMessage("");
+    setSuccessMessage("");
+
     if (!email || !password || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields");
+      setErrorMessage("Please fill in all fields");
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      setErrorMessage("Passwords do not match");
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters");
+      setErrorMessage("Password must be at least 6 characters");
       return;
     }
 
@@ -54,13 +63,21 @@ export default function SignUpScreen() {
     const { error } = await signUp(email, password);
 
     if (error) {
-      Alert.alert("Error", error.message);
+      // Customize password requirement error messages
+      let errorMsg = error.message;
+      if (error.message.includes("Password should contain")) {
+        errorMsg =
+          "Password must contain at least:\n• 1 uppercase letter (A-Z)\n• 1 lowercase letter (a-z)\n• 1 number (0-9)";
+      }
+      setErrorMessage(errorMsg);
     } else {
-      Alert.alert(
-        "Success",
-        "Account created successfully! Please check your email to verify your account.",
-        [{ text: "OK", onPress: () => router.replace("/login") }]
+      setSuccessMessage(
+        "Account created successfully! Please check your email to verify your account."
       );
+      // Redirect after showing success message
+      setTimeout(() => {
+        router.replace("/login");
+      }, 10000);
     }
     setLoading(false);
   };
@@ -91,6 +108,17 @@ export default function SignUpScreen() {
 
           {/* Form */}
           <View className={verticalSpacing}>
+            {/* Error and Success Messages */}
+            <ErrorMessage
+              message={errorMessage}
+              visible={!!errorMessage}
+              type="error"
+            />
+            <ErrorMessage
+              message={successMessage}
+              visible={!!successMessage}
+              type="info"
+            />
             <View>
               <Text className="text-gray-700 font-medium mb-2 ml-1">Email</Text>
               <TextInput
@@ -126,6 +154,8 @@ export default function SignUpScreen() {
                 placeholderTextColor="#9ca3af"
                 value={password}
                 onChangeText={setPassword}
+                onFocus={() => setShowPasswordRequirements(true)}
+                onBlur={() => setShowPasswordRequirements(false)}
                 secureTextEntry
                 autoComplete="password"
                 autoCorrect={false}
@@ -134,6 +164,10 @@ export default function SignUpScreen() {
                 returnKeyType="next"
                 blurOnSubmit={false}
                 onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+              />
+              <PasswordRequirements
+                password={password}
+                visible={showPasswordRequirements}
               />
             </View>
 
