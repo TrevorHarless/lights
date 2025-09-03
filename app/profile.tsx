@@ -11,6 +11,7 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SubscriptionGuard } from "~/components/SubscriptionGuard";
 import { useAuth } from "~/contexts/AuthContext";
 import { supabase } from "~/lib/supabase";
 import { projectsService } from "~/services/projects";
@@ -137,6 +138,7 @@ export default function ProfileScreen() {
   };
 
   return (
+    <SubscriptionGuard>
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
       {/* Header */}
       <View style={{
@@ -446,5 +448,6 @@ export default function ProfileScreen() {
           </View>
         </ScrollView>
       </SafeAreaView>
+      </SubscriptionGuard>
   );
 }

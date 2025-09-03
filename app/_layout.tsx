@@ -6,6 +6,18 @@ import "react-native-get-random-values";
 import Purchases, { LOG_LEVEL } from "react-native-purchases";
 import { AuthProvider } from "~/contexts/AuthContext";
 import { SyncProvider } from "~/contexts/SyncContext";
+import { useRevenueCat } from "~/hooks/useRevenueCat";
+
+function RootLayoutContent() {
+  useRevenueCat();
+
+  return (
+    <>
+      <StatusBar style="dark" backgroundColor="#ffffff" />
+      <Stack screenOptions={{ headerShown: false }} />
+    </>
+  );
+}
 
 export default function RootLayout() {
   useEffect(() => {
@@ -40,8 +52,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <SyncProvider>
-        <StatusBar style="dark" backgroundColor="#ffffff" />
-        <Stack screenOptions={{ headerShown: false }} />
+        <RootLayoutContent />
       </SyncProvider>
     </AuthProvider>
   );

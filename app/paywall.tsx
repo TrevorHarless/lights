@@ -29,26 +29,25 @@ export default function PaywallScreen() {
 
   const handleDismiss = async () => {
     try {
-      // Check if user has active subscription after purchase/restore
       const customerInfo = await Purchases.getCustomerInfo();
       const hasActiveSubscription = Object.keys(customerInfo.entitlements.active).length > 0;
       
       if (hasActiveSubscription) {
-        // User has subscription, go to projects
+        // User has subscription - allow access to main app
         router.replace("/projects");
       } else {
-        // User dismissed without purchasing, still go to projects
-        // You might want to implement a limited trial mode here
-        router.replace("/projects");
+        // No subscription - prevent access, stay on paywall
+        // User must subscribe or will be stuck here
+        return;
       }
     } catch (error) {
       console.error("Error checking subscription status:", error);
-      router.replace("/projects");
+      // On error, prevent access to main app
+      return;
     }
   };
 
   const handleRestoreCompleted = ({ customerInfo }: { customerInfo: CustomerInfo }) => {
-    console.log("Restore completed:", customerInfo);
     const hasActiveSubscription = Object.keys(customerInfo.entitlements.active).length > 0;
     
     if (hasActiveSubscription) {
@@ -56,6 +55,15 @@ export default function PaywallScreen() {
       router.replace("/projects");
     } else {
       Alert.alert("No Purchases", "No active subscriptions found to restore.");
+    }
+  };
+
+  const handlePurchaseCompleted = ({ customerInfo }: { customerInfo: CustomerInfo }) => {
+    const hasActiveSubscription = Object.keys(customerInfo.entitlements.active).length > 0;
+    
+    if (hasActiveSubscription) {
+      Alert.alert("Welcome!", "Your subscription is now active!");
+      router.replace("/projects");
     }
   };
 
@@ -70,8 +78,10 @@ export default function PaywallScreen() {
       <RevenueCatUI.Paywall
         options={{
           offering: offering || undefined,
+          displayCloseButton: false, // Prevent users from dismissing without subscribing
         }}
         onRestoreCompleted={handleRestoreCompleted}
+        onPurchaseCompleted={handlePurchaseCompleted}
         onDismiss={handleDismiss}
       />
     </View>

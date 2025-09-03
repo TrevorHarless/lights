@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ImageViewer from "~/components/editor/ImageViewer";
+import { SubscriptionGuard } from "~/components/SubscriptionGuard";
 import { useAuth } from "~/contexts/AuthContext";
 import { localStorageService } from "~/services/localStorage";
 import { Project } from "~/types/project";
@@ -89,7 +90,7 @@ export default function LightEditorScreen() {
   }
 
   return (
-    <>
+    <SubscriptionGuard>
       <Stack.Screen 
         options={{ 
           gestureEnabled: false,
@@ -124,6 +125,6 @@ export default function LightEditorScreen() {
         </View>
         )}
       </SafeAreaView>
-    </>
+    </SubscriptionGuard>
   );
 }

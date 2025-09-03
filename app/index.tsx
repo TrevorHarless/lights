@@ -10,6 +10,28 @@ export default function Index() {
   const router = useRouter();
   const [checkingSubscription, setCheckingSubscription] = useState(false);
 
+  const checkSubscriptionStatus = useCallback(async () => {
+    setCheckingSubscription(true);
+    try {
+      const customerInfo = await Purchases.getCustomerInfo();
+      const hasActiveSubscription = Object.keys(customerInfo.entitlements.active).length > 0;
+      
+      if (hasActiveSubscription) {
+        // User has subscription - allow access to main app
+        router.replace("/projects");
+      } else {
+        // No subscription - must subscribe to continue
+        router.replace("/paywall");
+      }
+    } catch (error) {
+      console.error("Error checking subscription status:", error);
+      // On error, require subscription to be safe
+      router.replace("/paywall");
+    } finally {
+      setCheckingSubscription(false);
+    }
+  }, [router]);
+
   useEffect(() => {
     if (!loading) {
       if (!user) {
@@ -19,26 +41,6 @@ export default function Index() {
       }
     }
   }, [user, loading, router, checkSubscriptionStatus]);
-
-  const checkSubscriptionStatus = useCallback(async () => {
-    setCheckingSubscription(true);
-    try {
-      const customerInfo = await Purchases.getCustomerInfo();
-      const hasActiveSubscription = Object.keys(customerInfo.entitlements.active).length > 0;
-      
-      if (hasActiveSubscription) {
-        router.replace("/projects");
-      } else {
-        router.replace("/paywall");
-      }
-    } catch (error) {
-      console.error("Error checking subscription status:", error);
-      // If there's an error, still show paywall to be safe
-      router.replace("/paywall");
-    } finally {
-      setCheckingSubscription(false);
-    }
-  }, [router]);
 
   // Show loading screen while determining auth state
   return (
