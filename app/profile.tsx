@@ -1,9 +1,11 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Alert,
+  Clipboard,
   Dimensions,
+  Linking,
   ScrollView,
   Text,
   TextInput,
@@ -11,6 +13,8 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Purchases from "react-native-purchases";
+import { SubscriptionGuard } from "~/components/SubscriptionGuard";
 import { useAuth } from "~/contexts/AuthContext";
 import { supabase } from "~/lib/supabase";
 import { projectsService } from "~/services/projects";
@@ -25,6 +29,67 @@ export default function ProfileScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [clearingProjects, setClearingProjects] = useState(false);
+  const [appUserID, setAppUserID] = useState<string>("");
+
+  useEffect(() => {
+    const getAppUserID = async () => {
+      try {
+        const customerInfo = await Purchases.getCustomerInfo();
+        setAppUserID(customerInfo.originalAppUserId);
+      } catch (error) {
+        console.error('Error getting app user ID:', error);
+      }
+    };
+    getAppUserID();
+  }, []);
+
+  const copyAppUserID = async () => {
+    try {
+      await Clipboard.setString(appUserID);
+      Alert.alert('Copied', 'App User ID copied to clipboard');
+    } catch {
+      Alert.alert('Error', 'Failed to copy App User ID');
+    }
+  };
+
+  const contactSupport = async () => {
+    const supportEmail = 'trevorharless.dev@gmail.com';
+    const subject = 'Holiday Lights Pro Support Request';
+    const body = `Hi,
+
+I need help with Holiday Lights Pro.
+
+My App User ID: ${appUserID}
+My Email: ${user?.email || 'N/A'}
+
+Issue Description:
+[Please describe your issue here]
+
+Thank you!`;
+    
+    const emailUrl = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    try {
+      const canOpen = await Linking.canOpenURL(emailUrl);
+      if (canOpen) {
+        await Linking.openURL(emailUrl);
+      } else {
+        // Fallback - copy email to clipboard
+        await Clipboard.setString(supportEmail);
+        Alert.alert(
+          'Email Client Not Available',
+          `Support email copied to clipboard: ${supportEmail}`
+        );
+      }
+    } catch {
+      // Fallback - copy email to clipboard
+      await Clipboard.setString(supportEmail);
+      Alert.alert(
+        'Error',
+        `Could not open email client. Support email copied to clipboard: ${supportEmail}`
+      );
+    }
+  };
   
   const { width } = Dimensions.get('window');
   const isTablet = width >= 768;
@@ -137,6 +202,7 @@ export default function ProfileScreen() {
   };
 
   return (
+    <SubscriptionGuard>
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
       {/* Header */}
       <View style={{
@@ -222,6 +288,132 @@ export default function ProfileScreen() {
             }}>
             {user?.email}
           </Text>
+        </View>
+
+        {/* App User ID Section */}
+        <View style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: isTablet ? 20 : 16,
+          padding: isTablet ? 28 : 20,
+          marginBottom: sectionSpacing,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 12,
+          elevation: 8,
+          alignItems: 'center',
+          maxWidth: contentMaxWidth,
+          width: '100%',
+        }}>
+          <Text style={{
+            fontSize: isTablet ? 22 : 20,
+            fontWeight: '700',
+            color: '#1f2937',
+            marginBottom: isTablet ? 20 : 16,
+            textAlign: 'center',
+          }}>
+            Support Information
+          </Text>
+          <Text style={{
+            fontSize: isTablet ? 16 : 14,
+            fontWeight: '600',
+            color: '#374151',
+            marginBottom: 8,
+            textAlign: 'center',
+          }}>
+            App User ID
+          </Text>
+          <Text style={{
+            fontSize: isTablet ? 14 : 12,
+            color: '#6b7280',
+            textAlign: 'center',
+            marginBottom: 16,
+            paddingHorizontal: 20,
+          }}>
+            This ID helps our support team assist you with subscription and account issues.
+          </Text>
+          <TouchableOpacity
+            onPress={copyAppUserID}
+            style={{
+              backgroundColor: '#f3f4f6',
+              borderRadius: 12,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: '#e5e7eb',
+              width: '100%',
+              marginBottom: 12,
+            }}
+          >
+            <Text style={{
+              fontSize: isTablet ? 14 : 12,
+              fontFamily: 'monospace',
+              color: '#374151',
+              textAlign: 'center',
+              lineHeight: isTablet ? 20 : 16,
+            }}>
+              {appUserID || 'Loading...'}
+            </Text>
+          </TouchableOpacity>
+          <Text style={{
+            fontSize: 12,
+            color: '#6b7280',
+            textAlign: 'center',
+            fontStyle: 'italic',
+            marginBottom: 20,
+          }}>
+            Tap to copy
+          </Text>
+          
+          <Text style={{
+            fontSize: isTablet ? 16 : 14,
+            fontWeight: '600',
+            color: '#374151',
+            marginBottom: 8,
+            textAlign: 'center',
+          }}>
+            Need Help?
+          </Text>
+          <Text style={{
+            fontSize: isTablet ? 14 : 12,
+            color: '#6b7280',
+            textAlign: 'center',
+            marginBottom: 16,
+            paddingHorizontal: 20,
+          }}>
+            Contact our support team for help with subscriptions, billing, or app features.
+          </Text>
+          
+          <TouchableOpacity
+            onPress={contactSupport}
+            style={{
+              backgroundColor: '#3b82f6',
+              borderRadius: 12,
+              padding: 16,
+              width: '100%',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 4,
+            }}
+          >
+            <Text style={{
+              fontSize: isTablet ? 16 : 14,
+              fontWeight: '600',
+              color: 'white',
+              textAlign: 'center',
+            }}>
+              Contact Support
+            </Text>
+            <Text style={{
+              fontSize: isTablet ? 12 : 11,
+              color: 'rgba(255, 255, 255, 0.8)',
+              textAlign: 'center',
+              marginTop: 4,
+            }}>
+              trevorharless.dev@gmail.com
+            </Text>
+          </TouchableOpacity>
         </View>
 
           {/* Change Password Section */}
@@ -446,5 +638,6 @@ export default function ProfileScreen() {
           </View>
         </ScrollView>
       </SafeAreaView>
+      </SubscriptionGuard>
   );
 }

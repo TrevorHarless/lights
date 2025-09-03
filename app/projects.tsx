@@ -17,6 +17,7 @@ import {
   ProjectCard,
   ProjectDetailsModal,
 } from "~/components/projects";
+import { SubscriptionGuard } from "~/components/SubscriptionGuard";
 import { SyncButton } from "~/components/sync/SyncButton";
 import { useAuth } from "~/contexts/AuthContext";
 import { useSync } from "~/contexts/SyncContext";
@@ -77,46 +78,49 @@ export default function ProjectsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            paddingHorizontal: 32,
-          }}
-        >
+      <SubscriptionGuard>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
           <View
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.95)",
-              paddingHorizontal: 32,
-              paddingVertical: 24,
-              borderRadius: 20,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.1,
-              shadowRadius: 12,
-              elevation: 8,
+              flex: 1,
+              justifyContent: "center",
               alignItems: "center",
+              paddingHorizontal: 32,
             }}
           >
-            <Text
+            <View
               style={{
-                fontSize: 18,
-                color: "#374151",
-                fontWeight: "600",
-                textAlign: "center",
+                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                paddingHorizontal: 32,
+                paddingVertical: 24,
+                borderRadius: 20,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 12,
+                elevation: 8,
+                alignItems: "center",
               }}
             >
-              Loading projects...
-            </Text>
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: "#374151",
+                  fontWeight: "600",
+                  textAlign: "center",
+                }}
+              >
+                Loading projects...
+              </Text>
+            </View>
           </View>
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </SubscriptionGuard>
     );
   }
 
   return (
+    <SubscriptionGuard>
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
       {/* Header */}
       <View
@@ -492,5 +496,6 @@ export default function ProjectsScreen() {
         onProjectUpdated={handleProjectUpdated}
       />
     </SafeAreaView>
+    </SubscriptionGuard>
   );
 }
