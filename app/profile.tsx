@@ -5,6 +5,7 @@ import {
   Alert,
   Clipboard,
   Dimensions,
+  Linking,
   ScrollView,
   Text,
   TextInput,
@@ -48,6 +49,45 @@ export default function ProfileScreen() {
       Alert.alert('Copied', 'App User ID copied to clipboard');
     } catch {
       Alert.alert('Error', 'Failed to copy App User ID');
+    }
+  };
+
+  const contactSupport = async () => {
+    const supportEmail = 'trevorharless.dev@gmail.com';
+    const subject = 'Holiday Lights Pro Support Request';
+    const body = `Hi,
+
+I need help with Holiday Lights Pro.
+
+My App User ID: ${appUserID}
+My Email: ${user?.email || 'N/A'}
+
+Issue Description:
+[Please describe your issue here]
+
+Thank you!`;
+    
+    const emailUrl = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    try {
+      const canOpen = await Linking.canOpenURL(emailUrl);
+      if (canOpen) {
+        await Linking.openURL(emailUrl);
+      } else {
+        // Fallback - copy email to clipboard
+        await Clipboard.setString(supportEmail);
+        Alert.alert(
+          'Email Client Not Available',
+          `Support email copied to clipboard: ${supportEmail}`
+        );
+      }
+    } catch {
+      // Fallback - copy email to clipboard
+      await Clipboard.setString(supportEmail);
+      Alert.alert(
+        'Error',
+        `Could not open email client. Support email copied to clipboard: ${supportEmail}`
+      );
     }
   };
   
@@ -319,9 +359,61 @@ export default function ProfileScreen() {
             color: '#6b7280',
             textAlign: 'center',
             fontStyle: 'italic',
+            marginBottom: 20,
           }}>
             Tap to copy
           </Text>
+          
+          <Text style={{
+            fontSize: isTablet ? 16 : 14,
+            fontWeight: '600',
+            color: '#374151',
+            marginBottom: 8,
+            textAlign: 'center',
+          }}>
+            Need Help?
+          </Text>
+          <Text style={{
+            fontSize: isTablet ? 14 : 12,
+            color: '#6b7280',
+            textAlign: 'center',
+            marginBottom: 16,
+            paddingHorizontal: 20,
+          }}>
+            Contact our support team for help with subscriptions, billing, or app features.
+          </Text>
+          
+          <TouchableOpacity
+            onPress={contactSupport}
+            style={{
+              backgroundColor: '#3b82f6',
+              borderRadius: 12,
+              padding: 16,
+              width: '100%',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 4,
+            }}
+          >
+            <Text style={{
+              fontSize: isTablet ? 16 : 14,
+              fontWeight: '600',
+              color: 'white',
+              textAlign: 'center',
+            }}>
+              Contact Support
+            </Text>
+            <Text style={{
+              fontSize: isTablet ? 12 : 11,
+              color: 'rgba(255, 255, 255, 0.8)',
+              textAlign: 'center',
+              marginTop: 4,
+            }}>
+              trevorharless.dev@gmail.com
+            </Text>
+          </TouchableOpacity>
         </View>
 
           {/* Change Password Section */}
