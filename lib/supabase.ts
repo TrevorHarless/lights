@@ -202,6 +202,42 @@ class LoggedSupabaseClient {
           console.log('🔐 AUTH: Password reset email sent successfully')
         }
         return result
+      },
+      signInWithOtp: async (credentials: any) => {
+        console.log('🔐 AUTH: Sending OTP to:', credentials.email)
+        const startTime = Date.now()
+        try {
+          const result = await originalAuth.signInWithOtp(credentials)
+          const duration = Date.now() - startTime
+          if (result.error) {
+            console.error(`🔐 AUTH: OTP send failed in ${duration}ms:`, result.error.message)
+          } else {
+            console.log(`🔐 AUTH: OTP sent successfully in ${duration}ms`)
+          }
+          return result
+        } catch (error) {
+          const duration = Date.now() - startTime
+          console.error(`🔐 AUTH: OTP send threw error in ${duration}ms:`, error)
+          throw error
+        }
+      },
+      verifyOtp: async (credentials: any) => {
+        console.log('🔐 AUTH: Verifying OTP for:', credentials.email)
+        const startTime = Date.now()
+        try {
+          const result = await originalAuth.verifyOtp(credentials)
+          const duration = Date.now() - startTime
+          if (result.error) {
+            console.error(`🔐 AUTH: OTP verification failed in ${duration}ms:`, result.error.message)
+          } else {
+            console.log(`🔐 AUTH: OTP verified successfully in ${duration}ms`)
+          }
+          return result
+        } catch (error) {
+          const duration = Date.now() - startTime
+          console.error(`🔐 AUTH: OTP verification threw error in ${duration}ms:`, error)
+          throw error
+        }
       }
     }
   }

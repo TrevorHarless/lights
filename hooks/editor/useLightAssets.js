@@ -2,30 +2,204 @@
 import React from "react";
 import { customLightStorage } from "~/services/customLightStorage";
 
+// Constants for better maintainability
+const LIGHT_CONSTANTS = {
+  // Spacing (pixels representing real-world spacing)
+  C9_SPACING: 36, // ~12" real-world spacing
+  MINI_SPACING: 15, // ~6" real-world spacing
+
+  // Base sizes
+  C9_BASE_SIZE: 12,
+  MINI_BASE_SIZE: 8,
+
+  // Border and glow settings
+  MAX_BORDER_WIDTH: 2, // Prevent thick black borders
+  GLOW_MULTIPLIER: 1.8,
+  SHADOW_RADIUS_MULTIPLIER: 0.4,
+
+  // Opacity settings
+  DEFAULT_SHADOW_OPACITY: 0.8,
+  BORDER_OPACITY: "40", // 25% opacity as hex suffix
+  MINI_BORDER_OPACITY: "30", // 18.75% opacity as hex suffix
+};
+
+// Reusable color patterns to reduce duplication - using RGBA for better control
+const COLOR_PATTERNS = {
+  multicolor: [
+    {
+      bg: "rgba(57, 205, 57, 1)",
+      shadow: "rgba(43, 166, 43, 1)",
+      name: "Green",
+    },
+    {
+      bg: "rgba(29, 116, 255, 1)", // Royal Blue
+      shadow: "rgba(65, 105, 225, 0.9)",
+      name: "Blue",
+    },
+    {
+      bg: "rgba(255, 232, 101, 1)", // Gold Yellow
+      shadow: "rgba(255, 232, 101, 1)",
+      name: "Yellow",
+    },
+    {
+      bg: "rgba(220, 20, 60, 1)", // Crimson Red
+      shadow: "rgba(220, 20, 60, 0.9)",
+      name: "Red",
+    },
+  ],
+
+  fourBulbPattern: [
+    {
+      bg: "rgba(255, 232, 101, 1)", // Gold Yellow
+      shadow: "rgba(255, 232, 101, 1)",
+      name: "Yellow",
+    },
+    {
+      bg: "rgba(220, 20, 60, 1)", // Crimson Red
+      shadow: "rgba(220, 20, 60, 0.9)",
+      name: "Red",
+    },
+    {
+      bg: "rgba(255, 232, 101, 1)", // Gold Yellow
+      shadow: "rgba(255, 232, 101, 1)",
+      name: "Yellow",
+    },
+    {
+      bg: "rgba(57, 205, 57, 1)", // Forest Green
+      shadow: "rgba(57, 205, 57, 1)",
+      name: "Green",
+    },
+  ],
+
+  redWhitePattern: [
+    {
+      bg: "rgba(220, 20, 60, 1)", // Crimson Red
+      shadow: "rgba(220, 20, 60, 0.9)",
+      name: "Red",
+    },
+    {
+      bg: "rgba(220, 20, 60, 1)", // Crimson Red
+      shadow: "rgba(220, 20, 60, 0.9)",
+      name: "Red",
+    },
+    {
+      bg: "rgba(255, 255, 255, 1)", // Pure White
+      shadow: "rgba(255, 245, 224, 0.9)", // Warm white glow
+      name: "White",
+    },
+    {
+      bg: "rgba(255, 255, 255, 1)", // Pure White
+      shadow: "rgba(255, 245, 224, 0.9)", // Warm white glow
+      name: "White",
+    },
+  ],
+
+  miniMulticolor: [
+    {
+      bg: "rgba(57, 205, 57, 1)",
+      shadow: "rgba(43, 166, 43, 1)",
+      name: "Green",
+    },
+    {
+      bg: "rgba(29, 116, 255, 1)", // Royal Blue
+      shadow: "rgba(65, 105, 225, 0.9)",
+      name: "Blue",
+    },
+    {
+      bg: "rgba(255, 232, 101, 1)", // Gold Yellow
+      shadow: "rgba(255, 232, 101, 1)",
+      name: "Yellow",
+    },
+    {
+      bg: "rgba(220, 20, 60, 1)", // Crimson Red
+      shadow: "rgba(220, 20, 60, 0.9)",
+      name: "Red",
+    },
+  ],
+};
+
+// Helper function to convert RGBA to lower opacity for borders
+const createBorderColor = (rgbaColor, isMinLight = false) => {
+  // If it's already an RGBA string, extract RGB and apply new opacity
+  if (rgbaColor.startsWith("rgba(")) {
+    const rgbMatch = rgbaColor.match(
+      /rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/
+    );
+    if (rgbMatch) {
+      const [, r, g, b] = rgbMatch;
+      const opacity = isMinLight ? 0.18 : 0.25; // 18% for mini, 25% for regular
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+  }
+
+  // If it's a hex color, convert to RGBA
+  if (rgbaColor.startsWith("#")) {
+    const hex = rgbaColor.replace("#", "");
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const opacity = isMinLight ? 0.18 : 0.25;
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  // Fallback: return the original color with reduced opacity
+  return rgbaColor;
+};
+
+// Helper function to create pattern-based render styles
+const createPatternRenderStyle = (pattern, isMinLight = false) => {
+  return (lightIndex = 0) => {
+    const colorInfo = pattern[lightIndex % pattern.length];
+
+    return {
+      backgroundColor: colorInfo.bg,
+      shadowColor: colorInfo.shadow,
+      shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
+      borderColor: createBorderColor(colorInfo.bg, isMinLight),
+      borderWidth: isMinLight ? 1 : 1.5,
+    };
+  };
+};
+
+// Helper function to create solid color render styles
+const createSolidRenderStyle = (
+  backgroundColor,
+  shadowColor,
+  isMinLight = false
+) => {
+  return {
+    backgroundColor,
+    shadowColor: shadowColor || backgroundColor,
+    shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
+    borderColor: createBorderColor(backgroundColor, isMinLight),
+    borderWidth: isMinLight ? 1 : 1.5,
+  };
+};
+
 export function useLightAssets() {
   // Custom assets state
   const [customAssets, setCustomAssets] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  // Light asset definitions - using only renderStyle for consistent rendering
+  // Light asset definitions - using standardized configurations
   const lightAssets = [
-    // Professional Grade LED String Lights
+    // C9 String Lights
     {
       id: "c9-warm-white",
       name: "Warm White",
       category: "string",
       type: "c9",
-      spacing: 36, // Default fallback spacing (pixels) - represents ~12" real-world spacing // Default fallback spacing (pixels) - represents ~12" real-world spacing
-      baseSize: 12,
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Warm-White.png"),
       renderStyle: {
-        backgroundColor: "#FFF8DC", // Cornsilk - more authentic warm white LED color
-        shadowColor: "#FFD700", // Golden glow for realistic light emission
-        shadowOpacity: 0.9, // Stronger, more visible glow
-        shadowRadius: 16, // Custom glow radius for better definition
-        borderColor: "#FFEAA7", // Soft golden border for bulb definition
-        borderWidth: 1.5, // Thinner border for more subtle bulb outline
+        backgroundColor: "#FFF8DC",
+        shadowColor: "#FFD700",
+        shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
+        shadowRadius: 16,
+        borderColor: "#FFEAA740",
+        borderWidth: 1.5,
       },
     },
     {
@@ -33,312 +207,204 @@ export function useLightAssets() {
       name: "Multicolor",
       category: "string",
       type: "c9",
-      spacing: 36, // Default fallback spacing (pixels) - represents ~12" real-world spacing
-      baseSize: 12,
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Multicolor.png"),
-      renderStyle: (lightIndex = 0) => {
-        // Realistic holiday light colors - warmer, more muted tones like actual colored glass bulbs
-        const colorData = [
-          { bg: "#228B22", shadow: "#90EE90", name: "Green" }, // Forest green with soft glow
-          { bg: "#4169E1", shadow: "#87CEEB", name: "Blue" }, // Royal blue with light glow
-          { bg: "#FFD700", shadow: "#FFF8DC", name: "Yellow" }, // Rich gold with warm glow
-          { bg: "#DC143C", shadow: "#FF6B6B", name: "Red" }, // Deep red with warm glow
-          { bg: "#FFD700", shadow: "#FFF8DC", name: "Yellow" }, // Rich gold with warm glow
-        ];
-
-        const colorInfo = colorData[lightIndex % colorData.length];
-        return {
-          backgroundColor: colorInfo.bg,
-          shadowColor: colorInfo.shadow,
-          shadowOpacity: 0.8, // Use custom light approach - slightly softer than fixed value
-          // Let shadowRadius be calculated by getLightRenderStyle function like custom lights
-          borderColor: `${colorInfo.bg}40`, // Subtle border with 25% opacity of main color
-          borderWidth: 1.5, // Keep consistent border thickness
-        };
-      },
+      renderStyle: createPatternRenderStyle(COLOR_PATTERNS.multicolor, false),
     },
     {
       id: "c9-red-white",
       name: "Red & White",
       category: "string",
       type: "c9",
-      spacing: 36, // Default fallback spacing (pixels) - represents ~12" real-world spacing
-      baseSize: 12,
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Red-White.png"),
-      renderStyle: (lightIndex = 0) => {
-        const pattern = ["#ff3333", "#ff3333", "#ffffff", "#ffffff"];
-        const color = pattern[lightIndex % pattern.length];
-        const isRed = color === "#ff3333";
-        return {
-          backgroundColor: color,
-          shadowColor: isRed ? "#ff3333" : "#fff5e0",
-          shadowOpacity: isRed ? 0.6 : 0.8,
-        };
-      },
+      renderStyle: createPatternRenderStyle(
+        COLOR_PATTERNS.redWhitePattern,
+        false
+      ),
     },
     {
       id: "c9-4-bulb-pattern",
       name: "4 Bulb Pattern",
       category: "string",
       type: "c9",
-      spacing: 36, // Default fallback spacing (pixels) - represents ~12" real-world spacing
-      baseSize: 12,
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Yellow-Red-Green.png"),
-      renderStyle: (lightIndex = 0) => {
-        // Classic 4-bulb pattern: Yellow-Red-Yellow-Green with realistic holiday light colors
-        const colorData = [
-          { bg: "#FFD700", shadow: "#FFF8DC", name: "Yellow" }, // Rich gold yellow with warm glow
-          { bg: "#DC143C", shadow: "#FF6B6B", name: "Red" }, // Deep crimson red with warm glow
-          { bg: "#FFD700", shadow: "#FFF8DC", name: "Yellow" }, // Rich gold yellow with warm glow
-          { bg: "#228B22", shadow: "#90EE90", name: "Green" }, // Forest green with soft glow
-        ];
-
-        const colorInfo = colorData[lightIndex % colorData.length];
-        return {
-          backgroundColor: colorInfo.bg,
-          shadowColor: colorInfo.shadow,
-          shadowOpacity: 0.8, // Use custom light approach for consistent glow quality
-          // Let shadowRadius be calculated by getLightRenderStyle function like custom lights
-          borderColor: `${colorInfo.bg}40`, // Subtle border with 25% opacity of main color
-          borderWidth: 1.5, // Consistent border thickness
-        };
-      },
+      renderStyle: createPatternRenderStyle(
+        COLOR_PATTERNS.fourBulbPattern,
+        false
+      ),
     },
     {
       id: "c7-c9-cool-white",
       name: "Cool White",
       category: "string",
       type: "c9",
-      spacing: 36, // Default fallback spacing (pixels) - represents ~12" real-world spacing
-      baseSize: 12,
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Cool-White.png"),
-      renderStyle: {
-        backgroundColor: "#F4FDFF", // Ghost white - more realistic cool white LED color
-        shadowColor: "#E6F3FF", // Subtle cool blue-white glow like real cool white LEDs
-        shadowOpacity: 0.8, // Consistent with other improved assets
-        borderColor: "#eef1ffff", // Soft blue-white border for better definition
-        borderWidth: 1.5, // Consistent border thickness
-      },
+      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF", false),
     },
     {
       id: "c7-c9-red",
       name: "Red",
       category: "string",
       type: "c9",
-      spacing: 36, // Default fallback spacing (pixels) - represents ~12" real-world spacing
-      baseSize: 12,
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Red.png"),
-      renderStyle: {
-        backgroundColor: "#DC143C", // Deep crimson red - matches multicolor pattern
-        shadowColor: "#FF6B6B", // Warm red glow for realistic light emission
-        shadowOpacity: 0.8, // Consistent with other improved assets
-        borderColor: "#DC143C40", // Subtle border with 25% opacity of main color
-        borderWidth: 1.5, // Consistent border thickness
-      },
+      renderStyle: createSolidRenderStyle(
+        "rgba(220, 20, 60, 1)",
+        "rgba(220, 20, 60, 1)",
+        false
+      ),
     },
     {
       id: "c7-c9-green",
       name: "Green",
       category: "string",
       type: "c9",
-      spacing: 36, // Default fallback spacing (pixels) - represents ~12" real-world spacing
-      baseSize: 12,
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Green.png"),
-      renderStyle: {
-        backgroundColor: "#228B22", // Forest green - matches multicolor pattern
-        shadowColor: "#90EE90", // Soft green glow for realistic light emission
-        shadowOpacity: 0.8, // Consistent with other improved assets
-        borderColor: "#228B2240", // Subtle border with 25% opacity of main color
-        borderWidth: 1.5, // Consistent border thickness
-      },
+      renderStyle: createSolidRenderStyle(
+        "rgba(57, 205, 57, 1)",
+        "rgba(57, 205, 57, 1)",
+        false
+      ),
     },
     {
       id: "c7-c9-blue",
       name: "Blue",
       category: "string",
       type: "c9",
-      spacing: 36, // Default fallback spacing (pixels) - represents ~12" real-world spacing
-      baseSize: 12,
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Blue.png"),
-      renderStyle: {
-        backgroundColor: "#4169E1", // Royal blue - matches multicolor pattern
-        shadowColor: "#87CEEB", // Light blue glow for realistic light emission
-        shadowOpacity: 0.8, // Consistent with other improved assets
-        borderColor: "#4169E140", // Subtle border with 25% opacity of main color
-        borderWidth: 1.5, // Consistent border thickness
-      },
+      renderStyle: createSolidRenderStyle(
+        "rgba(29, 116, 255, 1)",
+        "rgba(29, 116, 255, 1)",
+        false
+      ),
     },
     {
       id: "mini-led-warm",
       name: "Mini Warm White",
       category: "mini",
       type: "mini",
-      spacing: 15, // Default fallback spacing (pixels) - represents ~6" real-world spacing for mini lights
-      baseSize: 8,
+      spacing: LIGHT_CONSTANTS.MINI_SPACING,
+      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Warm-White.png"),
-      renderStyle: {
-        backgroundColor: "#FFF8DC", // Match C9 warm white color
-        shadowColor: "#FFD700", // Golden glow for realistic light emission
-        shadowOpacity: 0.8, // Consistent with other improved assets
-        borderColor: "#FFEAA740", // Soft golden border with 25% opacity
-        borderWidth: 1, // Thinner border for mini lights
-      },
+      renderStyle: createSolidRenderStyle("#FFF8DC", "#FFD700", true),
     },
     {
       id: "mini-led-multicolor",
       name: "Mini Multicolor",
       category: "mini",
       type: "mini",
-      spacing: 15, // Default fallback spacing (pixels) - represents ~6" real-world spacing for mini lights
-      baseSize: 8,
+      spacing: LIGHT_CONSTANTS.MINI_SPACING,
+      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Multicolor.png"),
-      renderStyle: (lightIndex = 0) => {
-        // Same realistic colors as C9 multicolor but scaled for mini lights
-        const colorData = [
-          { bg: "#DC143C", shadow: "#FF6B6B", name: "Red" }, // Deep red with warm glow
-          { bg: "#228B22", shadow: "#90EE90", name: "Green" }, // Forest green with soft glow
-          { bg: "#4169E1", shadow: "#87CEEB", name: "Blue" }, // Royal blue with light glow
-          { bg: "#FFD700", shadow: "#FFF8DC", name: "Yellow" }, // Rich gold with warm glow
-          { bg: "#FF8C00", shadow: "#FFE4B5", name: "Orange" }, // Deep orange with warm glow
-        ];
-
-        const colorInfo = colorData[lightIndex % colorData.length];
-        return {
-          backgroundColor: colorInfo.bg,
-          shadowColor: colorInfo.shadow,
-          shadowOpacity: 0.8, // Use custom light approach for consistent glow quality
-          // Let shadowRadius be calculated by getLightRenderStyle function like custom lights
-          borderColor: `${colorInfo.bg}30`, // More subtle border (18.75% opacity)
-          borderWidth: 1, // Slightly thicker border for better definition
-        };
-      },
+      renderStyle: createPatternRenderStyle(
+        COLOR_PATTERNS.miniMulticolor,
+        true
+      ),
     },
     {
       id: "mini-red-white",
       name: "Mini Red & White",
       category: "mini",
       type: "mini",
-      spacing: 15, // Default fallback spacing (pixels) - represents ~6" real-world spacing for mini lights
-      baseSize: 8,
+      spacing: LIGHT_CONSTANTS.MINI_SPACING,
+      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Red-White.png"),
-      renderStyle: (lightIndex = 0) => {
-        const pattern = ["#ff3333", "#ff3333", "#ffffff", "#ffffff"];
-        const color = pattern[lightIndex % pattern.length];
-        const isRed = color === "#ff3333";
-        return {
-          backgroundColor: color,
-          shadowColor: isRed ? "#ff3333" : "#fff5e0",
-          shadowOpacity: 0.8, // Consistent with other mini lights
-          borderColor: isRed ? "#ff333340" : "#ffffff40",
-          borderWidth: 1,
-        };
-      },
+      renderStyle: createPatternRenderStyle(
+        COLOR_PATTERNS.redWhitePattern,
+        true
+      ),
     },
     {
       id: "mini-4-bulb-pattern",
       name: "Mini 4 Bulb Pattern",
       category: "mini",
       type: "mini",
-      spacing: 15, // Default fallback spacing (pixels) - represents ~6" real-world spacing for mini lights
-      baseSize: 8,
+      spacing: LIGHT_CONSTANTS.MINI_SPACING,
+      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Yellow-Red-Green.png"),
-      renderStyle: (lightIndex = 0) => {
-        // Same pattern as C9 but for mini lights
-        const colorData = [
-          { bg: "#FFD700", shadow: "#FFF8DC", name: "Yellow" }, // Rich gold yellow with warm glow
-          { bg: "#DC143C", shadow: "#FF6B6B", name: "Red" }, // Deep crimson red with warm glow
-          { bg: "#FFD700", shadow: "#FFF8DC", name: "Yellow" }, // Rich gold yellow with warm glow
-          { bg: "#228B22", shadow: "#90EE90", name: "Green" }, // Forest green with soft glow
-        ];
-
-        const colorInfo = colorData[lightIndex % colorData.length];
-        return {
-          backgroundColor: colorInfo.bg,
-          shadowColor: colorInfo.shadow,
-          shadowOpacity: 0.8, // Consistent with other mini lights
-          borderColor: `${colorInfo.bg}30`, // More subtle border for mini lights
-          borderWidth: 1,
-        };
-      },
+      renderStyle: createPatternRenderStyle(
+        COLOR_PATTERNS.fourBulbPattern,
+        true
+      ),
     },
     {
       id: "mini-cool-white",
       name: "Mini Cool White",
       category: "mini",
       type: "mini",
-      spacing: 15, // Default fallback spacing (pixels) - represents ~6" real-world spacing for mini lights
-      baseSize: 8,
+      spacing: LIGHT_CONSTANTS.MINI_SPACING,
+      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Cool-White.png"),
-      renderStyle: {
-        backgroundColor: "#F4FDFF", // Match C9 cool white color
-        shadowColor: "#E6F3FF", // Subtle cool blue-white glow
-        shadowOpacity: 0.8, // Consistent with other mini lights
-        borderColor: "#E0E6FF40", // Soft blue-white border with opacity
-        borderWidth: 1,
-      },
+      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF", true),
     },
     {
       id: "mini-red",
       name: "Mini Red",
       category: "mini",
       type: "mini",
-      spacing: 15, // Default fallback spacing (pixels) - represents ~6" real-world spacing for mini lights
-      baseSize: 8,
+      spacing: LIGHT_CONSTANTS.MINI_SPACING,
+      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Red.png"),
-      renderStyle: {
-        backgroundColor: "#DC143C", // Match C9 red color
-        shadowColor: "#FF6B6B", // Warm red glow
-        shadowOpacity: 0.8, // Consistent with other mini lights
-        borderColor: "#DC143C30", // Subtle border with 18.75% opacity
-        borderWidth: 1,
-      },
+      renderStyle: createSolidRenderStyle(
+        "rgba(220, 20, 60, 1)",
+        "rgba(220, 20, 60, 1)",
+        true
+      ),
     },
     {
       id: "mini-green",
       name: "Mini Green",
       category: "mini",
       type: "mini",
-      spacing: 15, // Default fallback spacing (pixels) - represents ~6" real-world spacing for mini lights
-      baseSize: 8,
+      spacing: LIGHT_CONSTANTS.MINI_SPACING,
+      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Green.png"),
-      renderStyle: {
-        backgroundColor: "#228B22", // Match C9 green color
-        shadowColor: "#90EE90", // Soft green glow
-        shadowOpacity: 0.8, // Consistent with other mini lights
-        borderColor: "#228B2230", // Subtle border with 18.75% opacity
-        borderWidth: 1,
-      },
+      renderStyle: createSolidRenderStyle(
+        "rgba(57, 205, 57, 1)",
+        "rgba(57, 205, 57, 1)",
+        true
+      ),
     },
     {
       id: "mini-blue",
       name: "Mini Blue",
       category: "mini",
       type: "mini",
-      spacing: 15, // Default fallback spacing (pixels) - represents ~6" real-world spacing for mini lights
-      baseSize: 8,
+      spacing: LIGHT_CONSTANTS.MINI_SPACING,
+      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Blue.png"),
-      renderStyle: {
-        backgroundColor: "#4169E1", // Match C9 blue color
-        shadowColor: "#87CEEB", // Light blue glow
-        shadowOpacity: 0.8, // Consistent with other mini lights
-        borderColor: "#4169E130", // Subtle border with 18.75% opacity
-        borderWidth: 1,
-      },
+      renderStyle: createSolidRenderStyle(
+        "rgba(29, 116, 255, 1)",
+        "rgba(29, 116, 255, 1)",
+        true
+      ),
     },
   ];
 
@@ -388,13 +454,13 @@ export function useLightAssets() {
     return [...new Set(categoryAssets.map((asset) => asset.type))];
   };
 
-  // Get render style for SimpleLightRenderer
+  // Get render style for SimpleLightRenderer - FIXED border width calculation
   const getLightRenderStyle = (assetId, scale = 1, lightIndex = 0) => {
     const asset = getAssetById(assetId);
     if (!asset) return null;
 
-    const baseSize = asset.baseSize || 8;
-    const glowSize = baseSize * 1.8 * scale;
+    const baseSize = asset.baseSize || LIGHT_CONSTANTS.MINI_BASE_SIZE;
+    const glowSize = baseSize * LIGHT_CONSTANTS.GLOW_MULTIPLIER * scale;
 
     // Get the base style (either static or function)
     let baseStyle;
@@ -413,8 +479,11 @@ export function useLightAssets() {
       shadowColor:
         baseStyle.shadowColor || baseStyle.backgroundColor || "#ffffff",
       shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: baseStyle.shadowOpacity || 0.6,
-      shadowRadius: baseStyle.shadowRadius || baseSize * 0.4 * scale,
+      shadowOpacity:
+        baseStyle.shadowOpacity || LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
+      shadowRadius:
+        baseStyle.shadowRadius ||
+        baseSize * LIGHT_CONSTANTS.SHADOW_RADIUS_MULTIPLIER * scale,
       ...baseStyle,
     };
 
@@ -423,9 +492,15 @@ export function useLightAssets() {
       style.width = glowSize * baseStyle.widthRatio;
     }
 
-    // Handle border for lights that need it
+    // FIXED: Handle border for lights that need it - prevent thick black borders
     if (baseStyle.borderColor) {
-      style.borderWidth = Math.max(1, (glowSize - baseSize * scale) / 2);
+      // Use a reasonable border width instead of the problematic calculation
+      // The old calculation: Math.max(1, (glowSize - baseSize * scale) / 2)
+      // could create very thick borders that appeared as black circles
+      style.borderWidth = Math.min(
+        baseStyle.borderWidth || LIGHT_CONSTANTS.MAX_BORDER_WIDTH,
+        LIGHT_CONSTANTS.MAX_BORDER_WIDTH
+      );
       style.borderColor = baseStyle.borderColor;
     }
 
