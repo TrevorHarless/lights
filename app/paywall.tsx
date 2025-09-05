@@ -36,13 +36,13 @@ export default function PaywallScreen() {
         // User has subscription - allow access to main app
         router.replace("/projects");
       } else {
-        // No subscription - redirect to projects but SubscriptionGuard will protect it
-        // This allows dismissal but user will be redirected back to paywall when they try to access features
+        // No subscription - redirect to projects but only profile access will be allowed
+        // SubscriptionGuard will handle protecting other actions
         router.replace("/projects");
       }
     } catch (error) {
       console.error("Error checking subscription status:", error);
-      // On error, still allow dismissal but user will be protected by SubscriptionGuard
+      // On error, redirect to projects - SubscriptionGuard will handle protection
       router.replace("/projects");
     }
   };
@@ -78,7 +78,7 @@ export default function PaywallScreen() {
       <RevenueCatUI.Paywall
         options={{
           offering: offering || undefined,
-          displayCloseButton: false, // Prevent users from dismissing without subscribing
+          displayCloseButton: true, // Allow users to dismiss to access profile
         }}
         onRestoreCompleted={handleRestoreCompleted}
         onPurchaseCompleted={handlePurchaseCompleted}

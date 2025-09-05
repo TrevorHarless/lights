@@ -22,12 +22,14 @@ import { SyncButton } from "~/components/sync/SyncButton";
 import { useAuth } from "~/contexts/AuthContext";
 import { useSync } from "~/contexts/SyncContext";
 import { useProjects } from "~/hooks/projects/useProjects";
+import { useSubscription } from "~/hooks/useSubscription";
 import "../global.css";
 
 export default function ProjectsScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const { pendingChanges } = useSync();
+  const { requireSubscription } = useSubscription();
 
   const { width } = Dimensions.get("window");
   const isTablet = width >= 768;
@@ -70,7 +72,7 @@ export default function ProjectsScreen() {
   const renderProject = ({ item }: { item: any }) => (
     <ProjectCard
       project={item}
-      onPress={handleShowProjectDetails}
+      onPress={(project) => requireSubscription(() => handleShowProjectDetails(project))}
       isTablet={isTablet}
       numColumns={numColumns}
     />
@@ -200,6 +202,7 @@ export default function ProjectsScreen() {
             <SyncButton
               size={isTablet ? 24 : 20}
               color="white"
+              requireSubscription={requireSubscription}
               style={{
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 4 },
@@ -225,7 +228,7 @@ export default function ProjectsScreen() {
                 shadowRadius: 8,
                 elevation: 6,
               }}
-              onPress={() => setModalVisible(true)}
+              onPress={() => requireSubscription(() => setModalVisible(true))}
             >
               <FontAwesome name="plus" size={isTablet ? 24 : 20} color="white" />
             </TouchableOpacity>
@@ -355,7 +358,7 @@ export default function ProjectsScreen() {
                 shadowRadius: 6,
                 elevation: 4,
               }}
-              onPress={() => setModalVisible(true)}
+              onPress={() => requireSubscription(() => setModalVisible(true))}
             >
               <Text
                 style={{
