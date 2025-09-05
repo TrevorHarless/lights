@@ -690,8 +690,8 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       // Only allow panning when zoomed in
       if (scale.value > 1.1) {
         // Apply 2x multiplier for faster panning
-        translateX.value = savedTranslateX.value + e.translationX * 1.2;
-        translateY.value = savedTranslateY.value + e.translationY * 1.2;
+        translateX.value = savedTranslateX.value + e.translationX;
+        translateY.value = savedTranslateY.value + e.translationY;
       }
     })
     .onEnd(() => {

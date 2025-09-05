@@ -5,8 +5,8 @@ import { customLightStorage } from "~/services/customLightStorage";
 // Constants for better maintainability
 const LIGHT_CONSTANTS = {
   // Spacing (pixels representing real-world spacing)
-  C9_SPACING: 36, // ~12" real-world spacing
-  MINI_SPACING: 15, // ~6" real-world spacing
+  C9_SPACING: 18, // ~12" real-world spacing
+  MINI_SPACING: 8, // ~6" real-world spacing
 
   // Base sizes
   C9_BASE_SIZE: 12,

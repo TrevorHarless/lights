@@ -36,14 +36,14 @@ export default function PaywallScreen() {
         // User has subscription - allow access to main app
         router.replace("/projects");
       } else {
-        // No subscription - prevent access, stay on paywall
-        // User must subscribe or will be stuck here
-        return;
+        // No subscription - redirect to projects but SubscriptionGuard will protect it
+        // This allows dismissal but user will be redirected back to paywall when they try to access features
+        router.replace("/projects");
       }
     } catch (error) {
       console.error("Error checking subscription status:", error);
-      // On error, prevent access to main app
-      return;
+      // On error, still allow dismissal but user will be protected by SubscriptionGuard
+      router.replace("/projects");
     }
   };
 

@@ -25,6 +25,14 @@ const LightStringRenderer = ({
 
       const positions = calculateLightPositions(string, asset.spacing);
       
+      console.log("🔍 LightStringRenderer Debug:", {
+        stringId: string.id,
+        assetId: string.assetId,
+        assetName: asset.name,
+        assetSpacing: asset.spacing,
+        positionsCount: positions.length
+      });
+      
       return positions.map((pos, idx) => {
         // Temporarily disable instancing to test positioning
         const scaledOffset = 15 * lightScale;
@@ -67,6 +75,13 @@ const LightStringRenderer = ({
     if (!asset) return [];
 
     const positions = calculateLightPositions(currentVector, asset.spacing);
+    
+    console.log("🔍 LightStringRenderer Current Vector Debug:", {
+      assetId: currentVector.assetId,
+      assetName: asset.name,
+      assetSpacing: asset.spacing,
+      positionsCount: positions.length
+    });
 
     return positions.map((pos, idx) => {
       // Temporarily disable instancing to test positioning
