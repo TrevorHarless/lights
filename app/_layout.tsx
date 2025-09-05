@@ -21,7 +21,8 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   useEffect(() => {
-    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+    // Set log level to ERROR to reduce noise in production
+    Purchases.setLogLevel(LOG_LEVEL.ERROR);
 
     if (Platform.OS === "ios") {
       Purchases.configure({
@@ -29,25 +30,10 @@ export default function RootLayout() {
       });
     }
 
-    getCustomerInfo();
-    getOfferings();
+    // Remove unnecessary API calls on app start
+    // These are called when needed by components
   }, []);
 
-  async function getCustomerInfo() {
-    const customerInfo = await Purchases.getCustomerInfo();
-    console.log("customerInfo", JSON.stringify(customerInfo, null, 2));
-  }
-
-  async function getOfferings() {
-    const offerings = await Purchases.getOfferings();
-
-    if (
-      offerings.current !== null &&
-      offerings.current.availablePackages.length !== 0
-    ) {
-      console.log("what the bruhhhhh", JSON.stringify(offerings, null, 2));
-    }
-  }
 
   return (
     <AuthProvider>

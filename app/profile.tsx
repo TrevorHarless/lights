@@ -22,13 +22,14 @@ import { localStorageService } from "~/services/localStorage";
 import "../global.css";
 
 export default function ProfileScreen() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, deleteAccount } = useAuth();
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [clearingProjects, setClearingProjects] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [appUserID, setAppUserID] = useState<string>("");
 
   useEffect(() => {
@@ -195,6 +196,58 @@ Thank you!`;
               Alert.alert("Error", "Failed to clear projects: " + (error as Error).message);
             }
             setClearingProjects(false);
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      "Delete Account",
+      "This will permanently delete your account and ALL associated data, including projects, images, and subscription information. This action cannot be undone.\n\nAre you absolutely sure?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete Account",
+          style: "destructive",
+          onPress: () => {
+            // Double confirmation for such a destructive action
+            Alert.alert(
+              "Final Confirmation",
+              "This is your last chance. Once deleted, your account and all data will be permanently lost and cannot be recovered.\n\nType DELETE to confirm:",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "DELETE ACCOUNT",
+                  style: "destructive",
+                  onPress: async () => {
+                    setDeletingAccount(true);
+                    try {
+                      const { error } = await deleteAccount();
+                      
+                      if (error) {
+                        Alert.alert("Error", "Failed to delete account: " + error.message);
+                        setDeletingAccount(false);
+                      } else {
+                        // Account deleted successfully, navigate to login screen like sign out
+                        Alert.alert("Account Deleted", "Your account has been successfully deleted.", [
+                          {
+                            text: "OK",
+                            onPress: () => {
+                              router.replace("/");
+                            }
+                          }
+                        ]);
+                      }
+                    } catch (error) {
+                      Alert.alert("Error", "Failed to delete account: " + (error as Error).message);
+                      setDeletingAccount(false);
+                    }
+                  },
+                },
+              ]
+            );
           },
         },
       ]
@@ -416,6 +469,115 @@ Thank you!`;
           </TouchableOpacity>
         </View>
 
+        {/* Legal Links Section */}
+        <View style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: isTablet ? 20 : 16,
+          padding: isTablet ? 28 : 20,
+          marginBottom: sectionSpacing,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 12,
+          elevation: 6,
+        }}>
+          <Text style={{
+            fontSize: isTablet ? 24 : 20,
+            fontWeight: '700',
+            color: '#1f2937',
+            marginBottom: isTablet ? 16 : 12,
+          }}>
+            Legal Information
+          </Text>
+          
+          <TouchableOpacity
+            onPress={async () => {
+              const url = 'https://gist.github.com/TrevorHarless/05e515acedfa97f122f16b66601b0ce3';
+              try {
+                const canOpen = await Linking.canOpenURL(url);
+                if (canOpen) {
+                  await Linking.openURL(url);
+                } else {
+                  Alert.alert('Error', 'Cannot open Privacy Policy link');
+                }
+              } catch {
+                Alert.alert('Error', 'Failed to open Privacy Policy');
+              }
+            }}
+            style={{
+              backgroundColor: '#f8f9fa',
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 12,
+              borderWidth: 1,
+              borderColor: '#e5e7eb',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 2,
+            }}
+          >
+            <Text style={{
+              fontSize: isTablet ? 16 : 14,
+              fontWeight: '600',
+              color: '#374151',
+              marginBottom: 4,
+            }}>
+              Privacy Policy
+            </Text>
+            <Text style={{
+              fontSize: isTablet ? 14 : 12,
+              color: '#6b7280',
+            }}>
+              View our privacy policy and data handling practices
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={async () => {
+              const url = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
+              try {
+                const canOpen = await Linking.canOpenURL(url);
+                if (canOpen) {
+                  await Linking.openURL(url);
+                } else {
+                  Alert.alert('Error', 'Cannot open Terms of Use link');
+                }
+              } catch {
+                Alert.alert('Error', 'Failed to open Terms of Use');
+              }
+            }}
+            style={{
+              backgroundColor: '#f8f9fa',
+              borderRadius: 12,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: '#e5e7eb',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 2,
+            }}
+          >
+            <Text style={{
+              fontSize: isTablet ? 16 : 14,
+              fontWeight: '600',
+              color: '#374151',
+              marginBottom: 4,
+            }}>
+              Terms of Use (EULA)
+            </Text>
+            <Text style={{
+              fontSize: isTablet ? 14 : 12,
+              color: '#6b7280',
+            }}>
+              View the End User License Agreement
+            </Text>
+          </TouchableOpacity>
+        </View>
+
           {/* Change Password Section */}
           <View style={{
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -597,6 +759,77 @@ Thank you!`;
               fontWeight: '600',
             }}>
               {clearingProjects ? 'Deleting All Projects...' : 'Delete All Projects'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Delete Account Section */}
+        <View style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: 16,
+          padding: 20,
+          marginBottom: 24,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 12,
+          elevation: 6,
+          borderWidth: 2,
+          borderColor: '#fee2e2',
+        }}>
+          <Text style={{
+            fontSize: 20,
+            fontWeight: '700',
+            color: '#dc2626',
+            marginBottom: 8,
+          }}>
+            Delete Account
+          </Text>
+          <Text style={{
+            fontSize: 14,
+            color: '#6b7280',
+            marginBottom: 12,
+            lineHeight: 20,
+          }}>
+            <Text style={{ fontWeight: '600', color: '#dc2626' }}>Warning:</Text> This will permanently delete your account and ALL associated data including:
+          </Text>
+          <Text style={{
+            fontSize: 13,
+            color: '#6b7280',
+            marginBottom: 16,
+            lineHeight: 18,
+            paddingLeft: 12,
+          }}>
+            • All projects and images{'\n'}
+            • Account information{'\n'}
+            • Subscription data{'\n'}
+            • All app preferences{'\n'}
+            • This action cannot be undone
+          </Text>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#dc2626',
+              borderRadius: 12,
+              paddingVertical: 14,
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              elevation: 6,
+              opacity: deletingAccount ? 0.7 : 1,
+              borderWidth: 1,
+              borderColor: '#b91c1c',
+            }}
+            onPress={handleDeleteAccount}
+            disabled={deletingAccount}
+          >
+            <Text style={{
+              color: 'white',
+              fontSize: 16,
+              fontWeight: '600',
+            }}>
+              {deletingAccount ? 'Deleting Account...' : 'Delete Account Permanently'}
             </Text>
           </TouchableOpacity>
         </View>

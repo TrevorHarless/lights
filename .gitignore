@@ -47,3 +47,10 @@ yarn-error.*
 app-example
 
 /docs/current-TODO.md
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+supabase/.git/
+supabase/config.toml
+.env.supabase

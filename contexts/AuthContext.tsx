@@ -2,6 +2,8 @@ import { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 import * as AppleAuthentication from "expo-apple-authentication";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "~/lib/supabase";
+import { projectsService } from "~/services/projects";
+import { localStorageService } from "~/services/localStorage";
 
 interface AuthContextType {
   user: User | null;
@@ -14,6 +16,7 @@ interface AuthContextType {
   verifyOTP: (email: string, token: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
+  deleteAccount: () => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -155,6 +158,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
+  const deleteAccount = async () => {
+    try {
+      // Step 1: Get current user and session for authentication
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+      if (userError || !currentUser) {
+        return { error: userError || new Error("No user found") };
+      }
+
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        return { error: sessionError || new Error("No session found") };
+      }
+
+      // Step 2: Delete all user's projects and associated images
+      console.log("🗑️ Deleting all user projects and images...");
+      const { error: projectsError } = await projectsService.deleteAllProjects();
+      if (projectsError) {
+        console.error("Error deleting projects:", projectsError);
+        return { error: projectsError };
+      }
+
+      // Step 3: Clear all local storage data
+      console.log("🗑️ Clearing local storage data...");
+      await localStorageService.clearUserData();
+
+      // Step 4: Call Edge Function to delete user account
+      console.log("🗑️ Requesting account deletion via Edge Function...");
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/delete-user`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ userId: currentUser.id }),
+        }
+      );
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        console.error("Error deleting user account:", result.error);
+        // Continue with sign out even if account deletion fails
+        console.log("🗑️ Account deletion failed, but user data has been cleared.");
+      } else {
+        console.log("🗑️ User account successfully deleted.");
+      }
+
+      // Step 5: Sign out and clear local auth state
+      console.log("🗑️ Account deletion process complete, signing out...");
+      await signOut();
+
+      return { error: null };
+    } catch (error) {
+      console.error("Account deletion failed:", error);
+      return { error: error as any };
+    }
+  };
+
   const value = {
     user,
     session,
@@ -166,6 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     verifyOTP,
     signOut,
     resetPassword,
+    deleteAccount,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

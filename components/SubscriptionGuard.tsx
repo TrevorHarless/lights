@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text } from "react-native";
 import Purchases from "react-native-purchases";
 
@@ -11,28 +11,37 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
   const router = useRouter();
   const [hasSubscription, setHasSubscription] = useState<boolean | null>(null);
 
-  const checkSubscription = useCallback(async () => {
-    try {
-      const customerInfo = await Purchases.getCustomerInfo();
-      const hasActiveSubscription = Object.keys(customerInfo.entitlements.active).length > 0;
-      
-      if (!hasActiveSubscription) {
-        // No subscription - redirect to paywall
-        router.replace("/paywall");
-        return;
-      }
-      
-      setHasSubscription(true);
-    } catch (error) {
-      console.error("Error checking subscription:", error);
-      // On error, redirect to paywall to be safe
-      router.replace("/paywall");
-    }
-  }, [router]);
-
   useEffect(() => {
+    let mounted = true;
+    
+    const checkSubscription = async () => {
+      try {
+        const customerInfo = await Purchases.getCustomerInfo();
+        const hasActiveSubscription = Object.keys(customerInfo.entitlements.active).length > 0;
+        
+        if (!mounted) return;
+        
+        if (!hasActiveSubscription) {
+          // No subscription - redirect to paywall
+          router.replace("/paywall");
+          return;
+        }
+        
+        setHasSubscription(true);
+      } catch (error) {
+        console.error("Error checking subscription:", error);
+        if (!mounted) return;
+        // On error, redirect to paywall to be safe
+        router.replace("/paywall");
+      }
+    };
+
     checkSubscription();
-  }, [checkSubscription]);
+    
+    return () => {
+      mounted = false;
+    };
+  }, [router]); // Include router dependency as required by ESLint
 
   // Show loading while checking subscription
   if (hasSubscription === null) {

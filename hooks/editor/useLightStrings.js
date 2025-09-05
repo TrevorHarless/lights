@@ -201,6 +201,9 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
       //   assetSpacing,
       //   count,
       //   hasScaledSpacing: !!getScaledSpacing,
+      //   scaledSpacingValue: getScaledSpacing ? getScaledSpacing() : null,
+      //   vectorId: vector.id,
+      //   assetId: vector.assetId
       // });
 
       // If distance is too short, at least place one light

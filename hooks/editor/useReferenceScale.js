@@ -98,7 +98,7 @@ export function useReferenceScale() {
   );
 
   // Calculate scaled light spacing based on real-world light spacing
-  // Use 12 inches (1 foot) for realistic holiday light spacing - typical range is 12-15 inches
+  // Use 12 inches for realistic holiday light spacing - typical range is 12-15 inches
   const getScaledLightSpacing = useCallback(
     (lightSpacingInches = 12) => {
       const scaleFactor = getScaleFactor();
@@ -107,8 +107,8 @@ export function useReferenceScale() {
       const lightSpacingFeet = lightSpacingInches / 12; // convert inches to feet
       const spacing = lightSpacingFeet * scaleFactor; // convert to pixels
 
-      // Ensure minimum spacing for usability (at least 12 pixels apart for better light definition)
-      const minSpacing = 12;
+      // Ensure minimum spacing for usability (at least 3 pixels apart for better light definition)
+      const minSpacing = 3;
       const finalSpacing = Math.max(spacing, minSpacing);
 
       // console.log("🔍 Light Spacing Debug:", {
@@ -117,11 +117,14 @@ export function useReferenceScale() {
       //   lightSpacingFeet,
       //   calculatedSpacing: spacing,
       //   finalSpacing,
+      //   hasReference: !!(referenceLine && referenceLength),
+      //   referenceLine,
+      //   referenceLength
       // });
 
       return finalSpacing;
     },
-    [getScaleFactor]
+    [getScaleFactor, referenceLine, referenceLength]
   );
 
   // Get the length of a line in real-world units
@@ -145,28 +148,29 @@ export function useReferenceScale() {
       const lightDiameterFeet = lightDiameterInches / 12; // convert inches to feet
       const lightDiameterPixels = lightDiameterFeet * scaleFactor; // convert to pixels
 
-      // Base light size is 30 pixels diameter (15 pixel radius * 2)
-      const baseLightDiameter = 30;
+      // Base light size is 8 pixels diameter (4 pixel radius * 2) - reduced for better scaling
+      const baseLightDiameter = 8;
       const sizeScale = lightDiameterPixels / baseLightDiameter;
 
       // Ensure minimum and maximum scale for usability
-      const minScale = 0.3; // Don't let lights get smaller than 30% of original
+      const minScale = 0.05; // Don't let lights get smaller than 5% of original
       const maxScale = 3.0; // Don't let lights get larger than 300% of original
       const finalSizeScale = Math.min(Math.max(sizeScale, minScale), maxScale);
 
-      // console.log("🔍 Light Size Debug:", {
-      //   scaleFactor,
-      //   lightDiameterInches,
-      //   lightDiameterFeet,
-      //   lightDiameterPixels,
-      //   baseLightDiameter,
-      //   calculatedSizeScale: sizeScale,
-      //   finalSizeScale,
-      // });
+      console.log("🔍 Light Size Debug:", {
+        scaleFactor,
+        lightDiameterInches,
+        lightDiameterFeet,
+        lightDiameterPixels,
+        baseLightDiameter,
+        calculatedSizeScale: sizeScale,
+        finalSizeScale,
+        hasReference: !!(referenceLine && referenceLength)
+      });
 
       return finalSizeScale;
     },
-    [getScaleFactor]
+    [getScaleFactor, referenceLine, referenceLength]
   );
 
   return {
