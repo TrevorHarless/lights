@@ -8,9 +8,10 @@ interface SyncButtonProps {
   size?: number;
   color?: string;
   style?: any;
+  requireSubscription?: (action: () => void) => void;
 }
 
-export function SyncButton({ size = 20, color = 'white', style }: SyncButtonProps) {
+export function SyncButton({ size = 20, color = 'white', style, requireSubscription }: SyncButtonProps) {
   const { manualSync, syncStatus, pendingChanges, hasSyncErrors, retryFailedSyncs } = useSync();
   const [isPressed, setIsPressed] = useState(false);
 
@@ -69,7 +70,13 @@ export function SyncButton({ size = 20, color = 'white', style }: SyncButtonProp
 
   return (
     <TouchableOpacity
-      onPress={handleSync}
+      onPress={() => {
+        if (requireSubscription) {
+          requireSubscription(handleSync);
+        } else {
+          handleSync();
+        }
+      }}
       disabled={isDisabled}
       style={[
         {

@@ -35,8 +35,10 @@ export default function Index() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
+        // User is not logged in - go to login immediately, no subscription check needed
         router.replace("/login");
       } else {
+        // User is logged in - check subscription status
         checkSubscriptionStatus();
       }
     }

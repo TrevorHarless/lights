@@ -1,7 +1,8 @@
-import { useRouter } from "expo-router";
+import { useRouter, usePathname } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, Text } from "react-native";
 import Purchases from "react-native-purchases";
+import { useAuth } from "~/contexts/AuthContext";
 
 interface SubscriptionGuardProps {
   children: React.ReactNode;
@@ -9,12 +10,20 @@ interface SubscriptionGuardProps {
 
 export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { user } = useAuth();
   const [hasSubscription, setHasSubscription] = useState<boolean | null>(null);
 
   useEffect(() => {
     let mounted = true;
     
     const checkSubscription = async () => {
+      // If user is not logged in, don't do subscription checks
+      // Let the index route handle authentication redirects
+      if (!user) {
+        return;
+      }
+
       try {
         const customerInfo = await Purchases.getCustomerInfo();
         const hasActiveSubscription = Object.keys(customerInfo.entitlements.active).length > 0;
@@ -22,7 +31,15 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
         if (!mounted) return;
         
         if (!hasActiveSubscription) {
-          // No subscription - redirect to paywall
+          // Allow access to profile and projects screens even without subscription
+          // Profile enables users to delete their account if needed
+          // Projects allows access to profile button but protects other actions
+          if (pathname === "/profile" || pathname === "/projects") {
+            setHasSubscription(false);
+            return;
+          }
+          
+          // No subscription - redirect to paywall for other screens
           router.replace("/paywall");
           return;
         }
@@ -31,7 +48,14 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
       } catch (error) {
         console.error("Error checking subscription:", error);
         if (!mounted) return;
-        // On error, redirect to paywall to be safe
+        
+        // Allow access to profile and projects screens even on error
+        if (pathname === "/profile" || pathname === "/projects") {
+          setHasSubscription(false);
+          return;
+        }
+        
+        // On error, redirect to paywall to be safe for other screens
         router.replace("/paywall");
       }
     };
@@ -41,9 +65,15 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
     return () => {
       mounted = false;
     };
-  }, [router]); // Include router dependency as required by ESLint
+  }, [router, pathname, user]);
 
-  // Show loading while checking subscription
+  // If user is not logged in, render children without subscription checks
+  // The index route will handle redirecting to login
+  if (!user) {
+    return <>{children}</>;
+  }
+
+  // Show loading while checking subscription for logged-in users
   if (hasSubscription === null) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -52,6 +82,6 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
     );
   }
 
-  // If we get here, user has subscription
+  // Render children if user has subscription OR is on profile/projects screen
   return <>{children}</>;
 }
