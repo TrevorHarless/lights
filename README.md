@@ -2,7 +2,7 @@
 
 A comprehensive React Native app for planning, managing, and visualizing holiday light displays. Built with Expo and modern React Native architecture.
 
-# [Available now on iOS App Store!!](https://apps.apple.com/us/app/holiday-lights-pro/id6751132656)
+# [Available now on iOS App Store!](https://apps.apple.com/us/app/holiday-lights-pro/id6751132656)
 
 ## Features
 
