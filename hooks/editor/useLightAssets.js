@@ -6,11 +6,11 @@ import { customLightStorage } from "~/services/customLightStorage";
 const LIGHT_CONSTANTS = {
   // Spacing (pixels representing real-world spacing)
   C9_SPACING: 18, // ~12" real-world spacing
-  MINI_SPACING: 8, // ~6" real-world spacing
+  MINI_SPACING: 36, // ~6" real-world spacing
 
   // Base sizes
   C9_BASE_SIZE: 12,
-  MINI_BASE_SIZE: 12,
+  MINI_BASE_SIZE: 8,
 
   // Border and glow settings
   MAX_BORDER_WIDTH: 2, // Prevent thick black borders
@@ -164,26 +164,18 @@ const createPatternRenderStyle = (pattern, isMinLight = false) => {
       backgroundColor: colorInfo.bg,
       shadowColor: colorInfo.shadow,
       shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
-      shadowRadius: 3,
-      borderColor: createBorderColor(colorInfo.bg, isMinLight),
-      borderWidth: 1.5,
+      shadowRadius: 3.2,
     };
   };
 };
 
 // Helper function to create solid color render styles
-const createSolidRenderStyle = (
-  backgroundColor,
-  shadowColor,
-  isMinLight = false
-) => {
+const createSolidRenderStyle = (backgroundColor, shadowColor) => {
   return {
     backgroundColor,
     shadowColor: shadowColor || backgroundColor,
     shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
-    shadowRadius: 3,
-    borderColor: createBorderColor(backgroundColor, isMinLight),
-    borderWidth: 1.5,
+    shadowRadius: 3.2,
   };
 };
 
@@ -261,7 +253,7 @@ export function useLightAssets() {
       baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Cool-White.png"),
-      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF", false),
+      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF"),
     },
     {
       id: "c7-c9-red",
@@ -274,8 +266,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Red.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(220, 20, 60, 1)",
-        "rgba(220, 20, 60, 1)",
-        false
+        "rgba(220, 20, 60, 1)"
       ),
     },
     {
@@ -289,8 +280,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Green.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(57, 205, 57, 1)",
-        "rgba(57, 205, 57, 1)",
-        false
+        "rgba(57, 205, 57, 1)"
       ),
     },
     {
@@ -304,8 +294,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Blue.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(29, 116, 255, 1)",
-        "rgba(29, 116, 255, 1)",
-        false
+        "rgba(29, 116, 255, 1)"
       ),
     },
     {
@@ -317,7 +306,7 @@ export function useLightAssets() {
       baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Warm-White.png"),
-      renderStyle: createSolidRenderStyle("#FFF8DC", "#FFD700", true),
+      renderStyle: createSolidRenderStyle("#FFF8DC", "#FFD700"),
     },
     {
       id: "mini-led-multicolor",
@@ -370,7 +359,7 @@ export function useLightAssets() {
       baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Cool-White.png"),
-      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF", true),
+      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF"),
     },
     {
       id: "mini-red",
@@ -383,8 +372,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Red.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(220, 20, 60, 1)",
-        "rgba(220, 20, 60, 1)",
-        true
+        "rgba(220, 20, 60, 1)"
       ),
     },
     {
@@ -398,8 +386,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Green.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(57, 205, 57, 1)",
-        "rgba(57, 205, 57, 1)",
-        true
+        "rgba(57, 205, 57, 1)"
       ),
     },
     {
@@ -413,8 +400,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Blue.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(29, 116, 255, 1)",
-        "rgba(29, 116, 255, 1)",
-        true
+        "rgba(29, 116, 255, 1)"
       ),
     },
   ];
@@ -546,6 +532,8 @@ export function useLightAssets() {
               borderWidth: config.borderColor ? 2 : undefined,
             },
       };
+
+      // console.log("custom light asset data: ", JSON.stringify(lightAssetData));
 
       const savedAsset =
         await customLightStorage.saveCustomLight(lightAssetData);
