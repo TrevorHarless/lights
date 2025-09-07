@@ -153,7 +153,7 @@ export function useReferenceScale() {
       const sizeScale = lightDiameterPixels / baseLightDiameter;
 
       // Ensure minimum and maximum scale for usability
-      const minScale = 0.05; // Don't let lights get smaller than 5% of original
+      const minScale = 0.1; // Don't let lights get smaller than 5% of original
       const maxScale = 3.0; // Don't let lights get larger than 300% of original
       const finalSizeScale = Math.min(Math.max(sizeScale, minScale), maxScale);
 
@@ -165,7 +165,7 @@ export function useReferenceScale() {
         baseLightDiameter,
         calculatedSizeScale: sizeScale,
         finalSizeScale,
-        hasReference: !!(referenceLine && referenceLength)
+        hasReference: !!(referenceLine && referenceLength),
       });
 
       return finalSizeScale;

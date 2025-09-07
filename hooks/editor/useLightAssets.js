@@ -6,7 +6,7 @@ import { customLightStorage } from "~/services/customLightStorage";
 const LIGHT_CONSTANTS = {
   // Spacing (pixels representing real-world spacing)
   C9_SPACING: 18, // ~12" real-world spacing
-  MINI_SPACING: 8, // ~6" real-world spacing
+  MINI_SPACING: 36, // ~6" real-world spacing
 
   // Base sizes
   C9_BASE_SIZE: 12,
@@ -14,11 +14,11 @@ const LIGHT_CONSTANTS = {
 
   // Border and glow settings
   MAX_BORDER_WIDTH: 2, // Prevent thick black borders
-  GLOW_MULTIPLIER: 1.8,
+  GLOW_MULTIPLIER: 2,
   SHADOW_RADIUS_MULTIPLIER: 0.4,
 
   // Opacity settings
-  DEFAULT_SHADOW_OPACITY: 0.8,
+  DEFAULT_SHADOW_OPACITY: 1,
   BORDER_OPACITY: "40", // 25% opacity as hex suffix
   MINI_BORDER_OPACITY: "30", // 18.75% opacity as hex suffix
 };
@@ -28,22 +28,22 @@ const COLOR_PATTERNS = {
   multicolor: [
     {
       bg: "rgba(57, 205, 57, 1)",
-      shadow: "rgba(43, 166, 43, 1)",
+      shadow: "#3cff2aff",
       name: "Green",
     },
     {
       bg: "rgba(29, 116, 255, 1)", // Royal Blue
-      shadow: "rgba(65, 105, 225, 0.9)",
+      shadow: "#2a83ffff",
       name: "Blue",
     },
     {
       bg: "rgba(255, 232, 101, 1)", // Gold Yellow
-      shadow: "rgba(255, 232, 101, 1)",
+      shadow: "#ffdf2aff",
       name: "Yellow",
     },
     {
       bg: "rgba(220, 20, 60, 1)", // Crimson Red
-      shadow: "rgba(220, 20, 60, 0.9)",
+      shadow: "#ff2a2aff",
       name: "Red",
     },
   ],
@@ -51,22 +51,22 @@ const COLOR_PATTERNS = {
   fourBulbPattern: [
     {
       bg: "rgba(255, 232, 101, 1)", // Gold Yellow
-      shadow: "rgba(255, 232, 101, 1)",
+      shadow: "#ffdf2aff",
       name: "Yellow",
     },
     {
       bg: "rgba(220, 20, 60, 1)", // Crimson Red
-      shadow: "rgba(220, 20, 60, 0.9)",
+      shadow: "#ff2a2aff",
       name: "Red",
     },
     {
       bg: "rgba(255, 232, 101, 1)", // Gold Yellow
-      shadow: "rgba(255, 232, 101, 1)",
+      shadow: "#ffdf2aff",
       name: "Yellow",
     },
     {
       bg: "rgba(57, 205, 57, 1)", // Forest Green
-      shadow: "rgba(57, 205, 57, 1)",
+      shadow: "#6eff2aff",
       name: "Green",
     },
   ],
@@ -74,12 +74,12 @@ const COLOR_PATTERNS = {
   redWhitePattern: [
     {
       bg: "rgba(220, 20, 60, 1)", // Crimson Red
-      shadow: "rgba(220, 20, 60, 0.9)",
+      shadow: "#ff2a2aff",
       name: "Red",
     },
     {
       bg: "rgba(220, 20, 60, 1)", // Crimson Red
-      shadow: "rgba(220, 20, 60, 0.9)",
+      shadow: "#ff2a2aff",
       name: "Red",
     },
     {
@@ -97,22 +97,22 @@ const COLOR_PATTERNS = {
   miniMulticolor: [
     {
       bg: "rgba(57, 205, 57, 1)",
-      shadow: "rgba(43, 166, 43, 1)",
+      shadow: "#3cff2aff",
       name: "Green",
     },
     {
       bg: "rgba(29, 116, 255, 1)", // Royal Blue
-      shadow: "rgba(65, 105, 225, 0.9)",
+      shadow: "#2a83ffff",
       name: "Blue",
     },
     {
       bg: "rgba(255, 232, 101, 1)", // Gold Yellow
-      shadow: "rgba(255, 232, 101, 1)",
+      shadow: "#ffdf2aff",
       name: "Yellow",
     },
     {
       bg: "rgba(220, 20, 60, 1)", // Crimson Red
-      shadow: "rgba(220, 20, 60, 0.9)",
+      shadow: "#ff2a2aff",
       name: "Red",
     },
   ],
@@ -150,29 +150,32 @@ const createBorderColor = (rgbaColor, isMinLight = false) => {
 const createPatternRenderStyle = (pattern, isMinLight = false) => {
   return (lightIndex = 0) => {
     const colorInfo = pattern[lightIndex % pattern.length];
-
+    /** 
+     * renderStyle: {
+        backgroundColor: "#FFF8DC",
+        shadowColor: "#ffdf2aff",
+        shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
+        shadowRadius: 3,
+        borderColor: "#ffeaa747",
+        borderWidth: 1.5,
+      },
+     */
     return {
       backgroundColor: colorInfo.bg,
       shadowColor: colorInfo.shadow,
       shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
-      borderColor: createBorderColor(colorInfo.bg, isMinLight),
-      borderWidth: isMinLight ? 1 : 1.5,
+      shadowRadius: 3.2,
     };
   };
 };
 
 // Helper function to create solid color render styles
-const createSolidRenderStyle = (
-  backgroundColor,
-  shadowColor,
-  isMinLight = false
-) => {
+const createSolidRenderStyle = (backgroundColor, shadowColor) => {
   return {
     backgroundColor,
     shadowColor: shadowColor || backgroundColor,
     shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
-    borderColor: createBorderColor(backgroundColor, isMinLight),
-    borderWidth: isMinLight ? 1 : 1.5,
+    shadowRadius: 3.2,
   };
 };
 
@@ -195,10 +198,10 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Warm-White.png"),
       renderStyle: {
         backgroundColor: "#FFF8DC",
-        shadowColor: "#FFD700",
+        shadowColor: "#ffdf2aff",
         shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
-        shadowRadius: 16,
-        borderColor: "#FFEAA740",
+        shadowRadius: 3,
+        borderColor: "#ffeaa747",
         borderWidth: 1.5,
       },
     },
@@ -250,7 +253,7 @@ export function useLightAssets() {
       baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Cool-White.png"),
-      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF", false),
+      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF"),
     },
     {
       id: "c7-c9-red",
@@ -263,8 +266,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Red.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(220, 20, 60, 1)",
-        "rgba(220, 20, 60, 1)",
-        false
+        "rgba(220, 20, 60, 1)"
       ),
     },
     {
@@ -278,8 +280,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Green.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(57, 205, 57, 1)",
-        "rgba(57, 205, 57, 1)",
-        false
+        "rgba(57, 205, 57, 1)"
       ),
     },
     {
@@ -293,8 +294,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Blue.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(29, 116, 255, 1)",
-        "rgba(29, 116, 255, 1)",
-        false
+        "rgba(29, 116, 255, 1)"
       ),
     },
     {
@@ -306,7 +306,7 @@ export function useLightAssets() {
       baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Warm-White.png"),
-      renderStyle: createSolidRenderStyle("#FFF8DC", "#FFD700", true),
+      renderStyle: createSolidRenderStyle("#FFF8DC", "#FFD700"),
     },
     {
       id: "mini-led-multicolor",
@@ -359,7 +359,7 @@ export function useLightAssets() {
       baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
       renderType: "image",
       image: require("~/assets/light-thumbnails/Cool-White.png"),
-      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF", true),
+      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF"),
     },
     {
       id: "mini-red",
@@ -372,8 +372,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Red.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(220, 20, 60, 1)",
-        "rgba(220, 20, 60, 1)",
-        true
+        "rgba(220, 20, 60, 1)"
       ),
     },
     {
@@ -387,8 +386,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Green.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(57, 205, 57, 1)",
-        "rgba(57, 205, 57, 1)",
-        true
+        "rgba(57, 205, 57, 1)"
       ),
     },
     {
@@ -402,8 +400,7 @@ export function useLightAssets() {
       image: require("~/assets/light-thumbnails/Blue.png"),
       renderStyle: createSolidRenderStyle(
         "rgba(29, 116, 255, 1)",
-        "rgba(29, 116, 255, 1)",
-        true
+        "rgba(29, 116, 255, 1)"
       ),
     },
   ];
@@ -492,17 +489,17 @@ export function useLightAssets() {
       style.width = glowSize * baseStyle.widthRatio;
     }
 
-    // FIXED: Handle border for lights that need it - prevent thick black borders
-    if (baseStyle.borderColor) {
-      // Use a reasonable border width instead of the problematic calculation
-      // The old calculation: Math.max(1, (glowSize - baseSize * scale) / 2)
-      // could create very thick borders that appeared as black circles
-      style.borderWidth = Math.min(
-        baseStyle.borderWidth || LIGHT_CONSTANTS.MAX_BORDER_WIDTH,
-        LIGHT_CONSTANTS.MAX_BORDER_WIDTH
-      );
-      style.borderColor = baseStyle.borderColor;
-    }
+    // // FIXED: Handle border for lights that need it - prevent thick black borders
+    // if (baseStyle.borderColor) {
+    //   // Use a reasonable border width instead of the problematic calculation
+    //   // The old calculation: Math.max(1, (glowSize - baseSize * scale) / 2)
+    //   // could create very thick borders that appeared as black circles
+    //   style.borderWidth = Math.min(
+    //     baseStyle.borderWidth || LIGHT_CONSTANTS.MAX_BORDER_WIDTH,
+    //     LIGHT_CONSTANTS.MAX_BORDER_WIDTH
+    //   );
+    //   style.borderColor = baseStyle.borderColor;
+    // }
 
     return style;
   };
@@ -535,6 +532,8 @@ export function useLightAssets() {
               borderWidth: config.borderColor ? 2 : undefined,
             },
       };
+
+      // console.log("custom light asset data: ", JSON.stringify(lightAssetData));
 
       const savedAsset =
         await customLightStorage.saveCustomLight(lightAssetData);
