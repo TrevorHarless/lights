@@ -7,11 +7,13 @@ export interface CustomLightAsset {
   type: 'custom';
   spacing: number;
   baseSize: number;
-  renderType: 'style';
-  renderStyle: any; // Can be object or function
+  renderType: 'style' | 'pattern';
+  renderStyle?: any; // Can be object or function
+  component?: any; // For image-based patterns
+  pattern?: Array<{ lightImage: any; name: string }>; // For image-based patterns
   createdAt: string;
   isPattern?: boolean;
-  patternColors?: string[];
+  patternColors?: string[]; // For color-based patterns (legacy)
   backgroundColor?: string;
   shadowColor?: string;
   shadowOpacity?: number;

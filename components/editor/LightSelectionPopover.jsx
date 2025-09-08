@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import { CustomLightModal } from './CustomLightModal';
+import { CustomPatternModal } from './CustomPatternModal';
 
 export function LightSelectionPopover({ 
   visible, 
@@ -22,10 +23,12 @@ export function LightSelectionPopover({
   getCategories,
   getLightRenderStyle,
   onCreateCustomAsset,
+  onCreateCustomPattern,
   onRemoveCustomAsset
 }) {
   const [selectedCategory, setSelectedCategory] = React.useState('string');
   const [showCustomModal, setShowCustomModal] = React.useState(false);
+  const [showCustomPatternModal, setShowCustomPatternModal] = React.useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = React.useState(false);
   const [assetToDelete, setAssetToDelete] = React.useState(null);
   
@@ -188,41 +191,79 @@ export function LightSelectionPopover({
               alignItems: 'center',
             }}
           >
-            {/* Create Custom Button - only show in custom category */}
+            {/* Create Custom Buttons - only show in custom category */}
             {selectedCategory === 'custom' && (
-              <TouchableOpacity
-                onPress={() => setShowCustomModal(true)}
-                style={{
-                  alignItems: 'center',
-                  marginHorizontal: isTablet ? 12 : 8,
-                  paddingVertical: isTablet ? 12 : 8,
-                }}
-                activeOpacity={0.7}
-              >
-                <View style={{
-                  width: isTablet ? 96 : 64,
-                  height: isTablet ? 96 : 64,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: isTablet ? 20 : 12,
-                  borderWidth: 2,
-                  borderStyle: 'dashed',
-                  borderColor: '#3B82F6',
-                  backgroundColor: '#F8FAFC',
-                  position: 'relative',
-                }}>
-                  <MaterialIcons name="add" size={isTablet ? 48 : 32} color="#3B82F6" />
-                </View>
-                <Text style={{
-                  marginTop: isTablet ? 12 : 8,
-                  textAlign: 'center',
-                  fontSize: isTablet ? 16 : 12,
-                  color: '#6B7280',
-                  fontWeight: '500',
-                }}>
-                  Create New
-                </Text>
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity
+                  onPress={() => setShowCustomModal(true)}
+                  style={{
+                    alignItems: 'center',
+                    marginHorizontal: isTablet ? 12 : 8,
+                    paddingVertical: isTablet ? 12 : 8,
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={{
+                    width: isTablet ? 96 : 64,
+                    height: isTablet ? 96 : 64,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: isTablet ? 20 : 12,
+                    borderWidth: 2,
+                    borderStyle: 'dashed',
+                    borderColor: '#3B82F6',
+                    backgroundColor: '#F8FAFC',
+                    position: 'relative',
+                  }}>
+                    <MaterialIcons name="add" size={isTablet ? 32 : 24} color="#3B82F6" />
+                    <MaterialIcons name="lightbulb" size={isTablet ? 20 : 16} color="#3B82F6" style={{ marginTop: 2 }} />
+                  </View>
+                  <Text style={{
+                    marginTop: isTablet ? 12 : 8,
+                    textAlign: 'center',
+                    fontSize: isTablet ? 14 : 11,
+                    color: '#6B7280',
+                    fontWeight: '500',
+                  }}>
+                    Custom Light
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  onPress={() => setShowCustomPatternModal(true)}
+                  style={{
+                    alignItems: 'center',
+                    marginHorizontal: isTablet ? 12 : 8,
+                    paddingVertical: isTablet ? 12 : 8,
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={{
+                    width: isTablet ? 96 : 64,
+                    height: isTablet ? 96 : 64,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: isTablet ? 20 : 12,
+                    borderWidth: 2,
+                    borderStyle: 'dashed',
+                    borderColor: '#10B981',
+                    backgroundColor: '#F0FDF4',
+                    position: 'relative',
+                  }}>
+                    <MaterialIcons name="add" size={isTablet ? 32 : 24} color="#10B981" />
+                    <MaterialIcons name="palette" size={isTablet ? 20 : 16} color="#10B981" style={{ marginTop: 2 }} />
+                  </View>
+                  <Text style={{
+                    marginTop: isTablet ? 12 : 8,
+                    textAlign: 'center',
+                    fontSize: isTablet ? 14 : 11,
+                    color: '#6B7280',
+                    fontWeight: '500',
+                  }}>
+                    Custom Pattern
+                  </Text>
+                </TouchableOpacity>
+              </>
             )}
 
             {categoryAssets.map((asset) => (
@@ -249,7 +290,7 @@ export function LightSelectionPopover({
                     position: 'relative',
                   }}
                 >
-                  {asset.renderType === 'image' && asset.image ? (
+                  {(asset.renderType === 'image' || asset.renderType === 'pattern') && asset.image ? (
                     <Image 
                       source={asset.image} 
                       style={{ 
@@ -336,6 +377,13 @@ export function LightSelectionPopover({
         onClose={() => setShowCustomModal(false)}
         onCreateAsset={handleCreateCustomAsset}
         getLightRenderStyle={getLightRenderStyle}
+      />
+
+      {/* Custom Pattern Creation Modal */}
+      <CustomPatternModal
+        visible={showCustomPatternModal}
+        onClose={() => setShowCustomPatternModal(false)}
+        onCreatePattern={onCreateCustomPattern}
       />
 
       {/* Delete Confirmation Modal */}

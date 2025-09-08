@@ -1,234 +1,107 @@
 // hooks/useLightAssets.js
 import React from "react";
+import ImageLight from "~/components/editor/ImageLight";
 import { customLightStorage } from "~/services/customLightStorage";
 
 // Constants for better maintainability
 const LIGHT_CONSTANTS = {
   // Spacing (pixels representing real-world spacing)
   C9_SPACING: 18, // ~12" real-world spacing
-  MINI_SPACING: 36, // ~6" real-world spacing
 
   // Base sizes
-  C9_BASE_SIZE: 12,
   MINI_BASE_SIZE: 8,
 
-  // Border and glow settings
-  MAX_BORDER_WIDTH: 2, // Prevent thick black borders
+  // Glow and shadow settings
   GLOW_MULTIPLIER: 2,
   SHADOW_RADIUS_MULTIPLIER: 0.4,
-
-  // Opacity settings
   DEFAULT_SHADOW_OPACITY: 1,
-  BORDER_OPACITY: "40", // 25% opacity as hex suffix
-  MINI_BORDER_OPACITY: "30", // 18.75% opacity as hex suffix
 };
 
-// Reusable color patterns to reduce duplication - using RGBA for better control
-const COLOR_PATTERNS = {
-  multicolor: [
-    {
-      bg: "rgba(57, 205, 57, 1)",
-      shadow: "#3cff2aff",
-      name: "Green",
-    },
-    {
-      bg: "rgba(29, 116, 255, 1)", // Royal Blue
-      shadow: "#2a83ffff",
-      name: "Blue",
-    },
-    {
-      bg: "rgba(255, 232, 101, 1)", // Gold Yellow
-      shadow: "#ffdf2aff",
-      name: "Yellow",
-    },
-    {
-      bg: "rgba(220, 20, 60, 1)", // Crimson Red
-      shadow: "#ff2a2aff",
-      name: "Red",
-    },
-  ],
-
-  fourBulbPattern: [
-    {
-      bg: "rgba(255, 232, 101, 1)", // Gold Yellow
-      shadow: "#ffdf2aff",
-      name: "Yellow",
-    },
-    {
-      bg: "rgba(220, 20, 60, 1)", // Crimson Red
-      shadow: "#ff2a2aff",
-      name: "Red",
-    },
-    {
-      bg: "rgba(255, 232, 101, 1)", // Gold Yellow
-      shadow: "#ffdf2aff",
-      name: "Yellow",
-    },
-    {
-      bg: "rgba(57, 205, 57, 1)", // Forest Green
-      shadow: "#6eff2aff",
-      name: "Green",
-    },
-  ],
-
-  redWhitePattern: [
-    {
-      bg: "rgba(220, 20, 60, 1)", // Crimson Red
-      shadow: "#ff2a2aff",
-      name: "Red",
-    },
-    {
-      bg: "rgba(220, 20, 60, 1)", // Crimson Red
-      shadow: "#ff2a2aff",
-      name: "Red",
-    },
-    {
-      bg: "rgba(255, 255, 255, 1)", // Pure White
-      shadow: "rgba(255, 245, 224, 0.9)", // Warm white glow
-      name: "White",
-    },
-    {
-      bg: "rgba(255, 255, 255, 1)", // Pure White
-      shadow: "rgba(255, 245, 224, 0.9)", // Warm white glow
-      name: "White",
-    },
-  ],
-
-  miniMulticolor: [
-    {
-      bg: "rgba(57, 205, 57, 1)",
-      shadow: "#3cff2aff",
-      name: "Green",
-    },
-    {
-      bg: "rgba(29, 116, 255, 1)", // Royal Blue
-      shadow: "#2a83ffff",
-      name: "Blue",
-    },
-    {
-      bg: "rgba(255, 232, 101, 1)", // Gold Yellow
-      shadow: "#ffdf2aff",
-      name: "Yellow",
-    },
-    {
-      bg: "rgba(220, 20, 60, 1)", // Crimson Red
-      shadow: "#ff2a2aff",
-      name: "Red",
-    },
-  ],
-};
-
-// Helper function to convert RGBA to lower opacity for borders
-const createBorderColor = (rgbaColor, isMinLight = false) => {
-  // If it's already an RGBA string, extract RGB and apply new opacity
-  if (rgbaColor.startsWith("rgba(")) {
-    const rgbMatch = rgbaColor.match(
-      /rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/
-    );
-    if (rgbMatch) {
-      const [, r, g, b] = rgbMatch;
-      const opacity = isMinLight ? 0.18 : 0.25; // 18% for mini, 25% for regular
-      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-    }
-  }
-
-  // If it's a hex color, convert to RGBA
-  if (rgbaColor.startsWith("#")) {
-    const hex = rgbaColor.replace("#", "");
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
-    const opacity = isMinLight ? 0.18 : 0.25;
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  }
-
-  // Fallback: return the original color with reduced opacity
-  return rgbaColor;
-};
-
-// Helper function to create pattern-based render styles
-const createPatternRenderStyle = (pattern, isMinLight = false) => {
-  return (lightIndex = 0) => {
-    const colorInfo = pattern[lightIndex % pattern.length];
-    /** 
-     * renderStyle: {
-        backgroundColor: "#FFF8DC",
-        shadowColor: "#ffdf2aff",
-        shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
-        shadowRadius: 3,
-        borderColor: "#ffeaa747",
-        borderWidth: 1.5,
-      },
-     */
-    return {
-      backgroundColor: colorInfo.bg,
-      shadowColor: colorInfo.shadow,
-      shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
-      shadowRadius: 3.2,
-    };
-  };
-};
-
-// Helper function to create solid color render styles
-const createSolidRenderStyle = (backgroundColor, shadowColor) => {
-  return {
-    backgroundColor,
-    shadowColor: shadowColor || backgroundColor,
-    shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
-    shadowRadius: 3.2,
-  };
-};
 
 export function useLightAssets() {
   // Custom assets state
   const [customAssets, setCustomAssets] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  // Light asset definitions - using standardized configurations
+  // Light asset definitions
   const lightAssets = [
-    // C9 String Lights
     {
-      id: "c9-warm-white",
+      id: "c9-warm-white-image",
       name: "Warm White",
       category: "string",
       type: "c9",
       spacing: LIGHT_CONSTANTS.C9_SPACING,
-      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
+      baseSize: 48,
       renderType: "image",
+      component: ImageLight,
+      lightImage: require("~/assets/lights/Warm-White.png"),
       image: require("~/assets/light-thumbnails/Warm-White.png"),
-      renderStyle: {
-        backgroundColor: "#FFF8DC",
-        shadowColor: "#ffdf2aff",
-        shadowOpacity: LIGHT_CONSTANTS.DEFAULT_SHADOW_OPACITY,
-        shadowRadius: 3,
-        borderColor: "#ffeaa747",
-        borderWidth: 1.5,
-      },
     },
     {
-      id: "c9-multicolor",
+      id: "c9-red-image",
+      name: "Red",
+      category: "string",
+      type: "c9",
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: 48,
+      renderType: "image",
+      component: ImageLight,
+      lightImage: require("~/assets/lights/Red.png"),
+      image: require("~/assets/light-thumbnails/Red.png"),
+    },
+    {
+      id: "c9-blue-image",
+      name: "Blue",
+      category: "string",
+      type: "c9",
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: 48,
+      renderType: "image",
+      component: ImageLight,
+      lightImage: require("~/assets/lights/Blue.png"),
+      image: require("~/assets/light-thumbnails/Blue.png"),
+    },
+    {
+      id: "c9-green-image",
+      name: "Green",
+      category: "string",
+      type: "c9",
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: 48,
+      renderType: "image",
+      component: ImageLight,
+      lightImage: require("~/assets/lights/Green.png"),
+      image: require("~/assets/light-thumbnails/Green.png"),
+    },
+    {
+      id: "c9-yellow-image",
+      name: "Yellow",
+      category: "string",
+      type: "c9",
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: 48,
+      renderType: "image",
+      component: ImageLight,
+      lightImage: require("~/assets/lights/Yellow.png"),
+      image: require("~/assets/light-thumbnails/Yellow.png"),
+    },
+    // Pattern-based lights
+    {
+      id: "c9-multicolor-pattern",
       name: "Multicolor",
       category: "string",
       type: "c9",
       spacing: LIGHT_CONSTANTS.C9_SPACING,
-      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
-      renderType: "image",
+      baseSize: 48,
+      renderType: "pattern",
+      component: ImageLight,
+      pattern: [
+        { lightImage: require("~/assets/lights/Green.png"), name: "Green" },
+        { lightImage: require("~/assets/lights/Blue.png"), name: "Blue" },
+        { lightImage: require("~/assets/lights/Yellow.png"), name: "Yellow" },
+        { lightImage: require("~/assets/lights/Red.png"), name: "Red" },
+      ],
       image: require("~/assets/light-thumbnails/Multicolor.png"),
-      renderStyle: createPatternRenderStyle(COLOR_PATTERNS.multicolor, false),
-    },
-    {
-      id: "c9-red-white",
-      name: "Red & White",
-      category: "string",
-      type: "c9",
-      spacing: LIGHT_CONSTANTS.C9_SPACING,
-      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Red-White.png"),
-      renderStyle: createPatternRenderStyle(
-        COLOR_PATTERNS.redWhitePattern,
-        false
-      ),
     },
     {
       id: "c9-4-bulb-pattern",
@@ -236,172 +109,33 @@ export function useLightAssets() {
       category: "string",
       type: "c9",
       spacing: LIGHT_CONSTANTS.C9_SPACING,
-      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
-      renderType: "image",
+      baseSize: 48,
+      renderType: "pattern",
+      component: ImageLight,
+      pattern: [
+        { lightImage: require("~/assets/lights/Yellow.png"), name: "Yellow" },
+        { lightImage: require("~/assets/lights/Red.png"), name: "Red" },
+        { lightImage: require("~/assets/lights/Yellow.png"), name: "Yellow" },
+        { lightImage: require("~/assets/lights/Green.png"), name: "Green" },
+      ],
       image: require("~/assets/light-thumbnails/Yellow-Red-Green.png"),
-      renderStyle: createPatternRenderStyle(
-        COLOR_PATTERNS.fourBulbPattern,
-        false
-      ),
     },
     {
-      id: "c7-c9-cool-white",
-      name: "Cool White",
+      id: "c9-red-white-pattern",
+      name: "Red & White",
       category: "string",
       type: "c9",
       spacing: LIGHT_CONSTANTS.C9_SPACING,
-      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Cool-White.png"),
-      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF"),
-    },
-    {
-      id: "c7-c9-red",
-      name: "Red",
-      category: "string",
-      type: "c9",
-      spacing: LIGHT_CONSTANTS.C9_SPACING,
-      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Red.png"),
-      renderStyle: createSolidRenderStyle(
-        "rgba(220, 20, 60, 1)",
-        "rgba(220, 20, 60, 1)"
-      ),
-    },
-    {
-      id: "c7-c9-green",
-      name: "Green",
-      category: "string",
-      type: "c9",
-      spacing: LIGHT_CONSTANTS.C9_SPACING,
-      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Green.png"),
-      renderStyle: createSolidRenderStyle(
-        "rgba(57, 205, 57, 1)",
-        "rgba(57, 205, 57, 1)"
-      ),
-    },
-    {
-      id: "c7-c9-blue",
-      name: "Blue",
-      category: "string",
-      type: "c9",
-      spacing: LIGHT_CONSTANTS.C9_SPACING,
-      baseSize: LIGHT_CONSTANTS.C9_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Blue.png"),
-      renderStyle: createSolidRenderStyle(
-        "rgba(29, 116, 255, 1)",
-        "rgba(29, 116, 255, 1)"
-      ),
-    },
-    {
-      id: "mini-led-warm",
-      name: "Mini Warm White",
-      category: "mini",
-      type: "mini",
-      spacing: LIGHT_CONSTANTS.MINI_SPACING,
-      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Warm-White.png"),
-      renderStyle: createSolidRenderStyle("#FFF8DC", "#FFD700"),
-    },
-    {
-      id: "mini-led-multicolor",
-      name: "Mini Multicolor",
-      category: "mini",
-      type: "mini",
-      spacing: LIGHT_CONSTANTS.MINI_SPACING,
-      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Multicolor.png"),
-      renderStyle: createPatternRenderStyle(
-        COLOR_PATTERNS.miniMulticolor,
-        true
-      ),
-    },
-    {
-      id: "mini-red-white",
-      name: "Mini Red & White",
-      category: "mini",
-      type: "mini",
-      spacing: LIGHT_CONSTANTS.MINI_SPACING,
-      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
-      renderType: "image",
+      baseSize: 48,
+      renderType: "pattern",
+      component: ImageLight,
+      pattern: [
+        { lightImage: require("~/assets/lights/Red.png"), name: "Red" },
+        { lightImage: require("~/assets/lights/Red.png"), name: "Red" },
+        { lightImage: require("~/assets/lights/Warm-White.png"), name: "White" },
+        { lightImage: require("~/assets/lights/Warm-White.png"), name: "White" },
+      ],
       image: require("~/assets/light-thumbnails/Red-White.png"),
-      renderStyle: createPatternRenderStyle(
-        COLOR_PATTERNS.redWhitePattern,
-        true
-      ),
-    },
-    {
-      id: "mini-4-bulb-pattern",
-      name: "Mini 4 Bulb Pattern",
-      category: "mini",
-      type: "mini",
-      spacing: LIGHT_CONSTANTS.MINI_SPACING,
-      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Yellow-Red-Green.png"),
-      renderStyle: createPatternRenderStyle(
-        COLOR_PATTERNS.fourBulbPattern,
-        true
-      ),
-    },
-    {
-      id: "mini-cool-white",
-      name: "Mini Cool White",
-      category: "mini",
-      type: "mini",
-      spacing: LIGHT_CONSTANTS.MINI_SPACING,
-      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Cool-White.png"),
-      renderStyle: createSolidRenderStyle("#F4FDFF", "#E6F3FF"),
-    },
-    {
-      id: "mini-red",
-      name: "Mini Red",
-      category: "mini",
-      type: "mini",
-      spacing: LIGHT_CONSTANTS.MINI_SPACING,
-      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Red.png"),
-      renderStyle: createSolidRenderStyle(
-        "rgba(220, 20, 60, 1)",
-        "rgba(220, 20, 60, 1)"
-      ),
-    },
-    {
-      id: "mini-green",
-      name: "Mini Green",
-      category: "mini",
-      type: "mini",
-      spacing: LIGHT_CONSTANTS.MINI_SPACING,
-      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Green.png"),
-      renderStyle: createSolidRenderStyle(
-        "rgba(57, 205, 57, 1)",
-        "rgba(57, 205, 57, 1)"
-      ),
-    },
-    {
-      id: "mini-blue",
-      name: "Mini Blue",
-      category: "mini",
-      type: "mini",
-      spacing: LIGHT_CONSTANTS.MINI_SPACING,
-      baseSize: LIGHT_CONSTANTS.MINI_BASE_SIZE,
-      renderType: "image",
-      image: require("~/assets/light-thumbnails/Blue.png"),
-      renderStyle: createSolidRenderStyle(
-        "rgba(29, 116, 255, 1)",
-        "rgba(29, 116, 255, 1)"
-      ),
     },
   ];
 
@@ -489,17 +223,6 @@ export function useLightAssets() {
       style.width = glowSize * baseStyle.widthRatio;
     }
 
-    // // FIXED: Handle border for lights that need it - prevent thick black borders
-    // if (baseStyle.borderColor) {
-    //   // Use a reasonable border width instead of the problematic calculation
-    //   // The old calculation: Math.max(1, (glowSize - baseSize * scale) / 2)
-    //   // could create very thick borders that appeared as black circles
-    //   style.borderWidth = Math.min(
-    //     baseStyle.borderWidth || LIGHT_CONSTANTS.MAX_BORDER_WIDTH,
-    //     LIGHT_CONSTANTS.MAX_BORDER_WIDTH
-    //   );
-    //   style.borderColor = baseStyle.borderColor;
-    // }
 
     return style;
   };
@@ -548,6 +271,33 @@ export function useLightAssets() {
     }
   };
 
+  // Create a new custom pattern using image assets
+  const createCustomPattern = async (name, config) => {
+    try {
+      const patternAssetData = {
+        name: name,
+        category: "custom",
+        type: "custom",
+        spacing: config.spacing || LIGHT_CONSTANTS.C9_SPACING,
+        baseSize: config.baseSize || 48,
+        renderType: "pattern",
+        component: ImageLight,
+        pattern: config.pattern, // Array of { lightImage, name }
+        image: require("~/assets/light-thumbnails/Custom-Pattern.png"), // Thumbnail for UI
+      };
+
+      const savedAsset = await customLightStorage.saveCustomLight(patternAssetData);
+
+      // Update local state
+      setCustomAssets((prev) => [...prev, savedAsset]);
+
+      return savedAsset;
+    } catch (error) {
+      console.error("💡 useLightAssets: Error creating custom pattern:", error);
+      throw error;
+    }
+  };
+
   // Remove a custom asset
   const removeCustomAsset = async (id) => {
     try {
@@ -571,6 +321,7 @@ export function useLightAssets() {
     getTypesByCategory,
     getLightRenderStyle,
     createCustomAsset,
+    createCustomPattern,
     removeCustomAsset,
     customAssets,
     isLoading,

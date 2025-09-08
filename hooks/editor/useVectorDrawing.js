@@ -7,6 +7,8 @@ export function useVectorDrawing({
   selectedStringId = null,
   onVectorComplete,
   onUpdateLightString = null,
+  onStartMovingString = null,
+  onEndMovingString = null,
   onTapSelection,
   findClosestLightString,
   deselectLightString,
@@ -82,6 +84,10 @@ export function useVectorDrawing({
       if (handle) {
         setDragHandle(handle);
         setIsDragging(true);
+        // Start tracking the move operation for undo
+        if (onStartMovingString) {
+          onStartMovingString(handle.stringId);
+        }
         return;
       }
       
@@ -150,6 +156,10 @@ export function useVectorDrawing({
 
       // If we were dragging a handle, just clean up
       if (dragHandle) {
+        // End tracking the move operation for undo
+        if (onEndMovingString) {
+          onEndMovingString(dragHandle.stringId);
+        }
         setDragHandle(null);
         setIsDragging(false);
         return;

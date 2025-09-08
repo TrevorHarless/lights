@@ -33,15 +33,13 @@ import SingularLightRenderer from './SingularLightRenderer';
 
 import { useDecorAssets } from '~/hooks/editor/useDecorAssets';
 import { useDecorGestures } from '~/hooks/editor/useDecorGestures';
-import { useDecorShapes } from '~/hooks/editor/useDecorShapes';
 import { useLightAssets } from '~/hooks/editor/useLightAssets';
-import { useLightStrings } from '~/hooks/editor/useLightStrings';
 import { useMeasurementLines } from '~/hooks/editor/useMeasurementLines';
 import { useReferenceScale } from '~/hooks/editor/useReferenceScale';
 import { useSingularLightGestures } from '~/hooks/editor/useSingularLightGestures';
-import { useSingularLights } from '~/hooks/editor/useSingularLights';
 import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
 import { lightDataStorage } from '~/services/lightDataStorage';
+import { EditorProvider, useEditorContext } from '~/contexts/EditorContext';
 
 import TutorialOverlay from '~/components/tutorial/TutorialOverlay';
 import { useTutorial } from '~/hooks/tutorial/useTutorial';
@@ -61,6 +59,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     getCategories: getLightCategories,
     getLightRenderStyle,
     createCustomAsset,
+    createCustomPattern,
     removeCustomAsset
   } = useLightAssets();
 
@@ -88,7 +87,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   };
   const getCategories = () => [...getLightCategories(), 'decor'];
 
-  // Reference scale hook
+  // Reference scale hook - SINGLE INSTANCE for both EditorProvider and UI
   const {
     referenceLine,
     referenceLength,
@@ -106,6 +105,91 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     getLineLengthInFeet,
   } = useReferenceScale();
 
+  // Wrap with EditorProvider using the SAME reference scale instance
+  return (
+    <EditorProvider lightAssets={lightAssets} getScaledSpacing={getScaledLightSpacing}>
+      <ImageViewerContent
+        imgSource={imgSource}
+        onGoBack={onGoBack}
+        project={project}
+        projectId={projectId}
+        isTablet={isTablet}
+        isLandscape={isLandscape}
+        lightAssets={lightAssets}
+        getLightAssetById={getLightAssetById}
+        getLightAssetsByCategory={getLightAssetsByCategory}
+        getLightCategories={getLightCategories}
+        getLightRenderStyle={getLightRenderStyle}
+        createCustomAsset={createCustomAsset}
+        createCustomPattern={createCustomPattern}
+        removeCustomAsset={removeCustomAsset}
+        decorAssets={decorAssets}
+        getDecorAssetById={getDecorAssetById}
+        allAssets={allAssets}
+        selectedAsset={selectedAsset}
+        setSelectedAsset={setSelectedAsset}
+        handleAssetSelection={handleAssetSelection}
+        getAssetById={getAssetById}
+        getAssetsByCategory={getAssetsByCategory}
+        getCategories={getCategories}
+        referenceLine={referenceLine}
+        referenceLength={referenceLength}
+        isSettingReference={isSettingReference}
+        showReferenceModal={showReferenceModal}
+        startReferenceMode={startReferenceMode}
+        cancelReferenceMode={cancelReferenceMode}
+        handleReferenceLineComplete={handleReferenceLineComplete}
+        confirmReferenceLength={confirmReferenceLength}
+        clearReference={clearReference}
+        loadReferenceScale={loadReferenceScale}
+        getLightSizeScale={getLightSizeScale}
+        hasReference={hasReference}
+        getLineLengthInFeet={getLineLengthInFeet}
+      />
+    </EditorProvider>
+  );
+};
+
+// Content component that uses EditorContext
+const ImageViewerContent = ({ 
+  imgSource, 
+  onGoBack, 
+  project, 
+  projectId,
+  isTablet,
+  isLandscape,
+  lightAssets,
+  getLightAssetById,
+  getLightAssetsByCategory,
+  getLightCategories,
+  getLightRenderStyle,
+  createCustomAsset,
+  createCustomPattern,
+  removeCustomAsset,
+  decorAssets,
+  getDecorAssetById,
+  allAssets,
+  selectedAsset,
+  setSelectedAsset,
+  handleAssetSelection,
+  getAssetById,
+  getAssetsByCategory,
+  getCategories,
+  referenceLine,
+  referenceLength,
+  isSettingReference,
+  showReferenceModal,
+  startReferenceMode,
+  cancelReferenceMode,
+  handleReferenceLineComplete,
+  confirmReferenceLength,
+  clearReference,
+  loadReferenceScale,
+  getLightSizeScale,
+  hasReference,
+  getLineLengthInFeet
+}) => {
+
   // Measurement lines hook
   const {
     measurementLines,
@@ -122,40 +206,48 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     getMeasurementLineById,
   } = useMeasurementLines(getLineLengthInFeet);
 
+  // Use the centralized editor context
   const {
+    canUndo,
+    performUndo,
+    singularLights,
     lightStrings,
+    decorShapes,
+  } = useEditorContext();
+
+  // Destructure individual hook methods for easier access
+  const {
+    lightStrings: lightStringsData,
     selectedStringId,
-    deletedString,
     addLightString,
     updateLightString,
+    startMovingLightString,
+    endMovingLightString,
     deleteLightString,
-    undoDelete,
     clearAllLightStrings,
     calculateLightPositions,
     selectLightString,
     deselectLightString,
     findClosestLightString,
     loadLightStrings,
-  } = useLightStrings(lightAssets, getScaledLightSpacing);
+  } = lightStrings;
 
-  // Singular lights management
   const {
-    singularLights,
+    singularLights: singularLightsData,
     selectedLightId,
-    deletedLight,
     addSingularLight,
     moveSingularLight,
+    startMovingSingularLight,
+    endMovingSingularLight,
     deleteSingularLight,
-    undoDelete: undoDeleteLight,
     clearAllSingularLights,
     selectSingularLight,
     deselectSingularLight,
     findSingularLightAtPoint,
     getSingularLightById,
     loadSingularLights,
-  } = useSingularLights(lightAssets);
+  } = singularLights;
 
-  // Decor management
   const {
     decor,
     selectedDecorId,
@@ -163,19 +255,23 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     addDecor,
     removeDecor,
     moveDecor,
+    startMovingDecor,
+    endMovingDecor,
     resizeDecor,
+    startResizingDecor,
+    endResizingDecor,
     getDecorById,
     findDecorAtPoint,
     getResizeHandles,
     clearDecor,
     loadDecor,
-  } = useDecorShapes();
+  } = decorShapes;
 
   // Tutorial-aware wrapper for addLightString
   const addLightStringWithTutorial = useCallback((vector) => {
     
     // Check if this is the first string light drawn for tutorial (before adding)
-    const isFirstString = lightStrings.length === 0;
+    const isFirstString = lightStringsData.length === 0;
     
     // Call the original addLightString function
     addLightString(vector);
@@ -186,7 +282,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
         tutorial.handleAction('first_string_light_drawn');
       }, 1000); // Small delay to let the string render
     }
-  }, [addLightString, lightStrings.length, tutorial]);
+  }, [addLightString, lightStringsData.length, tutorial]);
 
   // Tutorial-aware wrapper for addMeasurementLine
   const addMeasurementLineWithTutorial = useCallback((line) => {
@@ -265,10 +361,12 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     panResponder: stringPanResponder 
   } = useVectorDrawing({
     selectedAsset,
-    lightStrings,
+    lightStrings: lightStringsData,
     selectedStringId,
     onVectorComplete: addLightStringWithTutorial,
     onUpdateLightString: updateLightString,
+    onStartMovingString: startMovingLightString,
+    onEndMovingString: endMovingLightString,
     onTapSelection: handleTapSelection,
     findClosestLightString,
     deselectLightString,
@@ -292,6 +390,10 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     getResizeHandles,
     selectedDecorId,
     setSelectedDecorId,
+    startMovingDecor,
+    endMovingDecor,
+    startResizingDecor,
+    endResizingDecor,
     isEnabled: interactionMode === 'decor',
   });
 
@@ -310,6 +412,8 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     setSelectedLightId: selectSingularLight,
     getLightRenderStyle,
     getLightSizeScale,
+    startMovingSingularLight,
+    endMovingSingularLight,
     isEnabled: interactionMode === 'tap',
   });
 
@@ -353,32 +457,12 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
         deselectMeasurementLine();
       }
       
-      // Start drawing a new measurement line if reference is set
-      if (hasReference && !isMeasuring && !draggedMeasureHandle) {
-        setCurrentMeasureLine({
-          start: point,
-          end: point,
-        });
-        setIsMeasuring(true);
-      } else if (!hasReference && !isMeasuring && !draggedMeasureHandle) {
-        // Show alert with option to set reference
-        Alert.alert(
-          'Reference Required',
-          'You need to set a reference measurement first to establish scale. Would you like to set one now?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Set Reference', 
-              onPress: () => {
-                startReferenceMode();
-              }
-            }
-          ]
-        );
-      }
+      // Don't start drawing immediately - wait for movement threshold
+      // This prevents the flash during pan/zoom gestures
     },
 
-    onPanResponderMove: (evt) => {
+    onPanResponderMove: (evt, gestureState) => {
+      // If multi-touch detected, abort this gesture to allow zoom/pan
       if (evt.nativeEvent.touches.length > 1) {
         setCurrentMeasureLine(null);
         setIsMeasuring(false);
@@ -400,8 +484,39 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
         }
         return;
       }
+      
+      // If we've moved more than a small threshold, this is a drag, not a tap
+      if (Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5) {
+        // Start drawing a new measurement line if reference is set and not already drawing
+        if (hasReference && !isMeasuring && !draggedMeasureHandle) {
+          const startPos = {
+            x: locationX - gestureState.dx,
+            y: locationY - gestureState.dy,
+          };
+          setCurrentMeasureLine({
+            start: startPos,
+            end: newPosition,
+          });
+          setIsMeasuring(true);
+        } else if (!hasReference && !isMeasuring && !draggedMeasureHandle) {
+          // Show alert with option to set reference
+          Alert.alert(
+            'Reference Required',
+            'You need to set a reference measurement first to establish scale. Would you like to set one now?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { 
+                text: 'Set Reference', 
+                onPress: () => {
+                  startReferenceMode();
+                }
+              }
+            ]
+          );
+        }
+      }
 
-      // Handle drawing new measurement line
+      // Handle drawing new measurement line (only if already started)
       if (isMeasuring && currentMeasureLine) {
         setCurrentMeasureLine(prev => ({
           ...prev,
@@ -410,8 +525,44 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
       }
     },
 
-    onPanResponderRelease: () => {
-      // Handle measurement line creation
+    onPanResponderRelease: (evt, gestureState) => {
+      const { locationX, locationY } = evt.nativeEvent;
+      const isTap = 
+        Math.abs(gestureState.dx) < 5 && 
+        Math.abs(gestureState.dy) < 5;
+      
+      // Handle tap actions for measure mode
+      if (isTap && !draggedMeasureHandle && !isMeasuring) {
+        const point = { x: locationX, y: locationY };
+        
+        // Check if tapping on an existing measurement line to select it
+        const hitLine = findMeasurementLineAtPoint(point.x, point.y);
+        if (hitLine) {
+          handleTapSelection('measurement', hitLine.id);
+        } else {
+          // Clear selections if not hitting anything
+          deselectMeasurementLine();
+          
+          // Show reference alert if no reference is set and trying to measure
+          if (!hasReference) {
+            Alert.alert(
+              'Reference Required',
+              'You need to set a reference measurement first to establish scale. Would you like to set one now?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                  text: 'Set Reference', 
+                  onPress: () => {
+                    startReferenceMode();
+                  }
+                }
+              ]
+            );
+          }
+        }
+      }
+      
+      // Handle measurement line creation (only if we were actually drawing)
       if (isMeasuring && currentMeasureLine && hasReference) {
         // Calculate line length and add the measurement
         const lengthInFeet = getLineLengthInFeet(currentMeasureLine.start, currentMeasureLine.end);
@@ -609,8 +760,8 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
 
       await lightDataStorage.saveProjectLightData(
         projectId,
-        lightStrings,
-        singularLights,
+        lightStringsData,
+        singularLightsData,
         decor,
         referenceScale,
         measurementLines
@@ -621,8 +772,8 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
 
       // Update saved data for comparison
       setSavedLightData({
-        lightStrings,
-        singleLights: singularLights,
+        lightStrings: lightStringsData,
+        singleLights: singularLightsData,
         decor,
         referenceScale,
         measurementLines,
@@ -636,13 +787,13 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     } finally {
       setIsSaving(false);
     }
-  }, [projectId, isSaving, lightStrings, singularLights, decor, referenceLine, referenceLength, measurementLines]);
+  }, [projectId, isSaving, lightStringsData, singularLightsData, decor, referenceLine, referenceLength, measurementLines]);
 
   // Check for unsaved changes
   useEffect(() => {
     const hasChanges = lightDataStorage.hasUnsavedChanges(
-      lightStrings,
-      singularLights,
+      lightStringsData,
+      singularLightsData,
       decor,
       measurementLines,
       savedLightData
@@ -659,7 +810,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
         handleSaveProject();
       }, 60000); // 30 seconds
     }
-  }, [lightStrings, singularLights, decor, measurementLines, savedLightData, isSaving, handleSaveProject]);
+  }, [lightStringsData, singularLightsData, decor, measurementLines, savedLightData, isSaving, handleSaveProject]);
 
   // Pure pinch gesture for zoom only
   const pinchGesture = Gesture.Pinch()
@@ -736,22 +887,18 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
   // Update the endpoint position when selection changes
   useEffect(() => {
     if (selectedStringId) {
-      const selectedString = lightStrings.find((string) => string.id === selectedStringId);
+      const selectedString = lightStringsData.find((string) => string.id === selectedStringId);
       if (selectedString) {
         setSelectedStringEndpoint(selectedString.end);
       }
     } else {
       setSelectedStringEndpoint(null);
     }
-  }, [selectedStringId, lightStrings]);
+  }, [selectedStringId, lightStringsData]);
 
   // Handle undo action
   const handleUndo = () => {
-    if (deletedString) {
-      undoDelete();
-    } else if (deletedLight) {
-      undoDeleteLight();
-    }
+    performUndo();
   };
 
   // Direct delete handler
@@ -1190,7 +1337,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
                 {interactionMode !== 'measure' && (
                   <>
                     <SimpleLightRenderer
-                      lightStrings={lightStrings}
+                      lightStrings={lightStringsData}
                       currentVector={currentVector}
                       isDragging={isDragging}
                       selectedStringId={selectedStringId}
@@ -1202,10 +1349,11 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
 
                     {/* Singular lights */}
                     <SingularLightRenderer
-                      singularLights={singularLights}
+                      singularLights={singularLightsData}
                       selectedLightId={selectedLightId}
                       getLightSizeScale={getLightSizeScale}
                       getLightRenderStyle={getLightRenderStyle}
+                      getAssetById={getAssetById}
                       showTouchableAreas={showTouchableAreas}
                     />
 
@@ -1275,11 +1423,12 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           getAssetsByCategory={getAssetsByCategory}
           getCategories={getCategories}
           getLightRenderStyle={getLightRenderStyle}
-          canUndo={!!deletedString || !!deletedLight}
+          canUndo={canUndo}
           onUndo={handleUndo}
           interactionMode={interactionMode}
           onModeToggle={handleModeChange}
           onCreateCustomAsset={createCustomAsset}
+          onCreateCustomPattern={createCustomPattern}
           onRemoveCustomAsset={removeCustomAsset}
           tutorial={tutorial}
           isLandscape={isLandscape}
@@ -1318,6 +1467,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     </GestureHandlerRootView>
   );
 };
+
 
 export default ImageViewer;
 

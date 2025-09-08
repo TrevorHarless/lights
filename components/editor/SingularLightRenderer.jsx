@@ -1,12 +1,14 @@
 // components/editor/SingularLightRenderer.jsx
 import React, { useMemo } from 'react';
 import { View } from 'react-native';
+import ImageLight from '~/components/editor/ImageLight';
 
 const SingularLightRenderer = ({
   singularLights,
   selectedLightId,
   getLightSizeScale,
   getLightRenderStyle,
+  getAssetById, // Add this to get asset information
   showTouchableAreas = false, // Debug prop to show touchable areas
 }) => {
   const lightScale = getLightSizeScale ? getLightSizeScale() : 1;
@@ -70,8 +72,35 @@ const SingularLightRenderer = ({
         );
       }
       
-      if (lightStyle) {
-        // Add the light
+      // Get asset information for image rendering
+      const asset = getAssetById ? getAssetById(light.assetId) : null;
+      
+      
+      if (asset && asset.renderType === 'image' && asset.lightImage) {
+        // Render using ImageLight component
+        views.push(
+          <ImageLight
+            key={light.id}
+            position={light.position}
+            scale={lightScale}
+            opacity={1}
+            imageSource={asset.lightImage}
+          />
+        );
+      } else if (asset && asset.renderType === 'pattern' && asset.pattern) {
+        // Handle pattern-based rendering
+        const patternStep = asset.pattern[(light.lightIndex || 0) % asset.pattern.length];
+        views.push(
+          <ImageLight
+            key={light.id}
+            position={light.position}
+            scale={lightScale}
+            opacity={1}
+            imageSource={patternStep.lightImage}
+          />
+        );
+      } else if (lightStyle) {
+        // Fallback to View-based rendering
         views.push(
           <View
             key={light.id}
@@ -86,35 +115,51 @@ const SingularLightRenderer = ({
             ]}
           />
         );
+      }
 
-        // Add selection indicator if selected
-        if (isSelected) {
-          const indicatorSize = Math.max(lightStyle.width * 1.5, 20);
-          const indicatorRadius = indicatorSize / 2;
-          
-          indicators.push(
-            <View
-              key={`selection-${light.id}`}
-              style={{
-                position: 'absolute',
-                left: light.position.x - indicatorRadius,
-                top: light.position.y - indicatorRadius,
-                width: indicatorSize,
-                height: indicatorSize,
-                borderRadius: indicatorRadius,
-                borderWidth: 2,
-                borderColor: '#007aff',
-                backgroundColor: 'transparent',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.3,
-                shadowRadius: 2,
-                elevation: 3,
-                pointerEvents: 'none', // Allow touch events to pass through
-              }}
-            />
-          );
+      // Add selection indicator if selected (for all render types)
+      if (isSelected) {
+        // Configurable multiplier for easy fine-tuning
+        const SELECTION_INDICATOR_MULTIPLIER = .5; // Easy value to modify
+        
+        let indicatorSize = 40; // Default fallback
+        
+        if (asset && (asset.lightImage || asset.pattern)) {
+          // For image-based lights, base size on the actual image size
+          const baseImageSize = 128 * lightScale; // Same calculation as ImageLight
+          indicatorSize = baseImageSize * SELECTION_INDICATOR_MULTIPLIER;
+        } else if (lightStyle) {
+          // For style-based lights (fallback), use the lightStyle width
+          indicatorSize = lightStyle.width * SELECTION_INDICATOR_MULTIPLIER;
         }
+        
+        // Ensure minimum size for usability
+        indicatorSize = Math.max(indicatorSize, 20);
+        
+        const indicatorRadius = indicatorSize / 2;
+        
+        indicators.push(
+          <View
+            key={`selection-${light.id}`}
+            style={{
+              position: 'absolute',
+              left: light.position.x - indicatorRadius,
+              top: light.position.y - indicatorRadius,
+              width: indicatorSize,
+              height: indicatorSize,
+              borderRadius: indicatorRadius,
+              borderWidth: 2,
+              borderColor: '#007aff',
+              backgroundColor: 'transparent',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.3,
+              shadowRadius: 2,
+              elevation: 3,
+              pointerEvents: 'none', // Allow touch events to pass through
+            }}
+          />
+        );
       }
     });
 
@@ -123,7 +168,7 @@ const SingularLightRenderer = ({
       selectionIndicators: indicators,
       touchableAreas: touchAreas,
     };
-  }, [singularLights, selectedLightId, lightScale, getLightRenderStyle, showTouchableAreas]);
+  }, [singularLights, selectedLightId, lightScale, getLightRenderStyle, getAssetById, showTouchableAreas]);
 
   if (!lightViews.length) {
     return null;

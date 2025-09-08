@@ -13,6 +13,10 @@ export function useDecorGestures({
   getResizeHandles,
   selectedDecorId,
   setSelectedDecorId,
+  startMovingDecor = null,
+  endMovingDecor = null,
+  startResizingDecor = null,
+  endResizingDecor = null,
   isEnabled = true,
 }) {
   const gestureState = useRef({
@@ -59,6 +63,11 @@ export function useDecorGestures({
                 dragTarget: selectedDecorId,
                 startPosition: touchPoint,
               };
+              
+              // Start tracking the resize operation for undo
+              if (startResizingDecor) {
+                startResizingDecor(selectedDecorId);
+              }
               return;
             }
           }
@@ -75,6 +84,11 @@ export function useDecorGestures({
           dragTarget: touchedDecor.id,
           startPosition: touchPoint,
         };
+        
+        // Start tracking the move operation for undo
+        if (startMovingDecor) {
+          startMovingDecor(touchedDecor.id);
+        }
         return;
       }
 
@@ -134,6 +148,15 @@ export function useDecorGestures({
     },
 
     onPanResponderRelease: () => {
+      // End tracking the operation for undo if we were dragging
+      if (gestureState.current.isDragging && gestureState.current.dragTarget) {
+        if (gestureState.current.dragType === 'move' && endMovingDecor) {
+          endMovingDecor(gestureState.current.dragTarget);
+        } else if (gestureState.current.dragType === 'resize' && endResizingDecor) {
+          endResizingDecor(gestureState.current.dragTarget);
+        }
+      }
+
       gestureState.current.isDragging = false;
     },
 
