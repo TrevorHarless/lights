@@ -28,6 +28,7 @@ export function BottomToolbar({
   onModeToggle,
   // Custom asset functionality
   onCreateCustomAsset,
+  onCreateCustomPattern,
   onRemoveCustomAsset,
   // Tutorial system
   tutorial,
@@ -243,6 +244,7 @@ export function BottomToolbar({
         getCategories={getCategories}
         getLightRenderStyle={getLightRenderStyle}
         onCreateCustomAsset={onCreateCustomAsset}
+        onCreateCustomPattern={onCreateCustomPattern}
         onRemoveCustomAsset={onRemoveCustomAsset}
       />
 

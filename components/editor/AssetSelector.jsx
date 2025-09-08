@@ -73,7 +73,7 @@ export const AssetSelector = ({
             }`}
             onPress={() => onSelectAsset(asset)}>
             <View className="w-15 h-15 justify-center items-center bg-white rounded-2xl border border-gray-200 shadow-sm relative">
-              {asset.renderType === 'image' && asset.image ? (
+              {(asset.renderType === 'image' || asset.renderType === 'pattern') && asset.image ? (
                 <Image 
                   source={asset.image} 
                   style={{ width: 36, height: 36 }}

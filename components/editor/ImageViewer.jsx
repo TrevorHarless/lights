@@ -61,6 +61,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
     getCategories: getLightCategories,
     getLightRenderStyle,
     createCustomAsset,
+    createCustomPattern,
     removeCustomAsset
   } = useLightAssets();
 
@@ -1206,6 +1207,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
                       selectedLightId={selectedLightId}
                       getLightSizeScale={getLightSizeScale}
                       getLightRenderStyle={getLightRenderStyle}
+                      getAssetById={getAssetById}
                       showTouchableAreas={showTouchableAreas}
                     />
 
@@ -1280,6 +1282,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
           interactionMode={interactionMode}
           onModeToggle={handleModeChange}
           onCreateCustomAsset={createCustomAsset}
+          onCreateCustomPattern={createCustomPattern}
           onRemoveCustomAsset={removeCustomAsset}
           tutorial={tutorial}
           isLandscape={isLandscape}

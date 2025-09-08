@@ -54,7 +54,7 @@ const SimpleLightRenderer = ({
         );
 
         // Add handles at start and end points
-        const handleSize = 12;
+        const handleSize = 10;
         const handleRadius = handleSize / 2;
         
         // Start handle
@@ -68,9 +68,9 @@ const SimpleLightRenderer = ({
               width: handleSize,
               height: handleSize,
               borderRadius: handleRadius,
-              backgroundColor: '#007aff',
+              backgroundColor: '#38ff2aff',
               borderWidth: 2,
-              borderColor: '#ffffff',
+              borderColor: '#38ff2aff',
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 1 },
               shadowOpacity: 0.3,
@@ -91,9 +91,9 @@ const SimpleLightRenderer = ({
               width: handleSize,
               height: handleSize,
               borderRadius: handleRadius,
-              backgroundColor: '#007aff',
+              backgroundColor: '#38ff2aff',
               borderWidth: 2,
-              borderColor: '#ffffff',
+              borderColor: '#38ff2aff',
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 1 },
               shadowOpacity: 0.3,
@@ -104,23 +104,62 @@ const SimpleLightRenderer = ({
         );
       }
 
-      // Add lights as simple Views
+      // Add lights as simple Views or components
       positions.forEach((pos, idx) => {
-        const lightStyle = getLightRenderStyle ? getLightRenderStyle(asset.id, lightScale, idx) : getFallbackStyle(asset.id, lightScale);
-        if (lightStyle) {
+        // Handle component rendering
+        if (asset.renderType === 'component' && asset.component) {
+          const LightComponent = asset.component;
           views.push(
-            <View
+            <LightComponent
               key={`${string.id}-${idx}`}
-              style={[
-                lightStyle,
-                {
-                  position: 'absolute',
-                  left: pos.x - lightStyle.width / 2,
-                  top: pos.y - lightStyle.height / 2,
-                }
-              ]}
+              position={pos}
+              scale={lightScale}
+              opacity={1}
             />
           );
+        } else if (asset.renderType === 'image' && asset.component && asset.lightImage) {
+          // Handle image-based rendering
+          const ImageComponent = asset.component;
+          views.push(
+            <ImageComponent
+              key={`${string.id}-${idx}`}
+              position={pos}
+              scale={lightScale}
+              opacity={1}
+              imageSource={asset.lightImage}
+            />
+          );
+        } else if (asset.renderType === 'pattern' && asset.component && asset.pattern) {
+          // Handle pattern-based rendering
+          const ImageComponent = asset.component;
+          const patternStep = asset.pattern[idx % asset.pattern.length];
+          views.push(
+            <ImageComponent
+              key={`${string.id}-${idx}`}
+              position={pos}
+              scale={lightScale}
+              opacity={1}
+              imageSource={patternStep.lightImage}
+            />
+          );
+        } else {
+          // Handle traditional style-based rendering
+          const lightStyle = getLightRenderStyle ? getLightRenderStyle(asset.id, lightScale, idx) : getFallbackStyle(asset.id, lightScale);
+          if (lightStyle) {
+            views.push(
+              <View
+                key={`${string.id}-${idx}`}
+                style={[
+                  lightStyle,
+                  {
+                    position: 'absolute',
+                    left: pos.x - lightStyle.width / 2,
+                    top: pos.y - lightStyle.height / 2,
+                  }
+                ]}
+              />
+            );
+          }
         }
       });
     });
@@ -164,22 +203,61 @@ const SimpleLightRenderer = ({
 
         // Add current vector lights
         positions.forEach((pos, idx) => {
-          const lightStyle = getLightRenderStyle ? getLightRenderStyle(asset.id, lightScale, idx) : getFallbackStyle(asset.id, lightScale);
-          if (lightStyle) {
+          // Handle component rendering for preview
+          if (asset.renderType === 'component' && asset.component) {
+            const LightComponent = asset.component;
             views.push(
-              <View
+              <LightComponent
                 key={`current-${idx}`}
-                style={[
-                  lightStyle,
-                  {
-                    position: 'absolute',
-                    left: pos.x - lightStyle.width / 2,
-                    top: pos.y - lightStyle.height / 2,
-                    opacity: 0.8, // Slightly transparent for preview
-                  }
-                ]}
+                position={pos}
+                scale={lightScale}
+                opacity={0.8} // Slightly transparent for preview
               />
             );
+          } else if (asset.renderType === 'image' && asset.component && asset.lightImage) {
+            // Handle image-based rendering for preview
+            const ImageComponent = asset.component;
+            views.push(
+              <ImageComponent
+                key={`current-${idx}`}
+                position={pos}
+                scale={lightScale}
+                opacity={0.8} // Slightly transparent for preview
+                imageSource={asset.lightImage}
+              />
+            );
+          } else if (asset.renderType === 'pattern' && asset.component && asset.pattern) {
+            // Handle pattern-based rendering for preview
+            const ImageComponent = asset.component;
+            const patternStep = asset.pattern[idx % asset.pattern.length];
+            views.push(
+              <ImageComponent
+                key={`current-${idx}`}
+                position={pos}
+                scale={lightScale}
+                opacity={0.8} // Slightly transparent for preview
+                imageSource={patternStep.lightImage}
+              />
+            );
+          } else {
+            // Handle traditional style-based rendering for preview
+            const lightStyle = getLightRenderStyle ? getLightRenderStyle(asset.id, lightScale, idx) : getFallbackStyle(asset.id, lightScale);
+            if (lightStyle) {
+              views.push(
+                <View
+                  key={`current-${idx}`}
+                  style={[
+                    lightStyle,
+                    {
+                      position: 'absolute',
+                      left: pos.x - lightStyle.width / 2,
+                      top: pos.y - lightStyle.height / 2,
+                      opacity: 0.8, // Slightly transparent for preview
+                    }
+                  ]}
+                />
+              );
+            }
           }
         });
       }

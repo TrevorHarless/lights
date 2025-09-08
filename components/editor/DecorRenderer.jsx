@@ -63,7 +63,7 @@ export function DecorRenderer({
         key={`${decorItem.id}-handle-${index}`}
         cx={handle.x}
         cy={handle.y}
-        r="8"
+        r="4"
         fill="rgba(0, 123, 255, 0.8)"
         stroke="#ffffff"
         strokeWidth="2"
