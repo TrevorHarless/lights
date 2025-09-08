@@ -1,28 +1,18 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
+import { useUndoSystem, UNDO_ACTION_TYPES } from "./useUndoSystem";
 
-export function useSingularLights(lightAssets = []) {
+export function useSingularLights(lightAssets = [], undoSystem = null) {
   const [singularLights, setSingularLights] = useState([]);
   const [selectedLightId, setSelectedLightId] = useState(null);
-  const [deletedLight, setDeletedLight] = useState(null);
-
-  // Use a ref for the undo timer to easily clear it
-  const undoTimerRef = useRef(null);
-
-  // Clear any existing undo timer
-  const clearUndoTimer = () => {
-    if (undoTimerRef.current) {
-      clearTimeout(undoTimerRef.current);
-      undoTimerRef.current = null;
-    }
-  };
+  
+  // Use passed undo system or create a local one for backward compatibility
+  const localUndoSystem = useUndoSystem();
+  const undo = undoSystem || localUndoSystem;
 
   // Delete a specific singular light without confirmation
   const deleteSingularLight = useCallback(
     (lightId) => {
-      // First, clear any existing undo timer
-      clearUndoTimer();
-
-      // Find the light to store for potential undo
+      // Find the light to delete
       const lightToDelete = singularLights.find(
         (light) => light.id === lightId
       );
@@ -32,50 +22,71 @@ export function useSingularLights(lightAssets = []) {
         return;
       }
 
-      // Store the deleted light for potential undo
-      setDeletedLight(lightToDelete);
+      // Record the delete action for undo
+      undo.recordAction({
+        type: UNDO_ACTION_TYPES.DELETE_SINGULAR_LIGHT,
+        data: {
+          light: lightToDelete,
+          wasSelected: selectedLightId === lightId
+        }
+      });
 
       // Remove the light from the list
       setSingularLights((prev) => prev.filter((light) => light.id !== lightId));
 
       // Deselect after deletion
-      setSelectedLightId(null);
-
-      // Set a timer to clear the deleted light from undo history
-      undoTimerRef.current = setTimeout(() => {
-        setDeletedLight(null);
-      }, 5000); // 5 seconds to undo
+      if (selectedLightId === lightId) {
+        setSelectedLightId(null);
+      }
 
       return lightToDelete;
     },
-    [singularLights]
+    [singularLights, selectedLightId, undo]
   );
 
-  // Undo the last deletion
-  const undoDelete = useCallback(() => {
-    if (!deletedLight) return false;
+  // Undo the last action
+  const undoLastAction = useCallback(() => {
+    if (!undo.canUndo) return false;
 
-    // Clear the undo timer
-    clearUndoTimer();
+    const lastAction = undo.popLastAction();
+    if (!lastAction) return false;
 
-    // Add the light back
-    setSingularLights((prev) => [...prev, deletedLight]);
+    switch (lastAction.type) {
+      case UNDO_ACTION_TYPES.DELETE_SINGULAR_LIGHT:
+        // Restore deleted light
+        setSingularLights(prev => [...prev, lastAction.data.light]);
+        if (lastAction.data.wasSelected) {
+          setSelectedLightId(lastAction.data.light.id);
+        }
+        break;
 
-    // Optionally select the restored light
-    setSelectedLightId(deletedLight.id);
+      case UNDO_ACTION_TYPES.ADD_SINGULAR_LIGHT:
+        // Remove added light
+        setSingularLights(prev => prev.filter(light => light.id !== lastAction.data.light.id));
+        if (selectedLightId === lastAction.data.light.id) {
+          setSelectedLightId(null);
+        }
+        break;
 
-    // Clear the deleted light state
-    setDeletedLight(null);
+      case UNDO_ACTION_TYPES.MOVE_SINGULAR_LIGHT:
+        // Restore previous position
+        setSingularLights(prev => prev.map(light => 
+          light.id === lastAction.data.entityId 
+            ? { ...light, position: lastAction.data.startState.position }
+            : light
+        ));
+        break;
+
+      default:
+        console.warn('Unknown undo action type:', lastAction.type);
+        return false;
+    }
 
     return true;
-  }, [deletedLight]);
+  }, [undo, selectedLightId]);
 
   // Add a new singular light
   const addSingularLight = useCallback((position, assetId, asset) => {
-    // Clear any existing undo state when adding a new light
-    clearUndoTimer();
-    setDeletedLight(null);
-
     const newLightId = Date.now().toString();
     const newLight = {
       id: newLightId,
@@ -85,23 +96,30 @@ export function useSingularLights(lightAssets = []) {
       lightIndex: 0, // For pattern-based lights
     };
 
+    // Record the add action for undo
+    undo.recordAction({
+      type: UNDO_ACTION_TYPES.ADD_SINGULAR_LIGHT,
+      data: {
+        light: newLight
+      }
+    });
+
     setSingularLights((prev) => [...prev, newLight]);
 
     // Optionally auto-select newly created light
     setSelectedLightId(newLightId);
 
     return newLightId;
-  }, []);
+  }, [undo]);
 
   // Clear all singular lights
   const clearAllSingularLights = useCallback(() => {
-    // Clear any existing undo state
-    clearUndoTimer();
-    setDeletedLight(null);
+    // Clear undo history when clearing all
+    undo.clearUndoHistory();
 
     setSingularLights([]);
     setSelectedLightId(null);
-  }, []);
+  }, [undo]);
 
   // Select a singular light
   const selectSingularLight = useCallback((lightId) => {
@@ -121,6 +139,22 @@ export function useSingularLights(lightAssets = []) {
       )
     );
   }, []);
+
+  // Start tracking a move operation
+  const startMovingSingularLight = useCallback((lightId) => {
+    const light = singularLights.find(l => l.id === lightId);
+    if (light) {
+      undo.startMoveTracking('SINGULAR_LIGHT', lightId, { position: light.position });
+    }
+  }, [singularLights, undo]);
+
+  // End tracking a move operation
+  const endMovingSingularLight = useCallback((lightId) => {
+    const light = singularLights.find(l => l.id === lightId);
+    if (light) {
+      undo.endMoveTracking('SINGULAR_LIGHT', lightId, { position: light.position });
+    }
+  }, [singularLights, undo]);
 
   // Move a singular light to a new position
   const moveSingularLight = useCallback(
@@ -218,12 +252,14 @@ export function useSingularLights(lightAssets = []) {
   return {
     singularLights,
     selectedLightId,
-    deletedLight, // Add deleted light to check if undo is available
+    canUndo: undo.canUndo, // Check if undo is available
     addSingularLight,
     updateSingularLight,
     moveSingularLight,
+    startMovingSingularLight, // New move tracking functions
+    endMovingSingularLight,
     deleteSingularLight,
-    undoDelete, // New undo function
+    undoLastAction, // New unified undo function
     clearAllSingularLights,
     selectSingularLight,
     deselectSingularLight,

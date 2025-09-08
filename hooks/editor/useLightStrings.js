@@ -1,28 +1,18 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
+import { useUndoSystem, UNDO_ACTION_TYPES } from "./useUndoSystem";
 
-export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
+export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoSystem = null) {
   const [lightStrings, setLightStrings] = useState([]);
   const [selectedStringId, setSelectedStringId] = useState(null);
-  const [deletedString, setDeletedString] = useState(null);
-
-  // Use a ref for the undo timer to easily clear it
-  const undoTimerRef = useRef(null);
-
-  // Clear any existing undo timer
-  const clearUndoTimer = () => {
-    if (undoTimerRef.current) {
-      clearTimeout(undoTimerRef.current);
-      undoTimerRef.current = null;
-    }
-  };
+  
+  // Use passed undo system or create a local one for backward compatibility
+  const localUndoSystem = useUndoSystem();
+  const undo = undoSystem || localUndoSystem;
 
   // Delete a specific light string without confirmation
   const deleteLightString = useCallback(
     (stringId) => {
-      // First, clear any existing undo timer
-      clearUndoTimer();
-
-      // Find the string to store for potential undo
+      // Find the string to delete
       const stringToDelete = lightStrings.find(
         (string) => string.id === stringId
       );
@@ -32,8 +22,14 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
         return;
       }
 
-      // Store the deleted string for potential undo
-      setDeletedString(stringToDelete);
+      // Record the delete action for undo
+      undo.recordAction({
+        type: UNDO_ACTION_TYPES.DELETE_LIGHT_STRING,
+        data: {
+          string: stringToDelete,
+          wasSelected: selectedStringId === stringId
+        }
+      });
 
       // Remove the string from the list
       setLightStrings((prev) =>
@@ -41,59 +37,89 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
       );
 
       // Deselect after deletion
-      setSelectedStringId(null);
-
-      // Set a timer to clear the deleted string from undo history
-      undoTimerRef.current = setTimeout(() => {
-        setDeletedString(null);
-      }, 5000); // 5 seconds to undo
+      if (selectedStringId === stringId) {
+        setSelectedStringId(null);
+      }
 
       return stringToDelete;
     },
-    [lightStrings]
+    [lightStrings, selectedStringId, undo]
   );
 
-  // Undo the last deletion
-  const undoDelete = useCallback(() => {
-    if (!deletedString) return false;
+  // Undo the last action
+  const undoLastAction = useCallback(() => {
+    if (!undo.canUndo) return false;
 
-    // Clear the undo timer
-    clearUndoTimer();
+    const lastAction = undo.popLastAction();
+    if (!lastAction) return false;
 
-    // Add the string back
-    setLightStrings((prev) => [...prev, deletedString]);
+    switch (lastAction.type) {
+      case UNDO_ACTION_TYPES.DELETE_LIGHT_STRING:
+        // Restore deleted string
+        setLightStrings(prev => [...prev, lastAction.data.string]);
+        if (lastAction.data.wasSelected) {
+          setSelectedStringId(lastAction.data.string.id);
+        }
+        break;
 
-    // Optionally select the restored string
-    setSelectedStringId(deletedString.id);
+      case UNDO_ACTION_TYPES.ADD_LIGHT_STRING:
+        // Remove added string
+        setLightStrings(prev => prev.filter(string => string.id !== lastAction.data.string.id));
+        if (selectedStringId === lastAction.data.string.id) {
+          setSelectedStringId(null);
+        }
+        break;
 
-    // Clear the deleted string state
-    setDeletedString(null);
+      case UNDO_ACTION_TYPES.MOVE_LIGHT_STRING:
+        // Restore previous positions
+        setLightStrings(prev => prev.map(string => 
+          string.id === lastAction.data.entityId 
+            ? { 
+                ...string, 
+                start: lastAction.data.startState.start,
+                end: lastAction.data.startState.end
+              }
+            : string
+        ));
+        break;
+
+      default:
+        console.warn('Unknown undo action type:', lastAction.type);
+        return false;
+    }
 
     return true;
-  }, [deletedString]);
+  }, [undo, selectedStringId]);
 
   // Add a new light string
-  const addLightString = (vector) => {
-    // Clear any existing undo state when adding a new string
-    clearUndoTimer();
-    setDeletedString(null);
-
+  const addLightString = useCallback((vector) => {
     const newStringId = Date.now().toString();
-    setLightStrings((prev) => [...prev, { ...vector, id: newStringId }]);
+    const newString = { ...vector, id: newStringId };
+
+    // Record the add action for undo
+    undo.recordAction({
+      type: UNDO_ACTION_TYPES.ADD_LIGHT_STRING,
+      data: {
+        string: newString
+      }
+    });
+
+    setLightStrings((prev) => [...prev, newString]);
 
     // Optionally auto-select newly created string
     setSelectedStringId(newStringId);
-  };
+    
+    return newStringId;
+  }, [undo]);
 
   // Clear all light strings
   const clearAllLightStrings = useCallback(() => {
-    // Clear any existing undo state
-    clearUndoTimer();
-    setDeletedString(null);
+    // Clear undo history when clearing all
+    undo.clearUndoHistory();
 
     setLightStrings([]);
     setSelectedStringId(null);
-  }, []);
+  }, [undo]);
 
   // Select a light string
   const selectLightString = useCallback((stringId) => {
@@ -104,6 +130,28 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
   const deselectLightString = useCallback(() => {
     setSelectedStringId(null);
   }, []);
+
+  // Start tracking a move operation
+  const startMovingLightString = useCallback((stringId) => {
+    const string = lightStrings.find(s => s.id === stringId);
+    if (string) {
+      undo.startMoveTracking('LIGHT_STRING', stringId, { 
+        start: string.start, 
+        end: string.end 
+      });
+    }
+  }, [lightStrings, undo]);
+
+  // End tracking a move operation
+  const endMovingLightString = useCallback((stringId) => {
+    const string = lightStrings.find(s => s.id === stringId);
+    if (string) {
+      undo.endMoveTracking('LIGHT_STRING', stringId, { 
+        start: string.start, 
+        end: string.end 
+      });
+    }
+  }, [lightStrings, undo]);
 
   // Update a light string's start or end position
   const updateLightString = useCallback((stringId, updates) => {
@@ -271,11 +319,13 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null) {
   return {
     lightStrings,
     selectedStringId,
-    deletedString, // Add deleted string to check if undo is available
+    canUndo: undo.canUndo, // Check if undo is available
     addLightString,
-    updateLightString, // New update function
+    updateLightString,
+    startMovingLightString, // New move tracking functions
+    endMovingLightString,
     deleteLightString,
-    undoDelete, // New undo function
+    undoLastAction, // New unified undo function
     clearAllLightStrings,
     calculateLightPositions,
     selectLightString,

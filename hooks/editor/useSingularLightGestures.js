@@ -13,6 +13,8 @@ export function useSingularLightGestures({
   setSelectedLightId,
   getLightRenderStyle,
   getLightSizeScale,
+  startMovingSingularLight = null,
+  endMovingSingularLight = null,
   isEnabled = true,
 }) {
   const gestureState = useRef({
@@ -66,6 +68,11 @@ export function useSingularLightGestures({
         gestureState.current.isDragging = true;
         gestureState.current.dragType = 'move';
         gestureState.current.dragTarget = touchedLight.id;
+        
+        // Start tracking the move operation for undo
+        if (startMovingSingularLight) {
+          startMovingSingularLight(touchedLight.id);
+        }
         return;
       }
     },
@@ -118,6 +125,11 @@ export function useSingularLightGestures({
     },
 
     onPanResponderRelease: (evt) => {
+      // End tracking the move operation for undo if we were dragging
+      if (gestureState.current.isDragging && gestureState.current.dragTarget && endMovingSingularLight) {
+        endMovingSingularLight(gestureState.current.dragTarget);
+      }
+
       // Only handle tap actions if we didn't drag and it was a quick tap
       const wasTap = !gestureState.current.hasActuallyMoved && 
                      !gestureState.current.isDragging &&
