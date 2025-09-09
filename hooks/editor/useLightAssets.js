@@ -17,7 +17,6 @@ const LIGHT_CONSTANTS = {
   DEFAULT_SHADOW_OPACITY: 1,
 };
 
-
 export function useLightAssets() {
   // Custom assets state
   const [customAssets, setCustomAssets] = React.useState([]);
@@ -85,6 +84,54 @@ export function useLightAssets() {
       lightImage: require("~/assets/lights/Yellow.png"),
       image: require("~/assets/light-thumbnails/Yellow.png"),
     },
+    {
+      id: "c9-orange-image",
+      name: "Orange",
+      category: "string",
+      type: "c9",
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: 48,
+      renderType: "image",
+      component: ImageLight,
+      lightImage: require("~/assets/lights/Orange.png"),
+      image: require("~/assets/light-thumbnails/Orange.png"),
+    },
+    {
+      id: "c9-cool-white-image",
+      name: "Cool White",
+      category: "string",
+      type: "c9",
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: 48,
+      renderType: "image",
+      component: ImageLight,
+      lightImage: require("~/assets/lights/Cool-White.png"),
+      image: require("~/assets/light-thumbnails/Cool-White.png"),
+    },
+    {
+      id: "c9-purple-image",
+      name: "Purple",
+      category: "string",
+      type: "c9",
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: 48,
+      renderType: "image",
+      component: ImageLight,
+      lightImage: require("~/assets/lights/Purple.png"),
+      image: require("~/assets/light-thumbnails/Purple.png"),
+    },
+    {
+      id: "c9-dark-blue-image",
+      name: "Dark Blue",
+      category: "string",
+      type: "c9",
+      spacing: LIGHT_CONSTANTS.C9_SPACING,
+      baseSize: 48,
+      renderType: "image",
+      component: ImageLight,
+      lightImage: require("~/assets/lights/Dark-Blue.png"),
+      image: require("~/assets/light-thumbnails/Dark-Blue.png"),
+    },
     // Pattern-based lights
     {
       id: "c9-multicolor-pattern",
@@ -132,8 +179,14 @@ export function useLightAssets() {
       pattern: [
         { lightImage: require("~/assets/lights/Red.png"), name: "Red" },
         { lightImage: require("~/assets/lights/Red.png"), name: "Red" },
-        { lightImage: require("~/assets/lights/Warm-White.png"), name: "White" },
-        { lightImage: require("~/assets/lights/Warm-White.png"), name: "White" },
+        {
+          lightImage: require("~/assets/lights/Warm-White.png"),
+          name: "White",
+        },
+        {
+          lightImage: require("~/assets/lights/Warm-White.png"),
+          name: "White",
+        },
       ],
       image: require("~/assets/light-thumbnails/Red-White.png"),
     },
@@ -223,7 +276,6 @@ export function useLightAssets() {
       style.width = glowSize * baseStyle.widthRatio;
     }
 
-
     return style;
   };
 
@@ -286,7 +338,8 @@ export function useLightAssets() {
         image: require("~/assets/light-thumbnails/Custom-Pattern.png"), // Thumbnail for UI
       };
 
-      const savedAsset = await customLightStorage.saveCustomLight(patternAssetData);
+      const savedAsset =
+        await customLightStorage.saveCustomLight(patternAssetData);
 
       // Update local state
       setCustomAssets((prev) => [...prev, savedAsset]);

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ImageLight from '~/components/editor/ImageLight';
 
 export interface CustomLightAsset {
   id: string;
@@ -10,7 +11,8 @@ export interface CustomLightAsset {
   renderType: 'style' | 'pattern';
   renderStyle?: any; // Can be object or function
   component?: any; // For image-based patterns
-  pattern?: Array<{ lightImage: any; name: string }>; // For image-based patterns
+  pattern?: { lightImage: any; name: string }[]; // For image-based patterns
+  image?: any; // Thumbnail image for UI
   createdAt: string;
   isPattern?: boolean;
   patternColors?: string[]; // For color-based patterns (legacy)
@@ -48,8 +50,9 @@ export const customLightStorage = {
 
       const customLights = JSON.parse(data) as CustomLightAsset[];
       
-      // Restore function-based render styles for patterns
+      // Restore function-based render styles for patterns and components for image-based patterns
       const restoredLights = customLights.map(light => {
+        // Restore legacy pattern lights with renderStyle functions
         if (light.isPattern && light.patternColors) {
           return {
             ...light,
@@ -64,6 +67,16 @@ export const customLightStorage = {
             }
           };
         }
+        
+        // Restore image-based patterns with ImageLight component and thumbnail
+        if (light.renderType === 'pattern' && light.pattern) {
+          return {
+            ...light,
+            component: ImageLight,
+            image: require('~/assets/light-thumbnails/Custom-Pattern.png') // Always use default thumbnail
+          };
+        }
+        
         return light;
       });
 
@@ -104,10 +117,11 @@ export const customLightStorage = {
       const existingLights = await this.getCustomLights();
       const updatedLights = [...existingLights, newLight];
 
-      // Prepare for storage (serialize functions)
+      // Prepare for storage (serialize functions and components)
       const lightsForStorage = updatedLights.map(light => ({
         ...light,
         renderStyle: light.isPattern ? undefined : light.renderStyle, // Don't store functions
+        component: undefined, // Don't store React components
       }));
 
       await AsyncStorage.setItem(CUSTOM_LIGHTS_KEY, JSON.stringify(lightsForStorage));
@@ -135,6 +149,7 @@ export const customLightStorage = {
       const lightsForStorage = filteredLights.map(light => ({
         ...light,
         renderStyle: light.isPattern ? undefined : light.renderStyle,
+        component: undefined, // Don't store React components
       }));
 
       await AsyncStorage.setItem(CUSTOM_LIGHTS_KEY, JSON.stringify(lightsForStorage));
@@ -184,6 +199,7 @@ export const customLightStorage = {
       const lightsForStorage = updatedLights.map(light => ({
         ...light,
         renderStyle: light.isPattern ? undefined : light.renderStyle,
+        component: undefined, // Don't store React components
       }));
 
       await AsyncStorage.setItem(CUSTOM_LIGHTS_KEY, JSON.stringify(lightsForStorage));

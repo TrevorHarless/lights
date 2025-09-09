@@ -38,6 +38,26 @@ const AVAILABLE_LIGHTS = [
     lightImage: require('~/assets/lights/Warm-White.png'),
     color: '#FFF8DC'
   },
+  { 
+    name: 'Dark Blue', 
+    lightImage: require('~/assets/lights/Dark-Blue.png'),
+    color: '#00008B'
+  },
+  { 
+    name: 'Orange', 
+    lightImage: require('~/assets/lights/Orange.png'),
+    color: '#FFA500'
+  },
+  { 
+    name: 'Purple', 
+    lightImage: require('~/assets/lights/Purple.png'),
+    color: '#800080'
+  },
+  { 
+    name: 'Cool White', 
+    lightImage: require('~/assets/lights/Cool-White.png'),
+    color: '#F0F8FF'
+  },
 ];
 
 const SPACING_PRESETS = [
@@ -233,7 +253,7 @@ export function CustomPatternModal({
                 fontWeight: '600',
                 color: '#333',
                 marginBottom: isTablet ? 16 : 12,
-              }}>Pattern Name</Text>
+              }}>Pattern Name <Text style={{ color: '#EF4444' }}>*</Text></Text>
               <TextInput
                 style={{
                   borderWidth: 1,
@@ -246,7 +266,7 @@ export function CustomPatternModal({
                 }}
                 value={name}
                 onChangeText={setName}
-                placeholder="Enter pattern name"
+                placeholder="Enter pattern name (required)"
                 placeholderTextColor="#999"
               />
             </View>
