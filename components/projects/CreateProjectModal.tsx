@@ -168,7 +168,7 @@ export default function CreateProjectModal({
                           onChangeText={setNewProjectName}
                           maxLength={50}
                           placeholderTextColor="#9ca3af"
-                          returnKeyType="next"
+                          returnKeyType="done"
                           onSubmitEditing={() => phoneInputRef.current?.focus()}
                         />
 
@@ -182,7 +182,7 @@ export default function CreateProjectModal({
                           keyboardType="phone-pad"
                           maxLength={20}
                           placeholderTextColor="#9ca3af"
-                          returnKeyType="next"
+                          returnKeyType="done"
                           onSubmitEditing={() => emailInputRef.current?.focus()}
                         />
 
@@ -198,7 +198,7 @@ export default function CreateProjectModal({
                           autoCorrect={false}
                           maxLength={100}
                           placeholderTextColor="#9ca3af"
-                          returnKeyType="next"
+                          returnKeyType="done"
                           onSubmitEditing={() =>
                             addressInputRef.current?.focus()
                           }
@@ -213,7 +213,7 @@ export default function CreateProjectModal({
                           onChangeText={setNewProjectAddress}
                           maxLength={200}
                           placeholderTextColor="#9ca3af"
-                          returnKeyType="next"
+                          returnKeyType="done"
                           autoCapitalize="words"
                           onSubmitEditing={() =>
                             descriptionInputRef.current?.focus()
@@ -316,7 +316,7 @@ export default function CreateProjectModal({
                         onChangeText={setNewProjectName}
                         maxLength={50}
                         placeholderTextColor="#9ca3af"
-                        returnKeyType="next"
+                        returnKeyType="done"
                         onSubmitEditing={() => phoneInputRef.current?.focus()}
                       />
 
@@ -330,7 +330,7 @@ export default function CreateProjectModal({
                         keyboardType="phone-pad"
                         maxLength={20}
                         placeholderTextColor="#9ca3af"
-                        returnKeyType="next"
+                        returnKeyType="done"
                         onSubmitEditing={() => addressInputRef.current?.focus()}
                       />
 
@@ -343,7 +343,7 @@ export default function CreateProjectModal({
                         onChangeText={setNewProjectAddress}
                         maxLength={200}
                         placeholderTextColor="#9ca3af"
-                        returnKeyType="next"
+                        returnKeyType="done"
                         autoCapitalize="words"
                         onSubmitEditing={() => emailInputRef.current?.focus()}
                       />
@@ -360,7 +360,7 @@ export default function CreateProjectModal({
                         autoCorrect={false}
                         maxLength={100}
                         placeholderTextColor="#9ca3af"
-                        returnKeyType="next"
+                        returnKeyType="done"
                         onSubmitEditing={() =>
                           descriptionInputRef.current?.focus()
                         }
@@ -486,7 +486,7 @@ export default function CreateProjectModal({
                   onChangeText={setNewProjectName}
                   maxLength={50}
                   placeholderTextColor="#9ca3af"
-                  returnKeyType="next"
+                  returnKeyType="done"
                   onSubmitEditing={() => phoneInputRef.current?.focus()}
                 />
 
@@ -500,7 +500,7 @@ export default function CreateProjectModal({
                   keyboardType="phone-pad"
                   maxLength={20}
                   placeholderTextColor="#9ca3af"
-                  returnKeyType="next"
+                  returnKeyType="done"
                   onSubmitEditing={() => emailInputRef.current?.focus()}
                 />
 
@@ -516,7 +516,7 @@ export default function CreateProjectModal({
                   autoCorrect={false}
                   maxLength={100}
                   placeholderTextColor="#9ca3af"
-                  returnKeyType="next"
+                  returnKeyType="done"
                   onSubmitEditing={() => addressInputRef.current?.focus()}
                 />
 
@@ -529,7 +529,7 @@ export default function CreateProjectModal({
                   onChangeText={setNewProjectAddress}
                   maxLength={200}
                   placeholderTextColor="#9ca3af"
-                  returnKeyType="next"
+                  returnKeyType="done"
                   autoCapitalize="words"
                   onSubmitEditing={() => descriptionInputRef.current?.focus()}
                 />
