@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react";
 import {
   Alert,
   Dimensions,
+  Keyboard,
   Modal,
   SafeAreaView,
   ScrollView,
@@ -169,7 +170,7 @@ export default function CreateProjectModal({
                           maxLength={50}
                           placeholderTextColor="#9ca3af"
                           returnKeyType="done"
-                          onSubmitEditing={() => phoneInputRef.current?.focus()}
+                          onSubmitEditing={Keyboard.dismiss}
                         />
 
                         <TextInput
@@ -183,7 +184,7 @@ export default function CreateProjectModal({
                           maxLength={20}
                           placeholderTextColor="#9ca3af"
                           returnKeyType="done"
-                          onSubmitEditing={() => emailInputRef.current?.focus()}
+                          onSubmitEditing={Keyboard.dismiss}
                         />
 
                         <TextInput
@@ -199,9 +200,7 @@ export default function CreateProjectModal({
                           maxLength={100}
                           placeholderTextColor="#9ca3af"
                           returnKeyType="done"
-                          onSubmitEditing={() =>
-                            addressInputRef.current?.focus()
-                          }
+                          onSubmitEditing={Keyboard.dismiss}
                         />
 
                         <TextInput
@@ -215,9 +214,7 @@ export default function CreateProjectModal({
                           placeholderTextColor="#9ca3af"
                           returnKeyType="done"
                           autoCapitalize="words"
-                          onSubmitEditing={() =>
-                            descriptionInputRef.current?.focus()
-                          }
+                          onSubmitEditing={Keyboard.dismiss}
                         />
 
                         <TextInput
@@ -317,7 +314,7 @@ export default function CreateProjectModal({
                         maxLength={50}
                         placeholderTextColor="#9ca3af"
                         returnKeyType="done"
-                        onSubmitEditing={() => phoneInputRef.current?.focus()}
+                        onSubmitEditing={Keyboard.dismiss}
                       />
 
                       <TextInput
@@ -331,7 +328,7 @@ export default function CreateProjectModal({
                         maxLength={20}
                         placeholderTextColor="#9ca3af"
                         returnKeyType="done"
-                        onSubmitEditing={() => addressInputRef.current?.focus()}
+                        onSubmitEditing={Keyboard.dismiss}
                       />
 
                       <TextInput
@@ -345,7 +342,7 @@ export default function CreateProjectModal({
                         placeholderTextColor="#9ca3af"
                         returnKeyType="done"
                         autoCapitalize="words"
-                        onSubmitEditing={() => emailInputRef.current?.focus()}
+                        onSubmitEditing={Keyboard.dismiss}
                       />
 
                       <TextInput
@@ -361,9 +358,7 @@ export default function CreateProjectModal({
                         maxLength={100}
                         placeholderTextColor="#9ca3af"
                         returnKeyType="done"
-                        onSubmitEditing={() =>
-                          descriptionInputRef.current?.focus()
-                        }
+                        onSubmitEditing={Keyboard.dismiss}
                       />
 
                       <TextInput
@@ -487,7 +482,7 @@ export default function CreateProjectModal({
                   maxLength={50}
                   placeholderTextColor="#9ca3af"
                   returnKeyType="done"
-                  onSubmitEditing={() => phoneInputRef.current?.focus()}
+                  onSubmitEditing={Keyboard.dismiss}
                 />
 
                 <TextInput
@@ -501,7 +496,7 @@ export default function CreateProjectModal({
                   maxLength={20}
                   placeholderTextColor="#9ca3af"
                   returnKeyType="done"
-                  onSubmitEditing={() => emailInputRef.current?.focus()}
+                  onSubmitEditing={Keyboard.dismiss}
                 />
 
                 <TextInput
@@ -517,7 +512,7 @@ export default function CreateProjectModal({
                   maxLength={100}
                   placeholderTextColor="#9ca3af"
                   returnKeyType="done"
-                  onSubmitEditing={() => addressInputRef.current?.focus()}
+                  onSubmitEditing={Keyboard.dismiss}
                 />
 
                 <TextInput
@@ -531,7 +526,7 @@ export default function CreateProjectModal({
                   placeholderTextColor="#9ca3af"
                   returnKeyType="done"
                   autoCapitalize="words"
-                  onSubmitEditing={() => descriptionInputRef.current?.focus()}
+                  onSubmitEditing={Keyboard.dismiss}
                 />
 
                 <TextInput
