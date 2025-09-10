@@ -106,9 +106,6 @@ export function useSingularLights(lightAssets = [], undoSystem = null) {
 
     setSingularLights((prev) => [...prev, newLight]);
 
-    // Optionally auto-select newly created light
-    setSelectedLightId(newLightId);
-
     return newLightId;
   }, [undo]);
 
