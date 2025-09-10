@@ -310,7 +310,15 @@ const ImageViewerContent = ({
       deselectSingularLight();
       deselectMeasurementLine();
       setSelectedDecorId(null);
-      setSelectedAsset(null);
+      
+      // Only clear selected asset if switching to/from a mode that doesn't use light assets
+      // Preserve asset selection when switching between 'string' and 'tap' modes
+      const lightModes = ['string', 'tap'];
+      const isLightModeSwitch = lightModes.includes(interactionMode) && lightModes.includes(newMode);
+      
+      if (!isLightModeSwitch) {
+        setSelectedAsset(null);
+      }
     }
     setInteractionMode(newMode);
   }, [interactionMode, deselectLightString, deselectSingularLight, deselectMeasurementLine, setSelectedDecorId, setSelectedAsset]);

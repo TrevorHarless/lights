@@ -146,8 +146,7 @@ export function useSingularLightGestures({
         }
         // If we have a light asset selected and no light is currently selected, place new light
         else if (selectedAsset && selectedAsset.category === 'string') {
-          const newLightId = addSingularLight(touchPoint, selectedAsset.id, selectedAsset);
-          setSelectedLightId(newLightId);
+          addSingularLight(touchPoint, selectedAsset.id, selectedAsset);
         }
       }
 
