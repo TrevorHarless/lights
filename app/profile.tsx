@@ -541,129 +541,6 @@ Thank you!`;
               </TouchableOpacity>
             </View>
 
-            {/* Legal Links Section */}
-            <View
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.95)",
-                borderRadius: isTablet ? 20 : 16,
-                padding: isTablet ? 28 : 20,
-                marginBottom: sectionSpacing,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.1,
-                shadowRadius: 12,
-                elevation: 6,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: isTablet ? 24 : 20,
-                  fontWeight: "700",
-                  color: "#1f2937",
-                  marginBottom: isTablet ? 16 : 12,
-                }}
-              >
-                Legal Information
-              </Text>
-
-              <TouchableOpacity
-                onPress={async () => {
-                  const url =
-                    "https://gist.github.com/TrevorHarless/05e515acedfa97f122f16b66601b0ce3";
-                  try {
-                    const canOpen = await Linking.canOpenURL(url);
-                    if (canOpen) {
-                      await Linking.openURL(url);
-                    } else {
-                      Alert.alert("Error", "Cannot open Privacy Policy link");
-                    }
-                  } catch {
-                    Alert.alert("Error", "Failed to open Privacy Policy");
-                  }
-                }}
-                style={{
-                  backgroundColor: "#f8f9fa",
-                  borderRadius: 12,
-                  padding: 16,
-                  marginBottom: 12,
-                  borderWidth: 1,
-                  borderColor: "#e5e7eb",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 2,
-                  elevation: 2,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: isTablet ? 16 : 14,
-                    fontWeight: "600",
-                    color: "#374151",
-                    marginBottom: 4,
-                  }}
-                >
-                  Privacy Policy
-                </Text>
-                <Text
-                  style={{
-                    fontSize: isTablet ? 14 : 12,
-                    color: "#6b7280",
-                  }}
-                >
-                  View our privacy policy and data handling practices
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={async () => {
-                  const url =
-                    "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
-                  try {
-                    const canOpen = await Linking.canOpenURL(url);
-                    if (canOpen) {
-                      await Linking.openURL(url);
-                    } else {
-                      Alert.alert("Error", "Cannot open Terms of Use link");
-                    }
-                  } catch {
-                    Alert.alert("Error", "Failed to open Terms of Use");
-                  }
-                }}
-                style={{
-                  backgroundColor: "#f8f9fa",
-                  borderRadius: 12,
-                  padding: 16,
-                  borderWidth: 1,
-                  borderColor: "#e5e7eb",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 2,
-                  elevation: 2,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: isTablet ? 16 : 14,
-                    fontWeight: "600",
-                    color: "#374151",
-                    marginBottom: 4,
-                  }}
-                >
-                  Terms of Use (EULA)
-                </Text>
-                <Text
-                  style={{
-                    fontSize: isTablet ? 14 : 12,
-                    color: "#6b7280",
-                  }}
-                >
-                  View the End User License Agreement
-                </Text>
-              </TouchableOpacity>
-            </View>
-
             {/* Change Password Section */}
             <View
               style={{
@@ -807,6 +684,46 @@ Thank you!`;
               </TouchableOpacity>
             </View>
 
+            {/* Sign Out Section */}
+            <View
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                borderRadius: 16,
+                padding: 20,
+                marginBottom: sectionSpacing,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 12,
+                elevation: 6,
+              }}
+            >
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#ef4444",
+                  borderRadius: 12,
+                  paddingVertical: 14,
+                  alignItems: "center",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 8,
+                  elevation: 6,
+                }}
+                onPress={handleSignOut}
+              >
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 16,
+                    fontWeight: "600",
+                  }}
+                >
+                  Sign Out
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             {/* Clear All Projects Section */}
             <View
               style={{
@@ -872,13 +789,135 @@ Thank you!`;
               </TouchableOpacity>
             </View>
 
+            {/* Legal Links Section */}
+            <View
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                borderRadius: isTablet ? 20 : 16,
+                padding: isTablet ? 28 : 20,
+                marginBottom: sectionSpacing,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 12,
+                elevation: 6,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: isTablet ? 24 : 20,
+                  fontWeight: "700",
+                  color: "#1f2937",
+                  marginBottom: isTablet ? 16 : 12,
+                }}
+              >
+                Legal Information
+              </Text>
+
+              <TouchableOpacity
+                onPress={async () => {
+                  const url =
+                    "https://gist.github.com/TrevorHarless/05e515acedfa97f122f16b66601b0ce3";
+                  try {
+                    const canOpen = await Linking.canOpenURL(url);
+                    if (canOpen) {
+                      await Linking.openURL(url);
+                    } else {
+                      Alert.alert("Error", "Cannot open Privacy Policy link");
+                    }
+                  } catch {
+                    Alert.alert("Error", "Failed to open Privacy Policy");
+                  }
+                }}
+                style={{
+                  backgroundColor: "#f8f9fa",
+                  borderRadius: 12,
+                  padding: 16,
+                  marginBottom: 12,
+                  borderWidth: 1,
+                  borderColor: "#e5e7eb",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 2,
+                  elevation: 2,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: isTablet ? 16 : 14,
+                    fontWeight: "600",
+                    color: "#374151",
+                    marginBottom: 4,
+                  }}
+                >
+                  Privacy Policy
+                </Text>
+                <Text
+                  style={{
+                    fontSize: isTablet ? 14 : 12,
+                    color: "#6b7280",
+                  }}
+                >
+                  View our privacy policy and data handling practices
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={async () => {
+                  const url =
+                    "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
+                  try {
+                    const canOpen = await Linking.canOpenURL(url);
+                    if (canOpen) {
+                      await Linking.openURL(url);
+                    } else {
+                      Alert.alert("Error", "Cannot open Terms of Use link");
+                    }
+                  } catch {
+                    Alert.alert("Error", "Failed to open Terms of Use");
+                  }
+                }}
+                style={{
+                  backgroundColor: "#f8f9fa",
+                  borderRadius: 12,
+                  padding: 16,
+                  borderWidth: 1,
+                  borderColor: "#e5e7eb",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 2,
+                  elevation: 2,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: isTablet ? 16 : 14,
+                    fontWeight: "600",
+                    color: "#374151",
+                    marginBottom: 4,
+                  }}
+                >
+                  Terms of Use (EULA)
+                </Text>
+                <Text
+                  style={{
+                    fontSize: isTablet ? 14 : 12,
+                    color: "#6b7280",
+                  }}
+                >
+                  View the End User License Agreement
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             {/* Delete Account Section */}
             <View
               style={{
                 backgroundColor: "rgba(255, 255, 255, 0.95)",
                 borderRadius: 16,
                 padding: 20,
-                marginBottom: 24,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.1,
@@ -953,45 +992,6 @@ Thank you!`;
                   {deletingAccount
                     ? "Deleting Account..."
                     : "Delete Account Permanently"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Sign Out Section */}
-            <View
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.95)",
-                borderRadius: 16,
-                padding: 20,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.1,
-                shadowRadius: 12,
-                elevation: 6,
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "#ef4444",
-                  borderRadius: 12,
-                  paddingVertical: 14,
-                  alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 8,
-                  elevation: 6,
-                }}
-                onPress={handleSignOut}
-              >
-                <Text
-                  style={{
-                    color: "white",
-                    fontSize: 16,
-                    fontWeight: "600",
-                  }}
-                >
-                  Sign Out
                 </Text>
               </TouchableOpacity>
             </View>
