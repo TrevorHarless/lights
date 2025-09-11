@@ -11,8 +11,6 @@ const EnhancedLightRenderer = ({
   calculateLightPositions,
   getLightSizeScale,
 }) => {
-  const lightScale = getLightSizeScale ? getLightSizeScale() : 1;
-
   // Memoize enhanced light components
   const { lightComponents, selectionLines, currentVectorLine } = useMemo(() => {
     const components = [];
@@ -24,7 +22,11 @@ const EnhancedLightRenderer = ({
       const asset = getAssetById(string.assetId);
       if (!asset) return;
 
-      const positions = calculateLightPositions(string, asset.spacing);
+      // Custom assets should not be affected by reference scale - use scale of 1
+      // Regular assets use the reference scale for real-world sizing
+      const assetLightScale = (asset.type === "custom") ? 1 : (getLightSizeScale ? getLightSizeScale() : 1);
+
+      const positions = calculateLightPositions(string, asset.spacing, asset);
       const isSelected = string.id === selectedStringId;
 
       // Add selection line if selected
@@ -59,7 +61,7 @@ const EnhancedLightRenderer = ({
 
       // Add enhanced lights
       positions.forEach((pos, idx) => {
-        const lightComponent = createEnhancedLight(asset.id, pos, lightScale, idx, `${string.id}-${idx}`);
+        const lightComponent = createEnhancedLight(asset.id, pos, assetLightScale, idx, `${string.id}-${idx}`);
         if (lightComponent) components.push(lightComponent);
       });
     });
@@ -68,7 +70,11 @@ const EnhancedLightRenderer = ({
     if (currentVector && isDragging) {
       const asset = getAssetById(currentVector.assetId);
       if (asset) {
-        const positions = calculateLightPositions(currentVector, asset.spacing);
+        // Custom assets should not be affected by reference scale - use scale of 1
+        // Regular assets use the reference scale for real-world sizing
+        const assetLightScale = (asset.type === "custom") ? 1 : (getLightSizeScale ? getLightSizeScale() : 1);
+        
+        const positions = calculateLightPositions(currentVector, asset.spacing, asset);
         
         // Enhanced dashed line with glow
         const start = currentVector.start;
@@ -105,7 +111,7 @@ const EnhancedLightRenderer = ({
 
         // Add current vector lights with preview opacity
         positions.forEach((pos, idx) => {
-          const lightComponent = createEnhancedLight(asset.id, pos, lightScale, idx, `current-${idx}`, 0.8);
+          const lightComponent = createEnhancedLight(asset.id, pos, assetLightScale, idx, `current-${idx}`, 0.8);
           if (lightComponent) components.push(lightComponent);
         });
       }
@@ -116,7 +122,7 @@ const EnhancedLightRenderer = ({
       selectionLines: lines,
       currentVectorLine: vectorLine,
     };
-  }, [lightStrings, currentVector, isDragging, selectedStringId, getAssetById, calculateLightPositions, lightScale]);
+  }, [lightStrings, currentVector, isDragging, selectedStringId, getAssetById, calculateLightPositions, getLightSizeScale]);
 
   if (!lightComponents.length && !currentVectorLine) {
     return null;

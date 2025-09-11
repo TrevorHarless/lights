@@ -14,15 +14,12 @@ const CanvasRenderer = ({
   width,
   height,
 }) => {
-  const lightScale = getLightSizeScale ? getLightSizeScale() : 1;
-
   // Generate light data for the canvas
   const lightData = useMemo(() => {
     const data = {
       strings: [],
       currentVector: null,
       selectedStringId,
-      scale: lightScale,
       width,
       height,
     };
@@ -32,11 +29,16 @@ const CanvasRenderer = ({
       const asset = getAssetById(string.assetId);
       if (!asset) return;
 
-      const positions = calculateLightPositions(string, asset.spacing);
+      // Custom assets should not be affected by reference scale - use scale of 1
+      // Regular assets use the reference scale for real-world sizing
+      const assetLightScale = (asset.type === "custom") ? 1 : (getLightSizeScale ? getLightSizeScale() : 1);
+
+      const positions = calculateLightPositions(string, asset.spacing, asset);
       data.strings.push({
         id: string.id,
         assetId: asset.id,
         positions: positions,
+        scale: assetLightScale, // Include per-asset scale
         centerOffset: asset.centerOffset || { x: 15, y: 15 },
       });
     });
@@ -45,10 +47,15 @@ const CanvasRenderer = ({
     if (currentVector && isDragging) {
       const asset = getAssetById(currentVector.assetId);
       if (asset) {
-        const positions = calculateLightPositions(currentVector, asset.spacing);
+        // Custom assets should not be affected by reference scale - use scale of 1
+        // Regular assets use the reference scale for real-world sizing
+        const assetLightScale = (asset.type === "custom") ? 1 : (getLightSizeScale ? getLightSizeScale() : 1);
+        
+        const positions = calculateLightPositions(currentVector, asset.spacing, asset);
         data.currentVector = {
           assetId: asset.id,
           positions: positions,
+          scale: assetLightScale, // Include per-asset scale
           centerOffset: asset.centerOffset || { x: 15, y: 15 },
           path: currentVector,
         };
@@ -56,7 +63,7 @@ const CanvasRenderer = ({
     }
 
     return data;
-  }, [lightStrings, currentVector, isDragging, selectedStringId, getAssetById, calculateLightPositions, lightScale, width, height]);
+  }, [lightStrings, currentVector, isDragging, selectedStringId, getAssetById, calculateLightPositions, getLightSizeScale, width, height]);
 
   // HTML content for the WebView with Canvas
   const htmlContent = `

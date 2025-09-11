@@ -152,7 +152,7 @@ export function ModeSelectionPopover({
                 >
                   <MaterialIcons
                     name={mode.icon}
-                    size={isTablet ? 32 : 24}
+                    size={isTablet ? 38 : 24}
                     color={isDisabled ? '#999' : (isSelected ? 'white' : '#666')}
                   />
                 </View>
@@ -160,7 +160,7 @@ export function ModeSelectionPopover({
                 <View style={{ flex: 1, justifyContent: 'center', paddingRight: isTablet ? 16 : 12 }}>
                   <Text
                     style={{
-                      fontSize: isTablet ? 20 : 16,
+                      fontSize: isTablet ? 24 : 16,
                       fontWeight: '600',
                       color: isDisabled ? '#999' : (isSelected ? mode.color : '#333'),
                       marginBottom: isTablet ? 8 : 6,
@@ -170,7 +170,7 @@ export function ModeSelectionPopover({
                   </Text>
                   <Text
                     style={{
-                      fontSize: isTablet ? 16 : 14,
+                      fontSize: isTablet ? 18 : 14,
                       color: isDisabled ? '#BBB' : '#666',
                       lineHeight: isTablet ? 22 : 20,
                       flexWrap: 'wrap',
@@ -208,7 +208,7 @@ export function ModeSelectionPopover({
           >
             <Text
               style={{
-                fontSize: isTablet ? 16 : 14,
+                fontSize: isTablet ? 18 : 14,
                 fontStyle: 'italic',
                 color: '#666',
                 textAlign: 'center',

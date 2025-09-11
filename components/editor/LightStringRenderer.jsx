@@ -15,15 +15,17 @@ const LightStringRenderer = ({
   getSharedGradientDefs, // New prop for shared gradient definitions
   getLightDefinitions, // New prop for light definitions
 }) => {
-  const lightScale = getLightSizeScale ? getLightSizeScale() : 1;
-
   // Memoize light positions for all strings - only recalculate when strings or scale change
   const memoizedLightElements = useMemo(() => {
     return lightStrings.flatMap((string) => {
       const asset = getAssetById(string.assetId);
       if (!asset) return [];
 
-      const positions = calculateLightPositions(string, asset.spacing);
+      // Custom assets should not be affected by reference scale - use scale of 1
+      // Regular assets use the reference scale for real-world sizing
+      const assetLightScale = (asset.type === "custom") ? 1 : (getLightSizeScale ? getLightSizeScale() : 1);
+
+      const positions = calculateLightPositions(string, asset.spacing, asset);
       
       console.log("🔍 LightStringRenderer Debug:", {
         stringId: string.id,
@@ -35,7 +37,7 @@ const LightStringRenderer = ({
       
       return positions.map((pos, idx) => {
         // Temporarily disable instancing to test positioning
-        const scaledOffset = 15 * lightScale;
+        const scaledOffset = 15 * assetLightScale;
         
         if (asset.useInstancing && asset.svg) {
           // If asset has instancing but also has svg fallback, use svg for now
@@ -45,7 +47,7 @@ const LightStringRenderer = ({
               x={pos.x - scaledOffset} 
               y={pos.y - scaledOffset}
             >
-              {asset.svg(lightScale, idx)}
+              {asset.svg(assetLightScale, idx)}
             </G>
           );
         } else if (asset.svg) {
@@ -56,7 +58,7 @@ const LightStringRenderer = ({
               x={pos.x - scaledOffset} 
               y={pos.y - scaledOffset}
             >
-              {asset.svg(lightScale, idx)}
+              {asset.svg(assetLightScale, idx)}
             </G>
           );
         } else {
@@ -65,7 +67,7 @@ const LightStringRenderer = ({
         }
       });
     });
-  }, [lightStrings, lightScale, getAssetById, calculateLightPositions]);
+  }, [lightStrings, getLightSizeScale, getAssetById, calculateLightPositions]);
 
   // Memoize current vector lights - only recalculate when current vector or scale changes
   const memoizedCurrentVectorElements = useMemo(() => {
@@ -74,7 +76,11 @@ const LightStringRenderer = ({
     const asset = getAssetById(currentVector.assetId);
     if (!asset) return [];
 
-    const positions = calculateLightPositions(currentVector, asset.spacing);
+    // Custom assets should not be affected by reference scale - use scale of 1
+    // Regular assets use the reference scale for real-world sizing
+    const assetLightScale = (asset.type === "custom") ? 1 : (getLightSizeScale ? getLightSizeScale() : 1);
+
+    const positions = calculateLightPositions(currentVector, asset.spacing, asset);
     
     console.log("🔍 LightStringRenderer Current Vector Debug:", {
       assetId: currentVector.assetId,
@@ -85,7 +91,7 @@ const LightStringRenderer = ({
 
     return positions.map((pos, idx) => {
       // Temporarily disable instancing to test positioning
-      const scaledOffset = 15 * lightScale;
+      const scaledOffset = 15 * assetLightScale;
       
       if (asset.useInstancing && asset.svg) {
         // If asset has instancing but also has svg fallback, use svg for now
@@ -95,7 +101,7 @@ const LightStringRenderer = ({
             x={pos.x - scaledOffset} 
             y={pos.y - scaledOffset}
           >
-            {asset.svg(lightScale, idx)}
+            {asset.svg(assetLightScale, idx)}
           </G>
         );
       } else if (asset.svg) {
@@ -106,7 +112,7 @@ const LightStringRenderer = ({
             x={pos.x - scaledOffset} 
             y={pos.y - scaledOffset}
           >
-            {asset.svg(lightScale, idx)}
+            {asset.svg(assetLightScale, idx)}
           </G>
         );
       } else {
@@ -114,7 +120,7 @@ const LightStringRenderer = ({
         return null;
       }
     });
-  }, [currentVector, isDragging, lightScale, getAssetById, calculateLightPositions]);
+  }, [currentVector, isDragging, getLightSizeScale, getAssetById, calculateLightPositions]);
 
   // Memoize selection highlighting
   const memoizedSelectionPath = useMemo(() => {
