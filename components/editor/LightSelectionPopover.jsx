@@ -171,7 +171,7 @@ export function LightSelectionPopover({
                 >
                   <Text
                     style={{
-                      fontSize: isTablet ? 18 : 14,
+                      fontSize: isTablet ? 24 : 14,
                       fontWeight: '500',
                       color: selectedCategory === category ? '#3B82F6' : '#6B7280',
                     }}

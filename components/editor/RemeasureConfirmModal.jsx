@@ -1,12 +1,15 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Modal, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Modal, Text, TouchableOpacity, View } from 'react-native';
 
 export function RemeasureConfirmModal({ 
   visible, 
   onCancel, 
   onConfirm 
 }) {
+  const { width } = Dimensions.get('window');
+  const isTablet = width >= 768;
+
   return (
     <Modal
       animationType="fade"
@@ -54,7 +57,7 @@ export function RemeasureConfirmModal({
 
           {/* Title */}
           <Text style={{
-            fontSize: 22,
+            fontSize: isTablet ? 32 : 22,
             fontWeight: '700',
             color: '#1f2937',
             textAlign: 'center',
@@ -66,7 +69,7 @@ export function RemeasureConfirmModal({
 
           {/* Message */}
           <Text style={{
-            fontSize: 16,
+            fontSize: isTablet ? 20 : 16,
             color: '#6b7280',
             textAlign: 'center',
             lineHeight: 22,
@@ -98,7 +101,7 @@ export function RemeasureConfirmModal({
               onPress={onCancel}
             >
               <Text style={{
-                fontSize: 16,
+                fontSize: isTablet ? 18 : 16,
                 fontWeight: '600',
                 color: '#374151',
               }}>
@@ -123,7 +126,7 @@ export function RemeasureConfirmModal({
               onPress={onConfirm}
             >
               <Text style={{
-                fontSize: 16,
+                fontSize: isTablet ? 18 : 16,
                 fontWeight: '600',
                 color: 'white',
               }}>

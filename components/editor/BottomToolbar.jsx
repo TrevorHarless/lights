@@ -112,7 +112,7 @@ export function BottomToolbar({
         >
           <MaterialIcons 
             name="straighten" 
-            size={isTablet ? 40 : 28} 
+            size={isTablet ? 60 : 28} 
             color={hasReference ? '#4CAF50' : (isSettingReference ? '#FF9800' : 'white')} 
           />
         </TouchableOpacity>
@@ -133,7 +133,7 @@ export function BottomToolbar({
               interactionMode === 'measure' ? 'square-foot' : 
               'timeline'
             } 
-            size={isTablet ? 40 : 28} 
+            size={isTablet ? 60 : 28} 
             color={
               interactionMode === 'decor' ? '#FF9800' : 
               interactionMode === 'tap' ? '#00BCD4' : 
@@ -155,7 +155,7 @@ export function BottomToolbar({
         >
           <MaterialIcons 
             name="category" 
-            size={isTablet ? 40 : 28} 
+            size={isTablet ? 60 : 28} 
             color={selectedAsset ? '#4CAF50' : 'white'} 
           />
         </TouchableOpacity>
@@ -172,7 +172,7 @@ export function BottomToolbar({
         >
           <MaterialIcons 
             name="undo" 
-            size={isTablet ? 40 : 28} 
+            size={isTablet ? 60 : 28} 
             color={canUndo ? 'white' : '#666'} 
           />
         </TouchableOpacity>

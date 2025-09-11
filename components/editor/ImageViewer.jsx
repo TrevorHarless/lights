@@ -31,6 +31,7 @@ import { ReferenceModal } from './ReferenceModal';
 import SimpleLightRenderer from './SimpleLightRenderer';
 import SingularLightRenderer from './SingularLightRenderer';
 
+import { EditorProvider, useEditorContext } from '~/contexts/EditorContext';
 import { useDecorAssets } from '~/hooks/editor/useDecorAssets';
 import { useDecorGestures } from '~/hooks/editor/useDecorGestures';
 import { useLightAssets } from '~/hooks/editor/useLightAssets';
@@ -39,7 +40,6 @@ import { useReferenceScale } from '~/hooks/editor/useReferenceScale';
 import { useSingularLightGestures } from '~/hooks/editor/useSingularLightGestures';
 import { useVectorDrawing } from '~/hooks/editor/useVectorDrawing';
 import { lightDataStorage } from '~/services/lightDataStorage';
-import { EditorProvider, useEditorContext } from '~/contexts/EditorContext';
 
 import TutorialOverlay from '~/components/tutorial/TutorialOverlay';
 import { useTutorial } from '~/hooks/tutorial/useTutorial';
@@ -1046,8 +1046,8 @@ const ImageViewerContent = ({
         {nightModeEnabled && (
           <View style={{ 
             position: 'absolute', 
-            top: isTablet ? 84 : 64, 
-            right: 12, 
+            top: isTablet ? 124 : 64, 
+            right: 24, 
             zIndex: 1000 
           }}>
             <View style={{
@@ -1065,17 +1065,17 @@ const ImageViewerContent = ({
               gap: isTablet ? 12 : 8,
             }}>
               <Text style={{
-                fontSize: isTablet ? 16 : 12,
+                fontSize: isTablet ? 20 : 12,
                 fontWeight: '600',
                 color: '#333',
-                minWidth: isTablet ? 40 : 30,
+                minWidth: isTablet ? 50 : 30,
               }}>
                 {Math.round(nightModeIntensity * 100)}%
               </Text>
               
               <Slider
                 style={{
-                  width: isTablet ? 120 : 80,
+                  width: isTablet ? 180 : 80,
                   height: isTablet ? 40 : 30,
                 }}
                 minimumValue={0.1}
@@ -1098,12 +1098,12 @@ const ImageViewerContent = ({
         <TouchableOpacity
           style={{
             position: 'absolute',
-            top: 12,
-            left: 12,
+            top: 24,
+            left: 24,
             zIndex: 1000,
-            width: isTablet ? 60 : 40,
-            height: isTablet ? 60 : 40,
-            borderRadius: isTablet ? 30 : 20,
+            width: isTablet ? 80 : 40,
+            height: isTablet ? 80 : 40,
+            borderRadius: isTablet ? 40 : 20,
             backgroundColor: 'rgba(255, 255, 255, 0.9)',
             justifyContent: 'center',
             alignItems: 'center',
@@ -1116,20 +1116,20 @@ const ImageViewerContent = ({
           onPress={onGoBack}>
           <MaterialIcons
             name="arrow-back"
-            size={isTablet ? 32 : 22}
+            size={isTablet ? 48 : 22}
             color="#333"
           />
         </TouchableOpacity>
 
         {/* Top Right Button Group */}
-        <View style={{ position: 'absolute', top: 12, right: 12, zIndex: 1000 }}>
+        <View style={{ position: 'absolute', top: 24, right: 24, zIndex: 1000 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: isTablet ? 16 : 8 }}>
             {/* Night Mode Toggle */}
             <TouchableOpacity
               style={{
-                width: isTablet ? 60 : 40,
-                height: isTablet ? 60 : 40,
-                borderRadius: isTablet ? 30 : 20,
+                width: isTablet ? 80 : 40,
+                height: isTablet ? 80 : 40,
+                borderRadius: isTablet ? 40 : 20,
                 backgroundColor: nightModeEnabled ? 'rgba(25, 25, 50, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -1142,7 +1142,7 @@ const ImageViewerContent = ({
               onPress={toggleNightMode}>
               <MaterialIcons
                 name={nightModeEnabled ? 'wb-sunny' : 'nightlight-round'}
-                size={isTablet ? 32 : 22}
+                size={isTablet ? 48 : 22}
                 color={nightModeEnabled ? '#FFD700' : '#333'}
               />
             </TouchableOpacity>
@@ -1152,9 +1152,9 @@ const ImageViewerContent = ({
               onPress={handleSaveProject}
               disabled={isSaving}
               style={{
-                width: isTablet ? 60 : 40,
-                height: isTablet ? 60 : 40,
-                borderRadius: isTablet ? 30 : 20,
+                width: isTablet ? 80 : 40,
+                height: isTablet ? 80 : 40,
+                borderRadius: isTablet ? 40 : 20,
                 backgroundColor: hasUnsavedChanges 
                   ? 'rgba(59, 130, 246, 0.9)' // Blue when unsaved changes
                   : 'rgba(34, 197, 94, 0.9)', // Green when saved
@@ -1171,7 +1171,7 @@ const ImageViewerContent = ({
               ) : (
                 <MaterialIcons 
                   name={hasUnsavedChanges ? "save" : "check"} 
-                  size={isTablet ? 32 : 22} 
+                  size={isTablet ? 48 : 22} 
                   color="white" 
                 />
               )}
@@ -1182,9 +1182,9 @@ const ImageViewerContent = ({
               onPress={handleExport}
               disabled={isExporting}
               style={{
-                width: isTablet ? 60 : 40,
-                height: isTablet ? 60 : 40,
-                borderRadius: isTablet ? 30 : 20,
+                width: isTablet ? 80 : 40,
+                height: isTablet ? 80 : 40,
+                borderRadius: isTablet ? 40 : 20,
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -1197,7 +1197,7 @@ const ImageViewerContent = ({
               {isExporting ? (
                 <ActivityIndicator size={isTablet ? "large" : "small"} color="#333" />
               ) : (
-                <MaterialIcons name="file-download" size={isTablet ? 32 : 22} color="#333" />
+                <MaterialIcons name="file-download" size={isTablet ? 48 : 22} color="#333" />
               )}
             </TouchableOpacity>
 
@@ -1205,9 +1205,9 @@ const ImageViewerContent = ({
             <TouchableOpacity
               onPress={resetZoom}
               style={{
-                width: isTablet ? 60 : 40,
-                height: isTablet ? 60 : 40,
-                borderRadius: isTablet ? 30 : 20,
+                width: isTablet ? 80 : 40,
+                height: isTablet ? 80 : 40,
+                borderRadius: isTablet ? 40 : 20,
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -1217,16 +1217,16 @@ const ImageViewerContent = ({
                 shadowRadius: 4,
                 elevation: 4,
               }}>
-              <MaterialIcons name="zoom-out-map" size={isTablet ? 32 : 22} color="#333" />
+              <MaterialIcons name="zoom-out-map" size={isTablet ? 48 : 22} color="#333" />
             </TouchableOpacity>
 
             {/* Menu Button */}
             <TouchableOpacity 
               onPress={() => setIsMenuExpanded(!isMenuExpanded)} 
               style={{
-                width: isTablet ? 60 : 40,
-                height: isTablet ? 60 : 40,
-                borderRadius: isTablet ? 30 : 20,
+                width: isTablet ? 80 : 40,
+                height: isTablet ? 80 : 40,
+                borderRadius: isTablet ? 40 : 20,
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -1236,7 +1236,7 @@ const ImageViewerContent = ({
                 shadowRadius: 4,
                 elevation: 4,
               }}>
-              <MaterialIcons name={isMenuExpanded ? 'close' : 'more-horiz'} size={isTablet ? 32 : 22} color="#333" />
+              <MaterialIcons name={isMenuExpanded ? 'close' : 'more-horiz'} size={isTablet ? 48 : 22} color="#333" />
             </TouchableOpacity>
           </View>
 
@@ -1244,7 +1244,7 @@ const ImageViewerContent = ({
           {isMenuExpanded && (
             <View style={{ 
               position: 'absolute', 
-              top: isTablet ? 70 : 50, 
+              top: isTablet ? 212 : 50, 
               right: 0, 
               minWidth: isTablet ? 200 : 120,
             }}>
@@ -1268,7 +1268,7 @@ const ImageViewerContent = ({
                   marginLeft: isTablet ? 20 : 8, 
                   fontWeight: '600', 
                   color: '#EF4444', 
-                  fontSize: isTablet ? 20 : 14 
+                  fontSize: isTablet ? 24 : 14 
                 }}>
                   Clear All Lights & Decor
                 </Text>
@@ -1299,7 +1299,7 @@ const ImageViewerContent = ({
                   marginLeft: isTablet ? 20 : 8, 
                   fontWeight: '600', 
                   color: '#2196F3', 
-                  fontSize: isTablet ? 20 : 14 
+                  fontSize: isTablet ? 24 : 14 
                 }}>
                   Restart Tutorial
                 </Text>

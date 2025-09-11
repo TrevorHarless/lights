@@ -135,7 +135,7 @@ export function ReferenceModal({ visible, onClose, onConfirm, onCancel }) {
           {/* Input Section */}
           <View style={{ width: '100%', marginBottom: isTablet ? 40 : 32 }}>
             <Text style={{
-              fontSize: isTablet ? 18 : 14,
+              fontSize: isTablet ? 20 : 14,
               fontWeight: '600',
               color: '#374151',
               marginBottom: isTablet ? 12 : 8,
@@ -170,7 +170,7 @@ export function ReferenceModal({ visible, onClose, onConfirm, onCancel }) {
               selectTextOnFocus
             />
             <Text style={{
-              fontSize: isTablet ? 16 : 12,
+              fontSize: isTablet ? 18 : 12,
               color: '#9ca3af',
               textAlign: 'center',
               marginTop: isTablet ? 12 : 8,
