@@ -12,8 +12,6 @@ const SimpleLightRenderer = ({
   getLightSizeScale,
   getLightRenderStyle,
 }) => {
-  const lightScale = getLightSizeScale ? getLightSizeScale() : 1;
-
   // Memoize all light positions and styles - MUCH simpler than SVG
   const { lightViews, selectionLines, selectionHandles, currentVectorLine } = useMemo(() => {
     const views = [];
@@ -26,7 +24,11 @@ const SimpleLightRenderer = ({
       const asset = getAssetById(string.assetId);
       if (!asset) return;
 
-      const positions = calculateLightPositions(string, asset.spacing);
+      // Custom assets should not be affected by reference scale - use scale of 1
+      // Regular assets use the reference scale for real-world sizing
+      const assetLightScale = (asset.type === "custom") ? 1 : (getLightSizeScale ? getLightSizeScale() : 1);
+
+      const positions = calculateLightPositions(string, asset.spacing, asset);
       const isSelected = string.id === selectedStringId;
 
       // Add selection line if selected
@@ -53,8 +55,21 @@ const SimpleLightRenderer = ({
           />
         );
 
-        // Add handles at start and end points
-        const handleSize = 10;
+        // Add handles at start and end points - size based on light asset size
+        // Get the actual light size from the asset
+        let lightWidth = 10; // fallback size
+        if (asset.renderType === 'style' || (!asset.renderType && positions.length > 0)) {
+          const lightStyle = getLightRenderStyle ? getLightRenderStyle(asset.id, assetLightScale, 0) : getFallbackStyle(asset.id, assetLightScale);
+          if (lightStyle && lightStyle.width) {
+            lightWidth = lightStyle.width;
+          }
+        } else if (asset.baseSize) {
+          // For component/image rendering, estimate size from baseSize
+          lightWidth = asset.baseSize * 2 * assetLightScale; // baseSize * GLOW_MULTIPLIER * scale
+        }
+        
+        // Handle size should be at least as large as the light, with a minimum of 10px and maximum of 30px
+        const handleSize = Math.max(10, Math.min(30, lightWidth * 1.2));
         const handleRadius = handleSize / 2;
         
         // Start handle
@@ -113,7 +128,7 @@ const SimpleLightRenderer = ({
             <LightComponent
               key={`${string.id}-${idx}`}
               position={pos}
-              scale={lightScale}
+              scale={assetLightScale}
               opacity={1}
             />
           );
@@ -124,7 +139,7 @@ const SimpleLightRenderer = ({
             <ImageComponent
               key={`${string.id}-${idx}`}
               position={pos}
-              scale={lightScale}
+              scale={assetLightScale}
               opacity={1}
               imageSource={asset.lightImage}
             />
@@ -137,14 +152,14 @@ const SimpleLightRenderer = ({
             <ImageComponent
               key={`${string.id}-${idx}`}
               position={pos}
-              scale={lightScale}
+              scale={assetLightScale}
               opacity={1}
               imageSource={patternStep.lightImage}
             />
           );
         } else {
           // Handle traditional style-based rendering
-          const lightStyle = getLightRenderStyle ? getLightRenderStyle(asset.id, lightScale, idx) : getFallbackStyle(asset.id, lightScale);
+          const lightStyle = getLightRenderStyle ? getLightRenderStyle(asset.id, assetLightScale, idx) : getFallbackStyle(asset.id, assetLightScale);
           if (lightStyle) {
             views.push(
               <View
@@ -168,7 +183,11 @@ const SimpleLightRenderer = ({
     if (currentVector && isDragging) {
       const asset = getAssetById(currentVector.assetId);
       if (asset) {
-        const positions = calculateLightPositions(currentVector, asset.spacing);
+        // Custom assets should not be affected by reference scale - use scale of 1
+        // Regular assets use the reference scale for real-world sizing
+        const assetLightScale = (asset.type === "custom") ? 1 : (getLightSizeScale ? getLightSizeScale() : 1);
+        
+        const positions = calculateLightPositions(currentVector, asset.spacing, asset);
         
         // Add dashed line (simplified as multiple small rectangles)
         const start = currentVector.start;
@@ -210,7 +229,7 @@ const SimpleLightRenderer = ({
               <LightComponent
                 key={`current-${idx}`}
                 position={pos}
-                scale={lightScale}
+                scale={assetLightScale}
                 opacity={0.8} // Slightly transparent for preview
               />
             );
@@ -221,7 +240,7 @@ const SimpleLightRenderer = ({
               <ImageComponent
                 key={`current-${idx}`}
                 position={pos}
-                scale={lightScale}
+                scale={assetLightScale}
                 opacity={0.8} // Slightly transparent for preview
                 imageSource={asset.lightImage}
               />
@@ -234,14 +253,14 @@ const SimpleLightRenderer = ({
               <ImageComponent
                 key={`current-${idx}`}
                 position={pos}
-                scale={lightScale}
+                scale={assetLightScale}
                 opacity={0.8} // Slightly transparent for preview
                 imageSource={patternStep.lightImage}
               />
             );
           } else {
             // Handle traditional style-based rendering for preview
-            const lightStyle = getLightRenderStyle ? getLightRenderStyle(asset.id, lightScale, idx) : getFallbackStyle(asset.id, lightScale);
+            const lightStyle = getLightRenderStyle ? getLightRenderStyle(asset.id, assetLightScale, idx) : getFallbackStyle(asset.id, assetLightScale);
             if (lightStyle) {
               views.push(
                 <View
@@ -269,7 +288,7 @@ const SimpleLightRenderer = ({
       selectionHandles: handles,
       currentVectorLine: vectorLine,
     };
-  }, [lightStrings, currentVector, isDragging, selectedStringId, getAssetById, calculateLightPositions, lightScale, getLightRenderStyle]);
+  }, [lightStrings, currentVector, isDragging, selectedStringId, getAssetById, calculateLightPositions, getLightSizeScale, getLightRenderStyle]);
 
   if (!lightViews.length && !currentVectorLine) {
     return null;

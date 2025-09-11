@@ -229,7 +229,7 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoS
 
   // Calculate positions for lights along a vector
   const calculateLightPositions = useCallback(
-    (vector, assetSpacing) => {
+    (vector, assetSpacing, asset = null) => {
       if (!vector) return [];
 
       const { start, end } = vector;
@@ -237,8 +237,13 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoS
       const dy = end.y - start.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      // Use scaled spacing if available, otherwise use asset default spacing
-      const spacing = getScaledSpacing ? getScaledSpacing() : assetSpacing;
+      // For custom assets, use their exact spacing. For regular assets, use scaled spacing.
+      let spacing;
+      if (asset && asset.type === "custom") {
+        spacing = assetSpacing; // Use custom asset spacing directly
+      } else {
+        spacing = getScaledSpacing ? getScaledSpacing() : assetSpacing; // Use scaled spacing for regular assets
+      }
 
       // Calculate how many lights to place
       const count = Math.floor(distance / spacing);

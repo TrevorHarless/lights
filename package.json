@@ -35,6 +35,7 @@
     "expo-router": "~5.1.5",
     "expo-splash-screen": "~0.30.10",
     "expo-status-bar": "~2.2.3",
+    "expo-updates": "~0.28.17",
     "jest-expo": "53.0.10",
     "nativewind": "^4.1.23",
     "react": "19.0.0",
@@ -53,8 +54,7 @@
     "react-native-view-shot": "^4.0.3",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
-    "expo-updates": "~0.28.17",
-    "expo-blur": "~14.1.5"
+    "reanimated-color-picker": "^4.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
