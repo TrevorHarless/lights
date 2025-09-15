@@ -54,6 +54,9 @@ class SyncService {
               email: localProject.email,
               image_url: imageUrl,
               image_path: imagePath,
+              status: localProject.status,
+              latitude: localProject.latitude,
+              longitude: localProject.longitude,
             };
 
             const { data, error } = await supabase
@@ -117,6 +120,9 @@ class SyncService {
                 email: localProject.email,
                 image_url: imageUrl,
                 image_path: imagePath,
+                status: localProject.status,
+                latitude: localProject.latitude,
+                longitude: localProject.longitude,
               })
               .eq('id', localProject.id);
 

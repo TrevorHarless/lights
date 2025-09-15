@@ -1,3 +1,5 @@
+export type ProjectStatus = 'Lead' | 'Estimate Sent' | 'Approved' | 'Scheduled' | 'Installed' | 'Taken Down'
+
 export interface LightString {
   id: string
   start: { x: number; y: number }
@@ -55,8 +57,11 @@ export interface Project {
   name: string
   description?: string
   address?: string
+  latitude?: number
+  longitude?: number
   phone_number?: string
   email?: string
+  status: ProjectStatus
   image_url?: string
   image_path?: string
   image_url_expires_at?: string  // When current URL expires
@@ -70,8 +75,11 @@ export interface CreateProjectData {
   name: string
   description?: string
   address?: string
+  latitude?: number
+  longitude?: number
   phone_number?: string
   email?: string
+  status?: ProjectStatus
   image_url?: string
   image_path?: string
 }
@@ -80,8 +88,11 @@ export interface UpdateProjectData {
   name?: string
   description?: string
   address?: string
+  latitude?: number
+  longitude?: number
   phone_number?: string
   email?: string
+  status?: ProjectStatus
   image_url?: string
   image_path?: string
 }

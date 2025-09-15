@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -13,8 +13,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import LocationInput from "~/components/LocationInput";
 import { imageUploadService } from "~/services/imageUpload";
-import { Project } from "~/types/project";
+import { Project, ProjectStatus } from "~/types/project";
+import { getStatusColor } from "~/utils/statusColors";
 
 interface CreateProjectModalProps {
   visible: boolean;
@@ -32,8 +34,16 @@ export default function CreateProjectModal({
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectDescription, setNewProjectDescription] = useState("");
   const [newProjectAddress, setNewProjectAddress] = useState("");
+  const [newProjectLatitude, setNewProjectLatitude] = useState<
+    number | undefined
+  >();
+  const [newProjectLongitude, setNewProjectLongitude] = useState<
+    number | undefined
+  >();
   const [newProjectPhone, setNewProjectPhone] = useState("");
   const [newProjectEmail, setNewProjectEmail] = useState("");
+  const [newProjectStatus, setNewProjectStatus] =
+    useState<ProjectStatus>("Lead");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
@@ -44,17 +54,155 @@ export default function CreateProjectModal({
   // Refs for keyboard navigation
   const nameInputRef = useRef<TextInput>(null);
   const descriptionInputRef = useRef<TextInput>(null);
-  const addressInputRef = useRef<TextInput>(null);
   const phoneInputRef = useRef<TextInput>(null);
   const emailInputRef = useRef<TextInput>(null);
+
+  const statusOptions: ProjectStatus[] = [
+    "Lead",
+    "Estimate Sent",
+    "Approved",
+    "Scheduled",
+    "Installed",
+    "Taken Down",
+  ];
+
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const StatusPicker = ({ className }: { className?: string }) => (
+    <View className={`${className} mb-5`}>
+      <View style={{ position: "relative" }}>
+        <TouchableOpacity
+          onPress={() => setShowDropdown(!showDropdown)}
+          style={{
+            backgroundColor: getStatusColor(newProjectStatus).bg,
+            borderColor: getStatusColor(newProjectStatus).text,
+            borderWidth: 1,
+            borderRadius: 12,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={{
+              color: getStatusColor(newProjectStatus).text,
+              fontSize: 16,
+              fontWeight: "600",
+            }}
+          >
+            {newProjectStatus}
+          </Text>
+          <Text
+            style={{
+              color: getStatusColor(newProjectStatus).text,
+              fontSize: 18,
+              transform: [{ rotate: showDropdown ? "180deg" : "0deg" }],
+            }}
+          >
+            ▼
+          </Text>
+        </TouchableOpacity>
+
+        {showDropdown && (
+          <View
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              right: 0,
+              backgroundColor: "white",
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: "#e5e7eb",
+              marginTop: 4,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              elevation: 8,
+              zIndex: 1000,
+            }}
+          >
+            {statusOptions.map((status, index) => (
+              <TouchableOpacity
+                key={status}
+                onPress={() => {
+                  setNewProjectStatus(status);
+                  setShowDropdown(false);
+                }}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderBottomWidth: index < statusOptions.length - 1 ? 1 : 0,
+                  borderBottomColor: "#f3f4f6",
+                  backgroundColor:
+                    newProjectStatus === status
+                      ? `${getStatusColor(status).bg}40`
+                      : "white",
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View
+                    style={{
+                      backgroundColor: getStatusColor(status).bg,
+                      paddingHorizontal: 8,
+                      paddingVertical: 4,
+                      borderRadius: 6,
+                      marginRight: 12,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: getStatusColor(status).text,
+                        fontSize: 12,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {status}
+                    </Text>
+                  </View>
+                  {newProjectStatus === status && (
+                    <Text
+                      style={{
+                        color: getStatusColor(status).text,
+                        fontSize: 16,
+                      }}
+                    >
+                      ✓
+                    </Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+    </View>
+  );
 
   const clearForm = () => {
     setNewProjectName("");
     setNewProjectDescription("");
     setNewProjectAddress("");
+    setNewProjectLatitude(undefined);
+    setNewProjectLongitude(undefined);
     setNewProjectPhone("");
     setNewProjectEmail("");
+    setNewProjectStatus("Lead");
     setSelectedImage(null);
+    setShowDropdown(false);
+  };
+
+  const handleLocationSelect = (
+    address: string,
+    latitude?: number,
+    longitude?: number
+  ) => {
+    setNewProjectAddress(address);
+    setNewProjectLatitude(latitude);
+    setNewProjectLongitude(longitude);
   };
 
   const handlePickImage = async () => {
@@ -85,8 +233,11 @@ export default function CreateProjectModal({
         name: newProjectName.trim(),
         description: newProjectDescription.trim() || undefined,
         address: newProjectAddress.trim() || undefined,
+        latitude: newProjectLatitude,
+        longitude: newProjectLongitude,
         phone_number: newProjectPhone.trim() || undefined,
         email: newProjectEmail.trim() || undefined,
+        status: newProjectStatus,
         image_url: selectedImage || undefined, // Use local image initially
         image_path: undefined, // Will be set after server upload
         created_at: new Date().toISOString(),
@@ -109,6 +260,13 @@ export default function CreateProjectModal({
     onClose();
     clearForm();
   };
+
+  // Close dropdown when modal visibility changes
+  useEffect(() => {
+    if (!visible) {
+      setShowDropdown(false);
+    }
+  }, [visible]);
 
   return (
     <Modal
@@ -152,7 +310,12 @@ export default function CreateProjectModal({
                 </View>
               </View>
 
-              <ScrollView>
+              <ScrollView
+                nestedScrollEnabled={false}
+                scrollEnabled={false}
+                keyboardShouldPersistTaps="always"
+                keyboardDismissMode="none"
+              >
                 <View
                   className={`p-8 ${isTablet && isLandscape ? "flex-row space-x-6" : ""}`}
                 >
@@ -171,6 +334,15 @@ export default function CreateProjectModal({
                           placeholderTextColor="#9ca3af"
                           returnKeyType="done"
                           onSubmitEditing={Keyboard.dismiss}
+                        />
+
+                        <StatusPicker />
+
+                        <LocationInput
+                          value={newProjectAddress}
+                          onLocationSelect={handleLocationSelect}
+                          placeholder="Project address (optional)"
+                          className="mb-2"
                         />
 
                         <TextInput
@@ -200,20 +372,6 @@ export default function CreateProjectModal({
                           maxLength={100}
                           placeholderTextColor="#9ca3af"
                           returnKeyType="done"
-                          onSubmitEditing={Keyboard.dismiss}
-                        />
-
-                        <TextInput
-                          ref={addressInputRef}
-                          className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-4 text-gray-800 mb-5"
-                          style={{ fontSize: 16, fontWeight: "500" }}
-                          placeholder="Project address (optional)"
-                          value={newProjectAddress}
-                          onChangeText={setNewProjectAddress}
-                          maxLength={200}
-                          placeholderTextColor="#9ca3af"
-                          returnKeyType="done"
-                          autoCapitalize="words"
                           onSubmitEditing={Keyboard.dismiss}
                         />
 
@@ -317,6 +475,15 @@ export default function CreateProjectModal({
                         onSubmitEditing={Keyboard.dismiss}
                       />
 
+                      <StatusPicker />
+
+                      <LocationInput
+                        value={newProjectAddress}
+                        onLocationSelect={handleLocationSelect}
+                        placeholder="Project address (optional)"
+                        className="mb-2"
+                      />
+
                       <TextInput
                         ref={phoneInputRef}
                         className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
@@ -328,20 +495,6 @@ export default function CreateProjectModal({
                         maxLength={20}
                         placeholderTextColor="#9ca3af"
                         returnKeyType="done"
-                        onSubmitEditing={Keyboard.dismiss}
-                      />
-
-                      <TextInput
-                        ref={addressInputRef}
-                        className="bg-gray-50/80 border border-gray-300 rounded-2xl px-6 py-5 text-gray-800 mb-6"
-                        style={{ fontSize: 18, fontWeight: "500" }}
-                        placeholder="Project address (optional)"
-                        value={newProjectAddress}
-                        onChangeText={setNewProjectAddress}
-                        maxLength={200}
-                        placeholderTextColor="#9ca3af"
-                        returnKeyType="done"
-                        autoCapitalize="words"
                         onSubmitEditing={Keyboard.dismiss}
                       />
 
@@ -470,7 +623,13 @@ export default function CreateProjectModal({
               </View>
             </View>
 
-            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+            <ScrollView
+              className="flex-1"
+              nestedScrollEnabled={false}
+              scrollEnabled={false}
+              keyboardShouldPersistTaps="always"
+              keyboardDismissMode="none"
+            >
               <View className="p-6 space-y-6">
                 <TextInput
                   ref={nameInputRef}
@@ -483,6 +642,15 @@ export default function CreateProjectModal({
                   placeholderTextColor="#9ca3af"
                   returnKeyType="done"
                   onSubmitEditing={Keyboard.dismiss}
+                />
+
+                <StatusPicker />
+
+                <LocationInput
+                  value={newProjectAddress}
+                  onLocationSelect={handleLocationSelect}
+                  placeholder="Project address (optional)"
+                  className="mb-2"
                 />
 
                 <TextInput
@@ -512,20 +680,6 @@ export default function CreateProjectModal({
                   maxLength={100}
                   placeholderTextColor="#9ca3af"
                   returnKeyType="done"
-                  onSubmitEditing={Keyboard.dismiss}
-                />
-
-                <TextInput
-                  ref={addressInputRef}
-                  className="bg-gray-50/80 border border-gray-300 rounded-2xl px-5 py-4 text-gray-800 mb-5"
-                  style={{ fontSize: 16, fontWeight: "500" }}
-                  placeholder="Project address (optional)"
-                  value={newProjectAddress}
-                  onChangeText={setNewProjectAddress}
-                  maxLength={200}
-                  placeholderTextColor="#9ca3af"
-                  returnKeyType="done"
-                  autoCapitalize="words"
                   onSubmitEditing={Keyboard.dismiss}
                 />
 
@@ -568,24 +722,24 @@ export default function CreateProjectModal({
                         }}
                       />
                       <View className="flex-1">
-                        <Text className="text-gray-700 font-semibold text-base mb-1">
+                        <Text className="text-gray-700 font-semibold text-sm mb-1">
                           Project Photo Added
                         </Text>
-                        <Text className="text-gray-500 text-sm">
+                        <Text className="text-gray-500 text-xs">
                           Tap to change photo
                         </Text>
                       </View>
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
-                      className="border-2 border-dashed border-gray-300 bg-gray-50/50 rounded-2xl p-8 items-center"
+                      className="border-2 border-dashed border-gray-300 bg-gray-50/50 rounded-2xl p-4 items-center"
                       onPress={handlePickImage}
                     >
-                      <Text className="text-4xl mb-3">📸</Text>
-                      <Text className="text-gray-700 font-semibold text-base mb-1">
+                      <Text className="text-2xl mb-2">📸</Text>
+                      <Text className="text-gray-700 font-semibold text-sm mb-1">
                         Add Project Photo
                       </Text>
-                      <Text className="text-gray-500 text-sm text-center">
+                      <Text className="text-gray-500 text-xs text-center">
                         Choose from your photo library
                       </Text>
                     </TouchableOpacity>
@@ -594,7 +748,7 @@ export default function CreateProjectModal({
 
                 {/* Large Create Button */}
                 <TouchableOpacity
-                  className={`mt-8 rounded-2xl py-4 px-8 items-center shadow-lg ${
+                  className={`mt-4 rounded-2xl py-4 px-8 items-center shadow-lg ${
                     creating || !newProjectName.trim()
                       ? "bg-gray-300"
                       : "bg-primary-600 active:bg-primary-700"

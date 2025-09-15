@@ -2,6 +2,7 @@ import { supabase } from '~/lib/supabase';
 import { CreateProjectData, Project } from '~/types/project';
 import { imageUploadService } from './imageUpload';
 import { localStorageService } from './localStorage';
+import { locationService } from './location';
 
 export const projectsService = {
   async getProjects(): Promise<{ data: Project[] | null; error: any }> {
@@ -96,6 +97,27 @@ export const projectsService = {
       return { data: null, error: { message: 'User not authenticated' } }
     }
 
+    // Try to geocode address if provided but no coordinates
+    let latitude = projectData.latitude;
+    let longitude = projectData.longitude;
+    
+    if (projectData.address && (!latitude || !longitude)) {
+      console.log('🌍 Geocoding address for new project:', projectData.address);
+      try {
+        const geocodeResult = await locationService.geocodeAddress(projectData.address);
+        if (geocodeResult) {
+          latitude = geocodeResult.coordinates.latitude;
+          longitude = geocodeResult.coordinates.longitude;
+          console.log('✅ Geocoded coordinates:', { latitude, longitude });
+        } else {
+          console.warn('⚠️ Failed to geocode address:', projectData.address);
+        }
+      } catch (error) {
+        console.error('❌ Geocoding error:', error);
+        // Continue without coordinates rather than failing
+      }
+    }
+
     const { data, error } = await supabase
       .from('projects')
       .insert([
@@ -104,8 +126,11 @@ export const projectsService = {
           name: projectData.name,
           description: projectData.description || null,
           address: projectData.address || null,
+          latitude: latitude || null,
+          longitude: longitude || null,
           phone_number: projectData.phone_number || null,
           email: projectData.email || null,
+          status: projectData.status || 'Lead',
           image_url: projectData.image_url || null,
           image_path: projectData.image_path || null,
         }
@@ -149,9 +174,32 @@ export const projectsService = {
   },
 
   async updateProject(projectId: string, updates: Partial<CreateProjectData>): Promise<{ data: Project | null; error: any }> {
+    // Try to geocode address if it's being updated but no coordinates provided
+    let updatedData = { ...updates };
+    
+    if (updates.address && (!updates.latitude || !updates.longitude)) {
+      console.log('🌍 Geocoding updated address:', updates.address);
+      try {
+        const geocodeResult = await locationService.geocodeAddress(updates.address);
+        if (geocodeResult) {
+          updatedData.latitude = geocodeResult.coordinates.latitude;
+          updatedData.longitude = geocodeResult.coordinates.longitude;
+          console.log('✅ Geocoded coordinates for update:', { 
+            latitude: updatedData.latitude, 
+            longitude: updatedData.longitude 
+          });
+        } else {
+          console.warn('⚠️ Failed to geocode updated address:', updates.address);
+        }
+      } catch (error) {
+        console.error('❌ Geocoding error during update:', error);
+        // Continue without coordinates rather than failing
+      }
+    }
+
     const { data, error } = await supabase
       .from('projects')
-      .update(updates)
+      .update(updatedData)
       .eq('id', projectId)
       .select()
       .single()
