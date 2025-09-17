@@ -26,6 +26,7 @@ import { DecorRenderer } from './DecorRenderer';
 import { FloatingSelectionControls } from './FloatingSelectionControls';
 import { ImageWithNightOverlay } from './ImageWithNightOverlay';
 import { MeasureLineRenderer } from './MeasureLineRenderer';
+import PriceEstimationModal from './PriceEstimationModal';
 import { ReferenceLineRenderer } from './ReferenceLineRenderer';
 import { ReferenceModal } from './ReferenceModal';
 import SimpleLightRenderer from './SimpleLightRenderer';
@@ -107,7 +108,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
 
   // Wrap with EditorProvider using the SAME reference scale instance
   return (
-    <EditorProvider lightAssets={lightAssets} getScaledSpacing={getScaledLightSpacing}>
+    <EditorProvider lightAssets={lightAssets} getScaledSpacing={getScaledLightSpacing} getLightSizeScale={getLightSizeScale}>
       <ImageViewerContent
         imgSource={imgSource}
         onGoBack={onGoBack}
@@ -623,6 +624,9 @@ const ImageViewerContent = ({
   // State for clear all confirmation
   const [showClearAllModal, setShowClearAllModal] = useState(false);
 
+  // State for price estimation modal
+  const [showPriceEstimationModal, setShowPriceEstimationModal] = useState(false);
+
   // Debug: Set to true to show touchable areas for singular lights
   const showTouchableAreas = false;
 
@@ -933,6 +937,16 @@ const ImageViewerContent = ({
   const handleClearAllRequest = () => {
     setIsMenuExpanded(false);
     setShowClearAllModal(true);
+  };
+
+  // Price estimation handlers
+  const handlePriceEstimationRequest = () => {
+    setIsMenuExpanded(false);
+    setShowPriceEstimationModal(true);
+  };
+
+  const handlePriceEstimationClose = () => {
+    setShowPriceEstimationModal(false);
   };
 
   const handleClearAllCancel = () => {
@@ -1248,6 +1262,34 @@ const ImageViewerContent = ({
               right: 0, 
               minWidth: isTablet ? 200 : 120,
             }}>
+              {/* Price Estimation Button */}
+              <TouchableOpacity
+                onPress={handlePriceEstimationRequest}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  paddingHorizontal: isTablet ? 28 : 12,
+                  paddingVertical: isTablet ? 24 : 10,
+                  borderRadius: isTablet ? 24 : 12,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 4,
+                  elevation: 4,
+                  marginBottom: isTablet ? 16 : 8,
+                }}>
+                <MaterialIcons name="calculate" size={isTablet ? 32 : 18} color="#059669" />
+                <Text style={{ 
+                  marginLeft: isTablet ? 20 : 8, 
+                  fontWeight: '600', 
+                  color: '#059669', 
+                  fontSize: isTablet ? 24 : 14 
+                }}>
+                  Get Price Estimate
+                </Text>
+              </TouchableOpacity>
+
               <TouchableOpacity
                 onPress={handleClearAllRequest}
                 style={{
@@ -1461,6 +1503,14 @@ const ImageViewerContent = ({
           visible={showClearAllModal}
           onCancel={handleClearAllCancel}
           onConfirm={handleClearAllConfirm}
+        />
+
+        {/* Price Estimation Modal */}
+        <PriceEstimationModal
+          visible={showPriceEstimationModal}
+          onClose={handlePriceEstimationClose}
+          measurementLines={measurementLines}
+          isTablet={isTablet}
         />
 
         {/* Tutorial Overlay */}

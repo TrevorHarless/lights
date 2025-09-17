@@ -18,6 +18,7 @@ export const EditorProvider = ({
   children,
   lightAssets = [],
   getScaledSpacing = null,
+  getLightSizeScale = null,
 }) => {
   // Create central undo system
   const undoSystem = useUndoSystem();
@@ -27,7 +28,8 @@ export const EditorProvider = ({
   const lightStringsHook = useLightStrings(
     lightAssets,
     getScaledSpacing,
-    undoSystem
+    undoSystem,
+    getLightSizeScale
   );
   const decorShapesHook = useDecorShapes(undoSystem);
 

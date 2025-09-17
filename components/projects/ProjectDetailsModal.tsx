@@ -1,8 +1,17 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Image } from "expo-image";
 import React from "react";
-import { Alert, Dimensions, Linking, Modal, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Dimensions,
+  Linking,
+  Modal,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Project } from "~/types/project";
+import { getStatusColor } from "~/utils/statusColors";
 
 interface ProjectDetailsModalProps {
   visible: boolean;
@@ -23,13 +32,13 @@ export default function ProjectDetailsModal({
 }: ProjectDetailsModalProps) {
   if (!project) return null;
 
-  const { width } = Dimensions.get('window');
+  const { width } = Dimensions.get("window");
   const isTablet = width >= 768;
 
   const handlePhonePress = async (phoneNumber: string) => {
     const url = `tel:${phoneNumber}`;
     const supported = await Linking.canOpenURL(url);
-    
+
     if (supported) {
       await Linking.openURL(url);
     } else {
@@ -39,31 +48,31 @@ export default function ProjectDetailsModal({
 
   const handleAddressPress = (address: string) => {
     const encodedAddress = encodeURIComponent(address);
-    
-    Alert.alert(
-      "Open Address",
-      "Choose how to open this address:",
-      [
-        {
-          text: "Apple Maps",
-          onPress: () => Linking.openURL(`http://maps.apple.com/?q=${encodedAddress}`)
-        },
-        {
-          text: "Google Maps",
-          onPress: () => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`)
-        },
-        {
-          text: "Cancel",
-          style: "cancel"
-        }
-      ]
-    );
+
+    Alert.alert("Open Address", "Choose how to open this address:", [
+      {
+        text: "Apple Maps",
+        onPress: () =>
+          Linking.openURL(`http://maps.apple.com/?q=${encodedAddress}`),
+      },
+      {
+        text: "Google Maps",
+        onPress: () =>
+          Linking.openURL(
+            `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`
+          ),
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]);
   };
 
   const handleEmailPress = async (email: string) => {
     const url = `mailto:${email}`;
     const supported = await Linking.canOpenURL(url);
-    
+
     if (supported) {
       await Linking.openURL(url);
     } else {
@@ -78,59 +87,79 @@ export default function ProjectDetailsModal({
       visible={visible}
       onRequestClose={onClose}
     >
-      <View className={`flex-1 justify-center bg-black/50 ${isTablet ? 'px-8' : 'px-4'}`}>
-        <View 
-          className={`bg-white ${isTablet ? 'rounded-3xl' : 'rounded-3xl'} max-h-4/5`}
-          style={{ 
-            maxWidth: isTablet ? 600 : '100%',
-            alignSelf: 'center',
-            width: isTablet ? 600 : '100%'
+      <View
+        className={`flex-1 justify-center bg-black/50 ${isTablet ? "px-8" : "px-4"}`}
+      >
+        <View
+          className={`bg-white ${isTablet ? "rounded-3xl" : "rounded-3xl"} max-h-4/5`}
+          style={{
+            maxWidth: isTablet ? 600 : "100%",
+            alignSelf: "center",
+            width: isTablet ? 600 : "100%",
           }}
         >
           <View className={isTablet ? "p-8" : "p-6"}>
-            <View className={`flex-row justify-between items-start ${isTablet ? 'mb-6' : 'mb-4'}`}>
-              <Text className={`${isTablet ? 'text-3xl' : 'text-2xl'} font-bold text-gray-800 flex-1 pr-4`}>
+            <View
+              className={`flex-row justify-between items-start ${isTablet ? "mb-6" : "mb-4"}`}
+            >
+              <Text
+                className={`${isTablet ? "text-3xl" : "text-2xl"} font-bold text-gray-800 flex-1 pr-4`}
+              >
                 {project.name}
               </Text>
-              <View className={`flex-row ${isTablet ? 'gap-3' : 'gap-2'}`}>
+              <View className={`flex-row ${isTablet ? "gap-3" : "gap-2"}`}>
                 <TouchableOpacity
                   onPress={() => onEdit(project)}
                   className="bg-blue-100 rounded-full items-center justify-center"
                   style={{
-                    width: isTablet ? 44 : 36,
-                    height: isTablet ? 44 : 36,
+                    width: isTablet ? 64 : 36,
+                    height: isTablet ? 64 : 36,
                   }}
                 >
-                  <FontAwesome name="pencil" size={isTablet ? 20 : 16} color="#3b82f6" />
+                  <FontAwesome
+                    name="pencil"
+                    size={isTablet ? 32 : 16}
+                    color="#3b82f6"
+                  />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => onDelete(project)}
                   className="bg-red-100 rounded-full items-center justify-center"
                   style={{
-                    width: isTablet ? 44 : 36,
-                    height: isTablet ? 44 : 36,
+                    width: isTablet ? 64 : 36,
+                    height: isTablet ? 64 : 36,
                   }}
                 >
-                  <FontAwesome name="trash" size={isTablet ? 20 : 16} color="#ef4444" />
+                  <FontAwesome
+                    name="trash"
+                    size={isTablet ? 32 : 16}
+                    color="#ef4444"
+                  />
                 </TouchableOpacity>
-                <TouchableOpacity 
-                  onPress={onClose} 
+                <TouchableOpacity
+                  onPress={onClose}
                   className="bg-gray-100 rounded-full items-center justify-center"
                   style={{
-                    width: isTablet ? 44 : 36,
-                    height: isTablet ? 44 : 36,
+                    width: isTablet ? 64 : 36,
+                    height: isTablet ? 64 : 36,
                   }}
                 >
-                  <FontAwesome name="times" size={isTablet ? 20 : 16} color="#6b7280" />
+                  <FontAwesome
+                    name="times"
+                    size={isTablet ? 32 : 16}
+                    color="#6b7280"
+                  />
                 </TouchableOpacity>
               </View>
             </View>
 
             {project.image_url && (
-              <View className={`${isTablet ? 'mb-6' : 'mb-4'} items-center`}>
+              <View className={`${isTablet ? "mb-6" : "mb-4"} items-center`}>
                 <Image
                   source={{ uri: project.image_url }}
-                  className={isTablet ? "w-64 h-64 rounded-3xl" : "w-48 h-48 rounded-2xl"}
+                  className={
+                    isTablet ? "w-64 h-64 rounded-3xl" : "w-48 h-48 rounded-2xl"
+                  }
                   contentFit="cover"
                 />
               </View>
@@ -138,41 +167,90 @@ export default function ProjectDetailsModal({
 
             {project.description && (
               <View className={isTablet ? "mb-6" : "mb-4"}>
-                <Text className={`${isTablet ? 'text-base' : 'text-sm'} font-semibold text-gray-700 ${isTablet ? 'mb-3' : 'mb-2'}`}>
+                <Text
+                  className={`${isTablet ? "text-xl" : "text-sm"} font-semibold text-gray-700 ${isTablet ? "mb-3" : "mb-2"}`}
+                >
                   Description
                 </Text>
-                <Text className={`text-gray-600 ${isTablet ? 'leading-6 text-base' : 'leading-5'}`}>
+                <Text
+                  className={`text-gray-600 ${isTablet ? "leading-6 text-xl" : "leading-5"}`}
+                >
                   {project.description}
                 </Text>
               </View>
             )}
 
+            <View className={isTablet ? "mb-6" : "mb-4"}>
+              <Text
+                className={`${isTablet ? "text-xl" : "text-sm"} font-semibold text-gray-700 ${isTablet ? "mb-3" : "mb-2"}`}
+              >
+                Status
+              </Text>
+              <View
+                style={{
+                  backgroundColor: getStatusColor(project.status).bg,
+                  paddingHorizontal: isTablet ? 16 : 12,
+                  paddingVertical: isTablet ? 8 : 6,
+                  borderRadius: isTablet ? 12 : 10,
+                  alignSelf: "flex-start",
+                }}
+              >
+                <Text
+                  style={{
+                    color: getStatusColor(project.status).text,
+                    fontSize: isTablet ? 16 : 14,
+                    fontWeight: "600",
+                  }}
+                >
+                  {project.status}
+                </Text>
+              </View>
+            </View>
+
             {project.address && (
               <View className={isTablet ? "mb-6" : "mb-4"}>
-                <Text className={`${isTablet ? 'text-base' : 'text-sm'} font-semibold text-gray-700 ${isTablet ? 'mb-3' : 'mb-2'}`}>
+                <Text
+                  className={`${isTablet ? "text-xl" : "text-sm"} font-semibold text-gray-700 ${isTablet ? "mb-3" : "mb-2"}`}
+                >
                   Address
                 </Text>
                 <TouchableOpacity
                   onPress={() => handleAddressPress(project.address!)}
                   className="flex-row items-center"
                 >
-                  <FontAwesome name="map-marker" size={isTablet ? 20 : 16} color="#3b82f6" />
-                  <Text className={`text-blue-600 ml-2 underline ${isTablet ? 'text-base' : ''}`}>{project.address}</Text>
+                  <FontAwesome
+                    name="map-marker"
+                    size={isTablet ? 32 : 16}
+                    color="#3b82f6"
+                  />
+                  <Text
+                    className={`text-blue-600 ml-2 underline ${isTablet ? "text-xl" : ""}`}
+                  >
+                    {project.address}
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}
 
             {project.phone_number && (
               <View className={isTablet ? "mb-6" : "mb-4"}>
-                <Text className={`${isTablet ? 'text-base' : 'text-sm'} font-semibold text-gray-700 ${isTablet ? 'mb-3' : 'mb-2'}`}>
+                <Text
+                  className={`${isTablet ? "text-xl" : "text-sm"} font-semibold text-gray-700 ${isTablet ? "mb-3" : "mb-2"}`}
+                >
                   Contact Number
                 </Text>
                 <TouchableOpacity
                   onPress={() => handlePhonePress(project.phone_number!)}
                   className="flex-row items-center"
                 >
-                  <FontAwesome name="phone" size={isTablet ? 20 : 16} color="#3b82f6" />
-                  <Text className={`text-blue-600 ml-2 underline ${isTablet ? 'text-base' : ''}`}>
+                  <FontAwesome
+                    name="phone"
+                    size={isTablet ? 32 : 16}
+                    color="#3b82f6"
+                  />
+                  <Text
+                    className={`text-blue-600 ml-2 underline ${isTablet ? "text-xl" : ""}`}
+                  >
                     {project.phone_number}
                   </Text>
                 </TouchableOpacity>
@@ -181,15 +259,23 @@ export default function ProjectDetailsModal({
 
             {project.email && (
               <View className={isTablet ? "mb-6" : "mb-4"}>
-                <Text className={`${isTablet ? 'text-base' : 'text-sm'} font-semibold text-gray-700 ${isTablet ? 'mb-3' : 'mb-2'}`}>
+                <Text
+                  className={`${isTablet ? "text-xl" : "text-sm"} font-semibold text-gray-700 ${isTablet ? "mb-3" : "mb-2"}`}
+                >
                   Email Address
                 </Text>
                 <TouchableOpacity
                   onPress={() => handleEmailPress(project.email!)}
                   className="flex-row items-center"
                 >
-                  <FontAwesome name="envelope" size={isTablet ? 20 : 16} color="#3b82f6" />
-                  <Text className={`text-blue-600 ml-2 underline ${isTablet ? 'text-base' : ''}`}>
+                  <FontAwesome
+                    name="envelope"
+                    size={isTablet ? 32 : 16}
+                    color="#3b82f6"
+                  />
+                  <Text
+                    className={`text-blue-600 ml-2 underline ${isTablet ? "text-xl" : ""}`}
+                  >
                     {project.email}
                   </Text>
                 </TouchableOpacity>
@@ -197,10 +283,12 @@ export default function ProjectDetailsModal({
             )}
 
             <View className={isTablet ? "mb-8" : "mb-6"}>
-              <Text className={`${isTablet ? 'text-base' : 'text-sm'} font-semibold text-gray-700 ${isTablet ? 'mb-3' : 'mb-2'}`}>
+              <Text
+                className={`${isTablet ? "text-xl" : "text-sm"} font-semibold text-gray-700 ${isTablet ? "mb-3" : "mb-2"}`}
+              >
                 Created
               </Text>
-              <Text className={`text-gray-600 ${isTablet ? 'text-base' : ''}`}>
+              <Text className={`text-gray-600 ${isTablet ? "text-xl" : ""}`}>
                 {new Date(project.created_at).toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "long",
@@ -210,12 +298,18 @@ export default function ProjectDetailsModal({
             </View>
 
             <TouchableOpacity
-              className={`bg-blue-600 ${isTablet ? 'py-5' : 'py-4'} rounded-xl shadow-lg`}
+              className={`bg-blue-600 ${isTablet ? "py-5" : "py-4"} rounded-xl shadow-lg`}
               onPress={() => onOpenEditor(project)}
             >
               <View className="flex-row items-center justify-center">
-                <FontAwesome name="edit" size={isTablet ? 22 : 18} color="white" />
-                <Text className={`text-white font-semibold ${isTablet ? 'text-xl' : 'text-lg'} ml-2`}>
+                <FontAwesome
+                  name="edit"
+                  size={isTablet ? 22 : 18}
+                  color="white"
+                />
+                <Text
+                  className={`text-white font-semibold ${isTablet ? "text-xl" : "text-lg"} ml-2`}
+                >
                   Open Light Editor
                 </Text>
               </View>

@@ -160,7 +160,7 @@ export default function ProjectsScreen() {
               {pendingChanges > 0 && (
                 <Text
                   style={{
-                    fontSize: 12,
+                    fontSize: isTablet ? 18 : 12,
                     color: "#f59e0b",
                     fontWeight: "500",
                     marginTop: 2,
@@ -486,6 +486,46 @@ export default function ProjectsScreen() {
             }
           />
         )}
+
+        {/* Map Button - Fixed at bottom */}
+        <View
+          style={{
+            position: "absolute",
+            bottom: isTablet ? 80 : 20,
+            left: 20,
+            right: 20,
+            alignItems: "center",
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#10b981",
+              paddingHorizontal: 32,
+              paddingVertical: 16,
+              borderRadius: 24,
+              flexDirection: "row",
+              alignItems: "center",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.2,
+              shadowRadius: 12,
+              elevation: 8,
+            }}
+            onPress={() => router.push("/map")}
+          >
+            <MaterialIcons name="map" size={isTablet ? 48 : 24} color="white" />
+            <Text
+              style={{
+                color: "white",
+                fontSize: isTablet ? 36 : 18,
+                fontWeight: "600",
+                marginLeft: 8,
+              }}
+            >
+              View Map
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <CreateProjectModal
           visible={modalVisible}

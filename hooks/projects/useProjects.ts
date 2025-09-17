@@ -19,11 +19,14 @@ export function useProjects(user: any) {
   const router = useRouter();
 
   useEffect(() => {
+
     if (user) {
+
       // Clear cache for user change to prevent data leakage
       localStorageService.clearCacheForUser(user.id);
       loadProjects();
     } else {
+
       setProjects([]);
     }
   }, [user]);
@@ -42,14 +45,17 @@ export function useProjects(user: any) {
 
   const loadProjects = async () => {
     try {
+
       // Load immediately from local storage (instant)
       const localProjects = await localStorageService.getProjects();
+
+
       setProjects(localProjects);
       
       // SyncContext handles background sync, so we don't need to trigger it here
       // This prevents redundant sync calls on startup
     } catch (error) {
-      console.error("Error loading projects from local storage:", error);
+
       // Fallback to server if local storage fails
       await fallbackToServerProjects();
     }
