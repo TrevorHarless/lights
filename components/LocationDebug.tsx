@@ -6,55 +6,43 @@ import { locationService } from '~/services/location';
 export default function LocationDebug() {
   const [testing, setTesting] = useState(false);
 
-  const testGoogleAPI = async () => {
+  const testLocationService = async () => {
     setTesting(true);
     
     try {
-      console.log('=== API Debug Test ===');
-      console.log('Environment variables:');
-      console.log('EXPO_PUBLIC_GOOGLE_PLACES_API_KEY exists:', !!process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY);
-      
-      if (process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY) {
-        const key = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
-        console.log('API key length:', key.length);
-        console.log('API key starts with:', key.substring(0, 10));
-        console.log('API key format looks like AIza...:', key.startsWith('AIza'));
-      }
+      console.log('=== Location Service Test (Edge Functions) ===');
+      console.log('Testing Supabase Edge Functions for location services');
 
       // Test a simple search
       const results = await locationService.searchPlaces('New York');
-      console.log('API test successful, results:', results.length);
-      Alert.alert('Success', `API working! Found ${results.length} results for "New York"`);
+      console.log('Location service test successful, results:', results.length);
+      Alert.alert('Success', `Location service working! Found ${results.length} results for "New York"`);
     } catch (error) {
-      console.error('API test failed:', error);
-      Alert.alert('API Test Failed', error instanceof Error ? error.message : String(error));
+      console.error('Location service test failed:', error);
+      Alert.alert('Location Service Test Failed', error instanceof Error ? error.message : String(error));
     } finally {
       setTesting(false);
     }
   };
 
-  const testSimpleRequest = async () => {
+  const testGeocoding = async () => {
     setTesting(true);
     
     try {
-      const apiKey = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
-      if (!apiKey) {
-        Alert.alert('No API Key', 'EXPO_PUBLIC_GOOGLE_PLACES_API_KEY not found in environment');
-        return;
+      console.log('Testing geocoding edge function...');
+      
+      // Test geocoding
+      const result = await locationService.geocodeAddress('Times Square, New York');
+      
+      if (result) {
+        console.log('Geocoding test successful:', result);
+        Alert.alert('Geocoding Success', `Address: ${result.formatted_address}\nCoords: ${result.coordinates.latitude}, ${result.coordinates.longitude}`);
+      } else {
+        Alert.alert('Geocoding Test', 'No results found');
       }
-
-      // Make a simple test request
-      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=test&key=${apiKey}`;
-      console.log('Testing direct API call...');
-      
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      console.log('Direct API response:', data);
-      Alert.alert('Direct API Test', `Status: ${data.status}\nError: ${data.error_message || 'None'}`);
     } catch (error) {
-      console.error('Direct API test failed:', error);
-      Alert.alert('Direct API Test Failed', String(error));
+      console.error('Geocoding test failed:', error);
+      Alert.alert('Geocoding Test Failed', String(error));
     } finally {
       setTesting(false);
     }
@@ -62,28 +50,28 @@ export default function LocationDebug() {
 
   return (
     <View className="p-4 bg-yellow-100 m-4 rounded-lg">
-      <Text className="text-lg font-bold mb-2">🐛 Location API Debug</Text>
+      <Text className="text-lg font-bold mb-2">🐛 Location Service Debug (Edge Functions)</Text>
       <Text className="text-sm text-gray-600 mb-3">
-        Temporary debug panel - remove after testing
+        Testing Supabase Edge Functions for Google APIs - remove after testing
       </Text>
       
       <TouchableOpacity
         className="bg-blue-500 p-3 rounded mb-2"
-        onPress={testGoogleAPI}
+        onPress={testLocationService}
         disabled={testing}
       >
         <Text className="text-white text-center">
-          {testing ? 'Testing...' : 'Test Location Service'}
+          {testing ? 'Testing...' : 'Test Places Search (Edge Function)'}
         </Text>
       </TouchableOpacity>
       
       <TouchableOpacity
         className="bg-green-500 p-3 rounded"
-        onPress={testSimpleRequest}
+        onPress={testGeocoding}
         disabled={testing}
       >
         <Text className="text-white text-center">
-          {testing ? 'Testing...' : 'Test Direct API Call'}
+          {testing ? 'Testing...' : 'Test Geocoding (Edge Function)'}
         </Text>
       </TouchableOpacity>
     </View>

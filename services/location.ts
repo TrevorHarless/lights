@@ -1,4 +1,5 @@
 import * as Location from 'expo-location';
+import { supabase } from '~/lib/supabase';
 
 export interface LocationCoordinates {
   latitude: number;
@@ -18,23 +19,11 @@ export interface GeocodeResult {
 }
 
 class LocationService {
-  private googleApiKey: string | null = null;
+  private supabaseUrl: string;
 
   constructor() {
-    // In a real app, you'd store this in env variables
-    // For now, we'll use a placeholder - you'll need to add your Google API key
-    this.googleApiKey = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY || null;
-    console.log('LocationService initialized. API key configured:', !!this.googleApiKey);
-    if (this.googleApiKey) {
-      console.log('API key starts with:', this.googleApiKey.substring(0, 10) + '...');
-    }
-  }
-
-  /**
-   * Set Google Places API key
-   */
-  setApiKey(apiKey: string) {
-    this.googleApiKey = apiKey;
+    this.supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+    console.log('LocationService initialized. Using Supabase Edge Functions for Google APIs.');
   }
 
   /**
@@ -64,41 +53,24 @@ class LocationService {
   }
 
   /**
-   * Search for places using Google Places Autocomplete API
+   * Search for places using Supabase Edge Function
    */
   async searchPlaces(query: string): Promise<PlaceResult[]> {
-    if (!this.googleApiKey) {
-      throw new Error('Google Places API key not configured');
-    }
-
     if (query.length < 3) {
       return [];
     }
 
     try {
-      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${this.googleApiKey}&types=address`;
-      console.log('Making Places API request to:', url.replace(this.googleApiKey, 'API_KEY_HIDDEN'));
-      
-      const response = await fetch(url);
-      const data = await response.json();
+      const { data, error } = await supabase.functions.invoke('places-autocomplete', {
+        body: { query }
+      });
 
-      console.log('Places API response status:', data.status);
-      if (data.error_message) {
-        console.log('Places API error message:', data.error_message);
+      if (error) {
+        console.error('Places autocomplete error:', error);
+        throw new Error(`Places search failed: ${error.message}`);
       }
 
-      if (data.status !== 'OK') {
-        let errorMessage = `Google Places API error: ${data.status}`;
-        if (data.error_message) {
-          errorMessage += ` - ${data.error_message}`;
-        }
-        throw new Error(errorMessage);
-      }
-
-      return data.predictions.map((prediction: any) => ({
-        description: prediction.description,
-        place_id: prediction.place_id,
-      }));
+      return data.predictions || [];
     } catch (error) {
       console.error('Error searching places:', error);
       throw error;
@@ -106,33 +78,20 @@ class LocationService {
   }
 
   /**
-   * Get detailed place information including coordinates using Place Details API
+   * Get detailed place information including coordinates using Supabase Edge Function
    */
   async getPlaceDetails(placeId: string): Promise<GeocodeResult | null> {
-    if (!this.googleApiKey) {
-      throw new Error('Google Places API key not configured');
-    }
-
     try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=formatted_address,geometry&key=${this.googleApiKey}`
-      );
+      const { data, error } = await supabase.functions.invoke('place-details', {
+        body: { place_id: placeId }
+      });
 
-      const data = await response.json();
-
-      if (data.status !== 'OK') {
-        throw new Error(`Google Places API error: ${data.status}`);
+      if (error) {
+        console.error('Place details error:', error);
+        return null;
       }
 
-      const result = data.result;
-      return {
-        formatted_address: result.formatted_address,
-        coordinates: {
-          latitude: result.geometry.location.lat,
-          longitude: result.geometry.location.lng,
-        },
-        place_id: placeId,
-      };
+      return data;
     } catch (error) {
       console.error('Error getting place details:', error);
       return null;
@@ -140,33 +99,20 @@ class LocationService {
   }
 
   /**
-   * Geocode an address string to coordinates using Google Geocoding API
+   * Geocode an address string to coordinates using Supabase Edge Function
    */
   async geocodeAddress(address: string): Promise<GeocodeResult | null> {
-    if (!this.googleApiKey) {
-      throw new Error('Google Places API key not configured');
-    }
-
     try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${this.googleApiKey}`
-      );
+      const { data, error } = await supabase.functions.invoke('geocode', {
+        body: { address }
+      });
 
-      const data = await response.json();
-
-      if (data.status !== 'OK' || data.results.length === 0) {
-        throw new Error(`Geocoding failed: ${data.status}`);
+      if (error) {
+        console.error('Geocoding error:', error);
+        return null;
       }
 
-      const result = data.results[0];
-      return {
-        formatted_address: result.formatted_address,
-        coordinates: {
-          latitude: result.geometry.location.lat,
-          longitude: result.geometry.location.lng,
-        },
-        place_id: result.place_id,
-      };
+      return data;
     } catch (error) {
       console.error('Error geocoding address:', error);
       return null;
@@ -174,25 +120,23 @@ class LocationService {
   }
 
   /**
-   * Reverse geocode coordinates to address using Google Geocoding API
+   * Reverse geocode coordinates to address using Supabase Edge Function
    */
   async reverseGeocode(coordinates: LocationCoordinates): Promise<string | null> {
-    if (!this.googleApiKey) {
-      throw new Error('Google Places API key not configured');
-    }
-
     try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinates.latitude},${coordinates.longitude}&key=${this.googleApiKey}`
-      );
+      const { data, error } = await supabase.functions.invoke('reverse-geocode', {
+        body: { 
+          latitude: coordinates.latitude, 
+          longitude: coordinates.longitude 
+        }
+      });
 
-      const data = await response.json();
-
-      if (data.status !== 'OK' || data.results.length === 0) {
-        throw new Error(`Reverse geocoding failed: ${data.status}`);
+      if (error) {
+        console.error('Reverse geocoding error:', error);
+        return null;
       }
 
-      return data.results[0].formatted_address;
+      return data.formatted_address;
     } catch (error) {
       console.error('Error reverse geocoding:', error);
       return null;

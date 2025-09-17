@@ -108,7 +108,7 @@ const ImageViewer = ({ imgSource, onGoBack, project, projectId }) => {
 
   // Wrap with EditorProvider using the SAME reference scale instance
   return (
-    <EditorProvider lightAssets={lightAssets} getScaledSpacing={getScaledLightSpacing}>
+    <EditorProvider lightAssets={lightAssets} getScaledSpacing={getScaledLightSpacing} getLightSizeScale={getLightSizeScale}>
       <ImageViewerContent
         imgSource={imgSource}
         onGoBack={onGoBack}

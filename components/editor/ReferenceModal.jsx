@@ -1,45 +1,21 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Dimensions, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, InputAccessoryView, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export function ReferenceModal({ visible, onClose, onConfirm, onCancel }) {
   const [lengthInput, setLengthInput] = useState('');
-  const [modalVisible, setModalVisible] = useState(false);
-  const [, setShouldFocusInput] = useState(false);
   const inputRef = useRef(null);
-  
+
   // Device detection for responsive design
   const { width } = Dimensions.get('window');
   const isTablet = width >= 768;
 
-  // Handle modal showing with smooth timing
+  const inputAccessoryViewID = 'referenceDone';
+
+  // Clear input when modal becomes visible
   useEffect(() => {
     if (visible) {
-      // Focus input first to show keyboard
-      setShouldFocusInput(true);
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
-      
-      // Show modal after keyboard starts animating in
-      const modalTimer = setTimeout(() => {
-        setModalVisible(true);
-      }, 100);
-
-      return () => clearTimeout(modalTimer);
-    } else {
-      // Hide modal first
-      setModalVisible(false);
-      
-      // Dismiss keyboard after modal starts fading out
-      const keyboardTimer = setTimeout(() => {
-        setShouldFocusInput(false);
-        if (inputRef.current) {
-          inputRef.current.blur();
-        }
-      }, 100);
-
-      return () => clearTimeout(keyboardTimer);
+      setLengthInput('');
     }
   }, [visible]);
 
@@ -61,23 +37,24 @@ export function ReferenceModal({ visible, onClose, onConfirm, onCancel }) {
   };
 
   return (
-    <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={handleCancel}>
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      >
-        <ScrollView 
-          contentContainerStyle={{
-            flexGrow: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingHorizontal: isTablet ? 48 : 32,
-            paddingVertical: isTablet ? 60 : 40,
-          }}
-          keyboardShouldPersistTaps="handled"
+    <>
+      <Modal visible={visible} transparent animationType="fade" onRequestClose={handleCancel}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: isTablet ? 48 : 32,
+              paddingVertical: isTablet ? 60 : 40,
+            }}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="interactive"
+          >
           <View style={{
             backgroundColor: 'rgba(255, 255, 255, 0.98)',
             borderRadius: isTablet ? 32 : 24,
@@ -168,6 +145,9 @@ export function ReferenceModal({ visible, onClose, onConfirm, onCancel }) {
               placeholderTextColor="#9ca3af"
               keyboardType="decimal-pad"
               selectTextOnFocus
+              inputAccessoryViewID={inputAccessoryViewID}
+              returnKeyType="done"
+              onSubmitEditing={handleConfirm}
             />
             <Text style={{
               fontSize: isTablet ? 18 : 12,
@@ -240,5 +220,50 @@ export function ReferenceModal({ visible, onClose, onConfirm, onCancel }) {
         </ScrollView>
       </KeyboardAvoidingView>
     </Modal>
+    <InputAccessoryView nativeID={inputAccessoryViewID}>
+      <View style={{
+        backgroundColor: '#f3f4f6',
+        borderTopWidth: 1,
+        borderTopColor: '#e5e7eb',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}>
+        <TouchableOpacity
+          onPress={() => {
+            inputRef.current?.blur();
+            Keyboard.dismiss();
+            handleCancel();
+          }}
+          style={{
+            backgroundColor: '#9ca3af',
+            paddingHorizontal: 20,
+            paddingVertical: 8,
+            borderRadius: 12,
+          }}
+        >
+          <Text style={{ color: 'white', fontWeight: '600', fontSize: 16 }}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            inputRef.current?.blur();
+            Keyboard.dismiss();
+            handleConfirm();
+          }}
+          style={{
+            backgroundColor: '#374151',
+            paddingHorizontal: 20,
+            paddingVertical: 8,
+            borderRadius: 12,
+          }}
+        >
+          <Text style={{ color: 'white', fontWeight: '600', fontSize: 16 }}>Set Reference</Text>
+        </TouchableOpacity>
+      </View>
+    </InputAccessoryView>
+    </>
   );
 }

@@ -1,10 +1,15 @@
 import { useCallback, useState } from "react";
-import { useUndoSystem, UNDO_ACTION_TYPES } from "./useUndoSystem";
+import { UNDO_ACTION_TYPES, useUndoSystem } from "./useUndoSystem";
 
-export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoSystem = null) {
+export function useLightStrings(
+  lightAssets = [],
+  getScaledSpacing = null,
+  undoSystem = null,
+  getLightSizeScale = null
+) {
   const [lightStrings, setLightStrings] = useState([]);
   const [selectedStringId, setSelectedStringId] = useState(null);
-  
+
   // Use passed undo system or create a local one for backward compatibility
   const localUndoSystem = useUndoSystem();
   const undo = undoSystem || localUndoSystem;
@@ -27,8 +32,8 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoS
         type: UNDO_ACTION_TYPES.DELETE_LIGHT_STRING,
         data: {
           string: stringToDelete,
-          wasSelected: selectedStringId === stringId
-        }
+          wasSelected: selectedStringId === stringId,
+        },
       });
 
       // Remove the string from the list
@@ -56,7 +61,7 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoS
     switch (lastAction.type) {
       case UNDO_ACTION_TYPES.DELETE_LIGHT_STRING:
         // Restore deleted string
-        setLightStrings(prev => [...prev, lastAction.data.string]);
+        setLightStrings((prev) => [...prev, lastAction.data.string]);
         if (lastAction.data.wasSelected) {
           setSelectedStringId(lastAction.data.string.id);
         }
@@ -64,7 +69,9 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoS
 
       case UNDO_ACTION_TYPES.ADD_LIGHT_STRING:
         // Remove added string
-        setLightStrings(prev => prev.filter(string => string.id !== lastAction.data.string.id));
+        setLightStrings((prev) =>
+          prev.filter((string) => string.id !== lastAction.data.string.id)
+        );
         if (selectedStringId === lastAction.data.string.id) {
           setSelectedStringId(null);
         }
@@ -72,19 +79,21 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoS
 
       case UNDO_ACTION_TYPES.MOVE_LIGHT_STRING:
         // Restore previous positions
-        setLightStrings(prev => prev.map(string => 
-          string.id === lastAction.data.entityId 
-            ? { 
-                ...string, 
-                start: lastAction.data.startState.start,
-                end: lastAction.data.startState.end
-              }
-            : string
-        ));
+        setLightStrings((prev) =>
+          prev.map((string) =>
+            string.id === lastAction.data.entityId
+              ? {
+                  ...string,
+                  start: lastAction.data.startState.start,
+                  end: lastAction.data.startState.end,
+                }
+              : string
+          )
+        );
         break;
 
       default:
-        console.warn('Unknown undo action type:', lastAction.type);
+        console.warn("Unknown undo action type:", lastAction.type);
         return false;
     }
 
@@ -92,25 +101,28 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoS
   }, [undo, selectedStringId]);
 
   // Add a new light string
-  const addLightString = useCallback((vector) => {
-    const newStringId = Date.now().toString();
-    const newString = { ...vector, id: newStringId };
+  const addLightString = useCallback(
+    (vector) => {
+      const newStringId = Date.now().toString();
+      const newString = { ...vector, id: newStringId };
 
-    // Record the add action for undo
-    undo.recordAction({
-      type: UNDO_ACTION_TYPES.ADD_LIGHT_STRING,
-      data: {
-        string: newString
-      }
-    });
+      // Record the add action for undo
+      undo.recordAction({
+        type: UNDO_ACTION_TYPES.ADD_LIGHT_STRING,
+        data: {
+          string: newString,
+        },
+      });
 
-    setLightStrings((prev) => [...prev, newString]);
+      setLightStrings((prev) => [...prev, newString]);
 
-    // Optionally auto-select newly created string
-    setSelectedStringId(newStringId);
-    
-    return newStringId;
-  }, [undo]);
+      // Optionally auto-select newly created string
+      setSelectedStringId(newStringId);
+
+      return newStringId;
+    },
+    [undo]
+  );
 
   // Clear all light strings
   const clearAllLightStrings = useCallback(() => {
@@ -132,26 +144,32 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoS
   }, []);
 
   // Start tracking a move operation
-  const startMovingLightString = useCallback((stringId) => {
-    const string = lightStrings.find(s => s.id === stringId);
-    if (string) {
-      undo.startMoveTracking('LIGHT_STRING', stringId, { 
-        start: string.start, 
-        end: string.end 
-      });
-    }
-  }, [lightStrings, undo]);
+  const startMovingLightString = useCallback(
+    (stringId) => {
+      const string = lightStrings.find((s) => s.id === stringId);
+      if (string) {
+        undo.startMoveTracking("LIGHT_STRING", stringId, {
+          start: string.start,
+          end: string.end,
+        });
+      }
+    },
+    [lightStrings, undo]
+  );
 
   // End tracking a move operation
-  const endMovingLightString = useCallback((stringId) => {
-    const string = lightStrings.find(s => s.id === stringId);
-    if (string) {
-      undo.endMoveTracking('LIGHT_STRING', stringId, { 
-        start: string.start, 
-        end: string.end 
-      });
-    }
-  }, [lightStrings, undo]);
+  const endMovingLightString = useCallback(
+    (stringId) => {
+      const string = lightStrings.find((s) => s.id === stringId);
+      if (string) {
+        undo.endMoveTracking("LIGHT_STRING", stringId, {
+          start: string.start,
+          end: string.end,
+        });
+      }
+    },
+    [lightStrings, undo]
+  );
 
   // Update a light string's start or end position
   const updateLightString = useCallback((stringId, updates) => {
@@ -187,8 +205,18 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoS
 
   // Find the closest light string to a point within a threshold
   const findClosestLightString = useCallback(
-    (point, threshold = 20) => {
+    (point, staticThreshold = null) => {
       if (lightStrings.length === 0) return null;
+
+      // Calculate dynamic threshold based on light size scale
+      let threshold;
+      if (staticThreshold !== null) {
+        threshold = staticThreshold;
+      } else {
+        const baseThreshold = 8; // minimum touch area in pixels
+        const lightSizeMultiplier = getLightSizeScale ? getLightSizeScale() : 1;
+        threshold = Math.max(baseThreshold, baseThreshold * lightSizeMultiplier * 1.5);
+      }
 
       let closestString = null;
       let minDistance = Number.MAX_VALUE;
@@ -224,7 +252,7 @@ export function useLightStrings(lightAssets = [], getScaledSpacing = null, undoS
 
       return closestString;
     },
-    [lightStrings]
+    [lightStrings, getLightSizeScale]
   );
 
   // Calculate positions for lights along a vector
