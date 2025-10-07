@@ -295,7 +295,7 @@ export default function CreateProjectModal({
             <View className="flex-1 items-center justify-center p-8">
               <View
                 className="bg-white rounded-3xl shadow-2xl overflow-hidden"
-                style={{ width: 600, maxHeight: "85%" }}
+                style={{ width: 600, height: "85%" }}
               >
                 {/* Header */}
                 <View className="bg-white/95 px-8 py-6">
@@ -324,16 +324,13 @@ export default function CreateProjectModal({
                   </View>
                 </View>
 
-                <KeyboardAvoidingView
-                  behavior={Platform.OS === "ios" ? "padding" : "height"}
-                  style={{ flex: 1 }}
+                <ScrollView
+                  ref={scrollViewRef}
+                  keyboardShouldPersistTaps="always"
+                  keyboardDismissMode="interactive"
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ flexGrow: 1 }}
                 >
-                  <ScrollView
-                    ref={scrollViewRef}
-                    keyboardShouldPersistTaps="always"
-                    keyboardDismissMode="interactive"
-                    showsVerticalScrollIndicator={false}
-                  >
                     <View
                       className={`p-8 ${isTablet && isLandscape ? "flex-row space-x-6" : ""}`}
                     >
@@ -622,7 +619,6 @@ export default function CreateProjectModal({
                       )}
                     </View>
                   </ScrollView>
-                </KeyboardAvoidingView>
               </View>
             </View>
           ) : (
