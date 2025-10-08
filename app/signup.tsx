@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import AppleSignInButton from "~/components/AppleSignInButton";
 import ErrorMessage from "~/components/ui/ErrorMessage";
-import PasswordRequirements from "~/components/ui/PasswordRequirements";
 import { useAuth } from "~/contexts/AuthContext";
 import "../global.css";
 
@@ -23,9 +22,6 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [showPasswordRequirements, setShowPasswordRequirements] =
-    useState(false);
   const { signUp } = useAuth();
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
@@ -42,7 +38,6 @@ export default function SignUpScreen() {
   const handleSignUp = async () => {
     // Clear previous messages
     setErrorMessage("");
-    setSuccessMessage("");
 
     if (!email || !password || !confirmPassword) {
       setErrorMessage("Please fill in all fields");
@@ -63,21 +58,11 @@ export default function SignUpScreen() {
     const { error } = await signUp(email, password);
 
     if (error) {
-      // Customize password requirement error messages
-      let errorMsg = error.message;
-      if (error.message.includes("Password should contain")) {
-        errorMsg =
-          "Password must contain at least:\n• 1 uppercase letter (A-Z)\n• 1 lowercase letter (a-z)\n• 1 number (0-9)";
-      }
-      setErrorMessage(errorMsg);
+      setErrorMessage(error.message);
+      setLoading(false);
     } else {
-      setSuccessMessage(
-        "Account created successfully! Please check your email to verify your account."
-      );
-      // Redirect after showing success message
-      setTimeout(() => {
-        router.replace("/login");
-      }, 10000);
+      // Account created successfully - user is now automatically signed in
+      router.replace("/");
     }
     setLoading(false);
   };
@@ -114,11 +99,6 @@ export default function SignUpScreen() {
               visible={!!errorMessage}
               type="error"
             />
-            <ErrorMessage
-              message={successMessage}
-              visible={!!successMessage}
-              type="info"
-            />
             <View>
               <Text className="text-gray-700 font-medium mb-2 ml-1">Email</Text>
               <TextInput
@@ -150,12 +130,10 @@ export default function SignUpScreen() {
                 ref={passwordRef}
                 className={`bg-white border border-gray-200 rounded-xl ${isTablet ? "px-5 py-5" : "px-4 py-4"} text-gray-800 shadow-sm focus:border-primary-500 focus:shadow-md`}
                 style={{ fontSize: isTablet ? 18 : 16, fontWeight: "500" }}
-                placeholder="Enter your password"
+                placeholder="Enter your password (min 6 characters)"
                 placeholderTextColor="#9ca3af"
                 value={password}
                 onChangeText={setPassword}
-                onFocus={() => setShowPasswordRequirements(true)}
-                onBlur={() => setShowPasswordRequirements(false)}
                 secureTextEntry
                 autoComplete="password"
                 autoCorrect={false}
@@ -164,10 +142,6 @@ export default function SignUpScreen() {
                 returnKeyType="next"
                 blurOnSubmit={false}
                 onSubmitEditing={() => confirmPasswordRef.current?.focus()}
-              />
-              <PasswordRequirements
-                password={password}
-                visible={showPasswordRequirements}
               />
             </View>
 
