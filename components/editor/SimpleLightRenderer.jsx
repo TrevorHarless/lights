@@ -24,9 +24,11 @@ const SimpleLightRenderer = ({
       const asset = getAssetById(string.assetId);
       if (!asset) return;
 
-      // Custom assets should not be affected by reference scale - use scale of 1
-      // Regular assets use the reference scale for real-world sizing
-      const assetLightScale = (asset.type === "custom") ? 1 : (getLightSizeScale ? getLightSizeScale() : 1);
+      // Custom style-based lights (renderType: "style") use their own size (scale = 1)
+      // Custom patterns and preset lights use reference scale for consistent sizing
+      const assetLightScale = (asset.type === "custom" && asset.renderType === "style")
+        ? 1
+        : (getLightSizeScale ? getLightSizeScale() : 1);
 
       const positions = calculateLightPositions(string, asset.spacing, asset);
       const isSelected = string.id === selectedStringId;
@@ -183,9 +185,11 @@ const SimpleLightRenderer = ({
     if (currentVector && isDragging) {
       const asset = getAssetById(currentVector.assetId);
       if (asset) {
-        // Custom assets should not be affected by reference scale - use scale of 1
-        // Regular assets use the reference scale for real-world sizing
-        const assetLightScale = (asset.type === "custom") ? 1 : (getLightSizeScale ? getLightSizeScale() : 1);
+        // Custom style-based lights (renderType: "style") use their own size (scale = 1)
+        // Custom patterns and preset lights use reference scale for consistent sizing
+        const assetLightScale = (asset.type === "custom" && asset.renderType === "style")
+          ? 1
+          : (getLightSizeScale ? getLightSizeScale() : 1);
         
         const positions = calculateLightPositions(currentVector, asset.spacing, asset);
         
