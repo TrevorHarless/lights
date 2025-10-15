@@ -265,12 +265,13 @@ export function useLightStrings(
       const dy = end.y - start.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      // For custom assets, use their exact spacing. For regular assets, use scaled spacing.
+      // Custom style-based lights (renderType: "style") use their own spacing
+      // Custom patterns and preset lights (renderType: "pattern" or "image") use scaled spacing
       let spacing;
-      if (asset && asset.type === "custom") {
-        spacing = assetSpacing; // Use custom asset spacing directly
+      if (asset && asset.type === "custom" && asset.renderType === "style") {
+        spacing = assetSpacing; // Use custom light's own spacing
       } else {
-        spacing = getScaledSpacing ? getScaledSpacing() : assetSpacing; // Use scaled spacing for regular assets
+        spacing = getScaledSpacing ? getScaledSpacing() : assetSpacing; // Use scaled spacing for patterns and presets
       }
 
       // Calculate how many lights to place
